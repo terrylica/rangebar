@@ -100,3 +100,6 @@ statistics_v2_validation
 
 # Logs
 *.log
+# .Sessions folder - never delete
+.sessions/
+!.sessions/.gitignore
