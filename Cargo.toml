@@ -66,6 +66,14 @@ path = "src/bin/data_structure_validator.rs"
 name = "spot-tier1-processor"
 path = "src/bin/spot_tier1_processor.rs"
 
+[[bin]]
+name = "polars-benchmark"
+path = "src/bin/polars_benchmark.rs"
+
+[[bin]]
+name = "temporal-integrity-validator"
+path = "src/bin/temporal_integrity_test_only.rs"
+
 
 
 [[bench]]
@@ -120,7 +128,7 @@ tdigests = { version = "1.0", optional = true }      # Streaming percentiles <2%
 
 # Statistical analysis (optional)
 nalgebra = { version = "0.33", optional = true }
-polars = { version = "0.49", features = ["lazy", "temporal", "strings", "parquet", "csv"], optional = true }
+polars = { version = "0.49", features = ["lazy", "temporal", "strings", "parquet", "csv", "ipc"], optional = true }
 quantiles = { version = "0.7", optional = true }
 statrs = { version = "0.17", optional = true }
 
@@ -140,6 +148,7 @@ pyo3 = { version = "0.26", features = ["extension-module", "abi3-py38"], optiona
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 toml = "0.8"
+tempfile = "3.8"
 
 [profile.release]
 lto = true              # Link-time optimization for better performance
@@ -151,29 +160,46 @@ panic = "abort"         # Smaller binary size
 overflow-checks = true  # Keep overflow checks in debug builds
 
 [features]
-default = ["statistics", "data-integrity", "streaming-v2"]  # Core features for most users
-simd = []                                # Optional SIMD optimizations
+default = ["streaming-v2", "data-integrity"]  # Core features for most users
+simd = []  # Optional SIMD optimizations
 
-# Feature groups for modular compilation
-statistics = ["dep:statrs", "dep:quantiles", "dep:polars", "dep:nalgebra"]
-streaming-stats = ["dep:ta-statistics", "dep:rolling-stats", "dep:tdigests"]  # State-of-the-art streaming statistics
-memory-optimized = ["dep:mempool", "dep:bufferpool", "dep:tikv-jemallocator"]  # Zero-allocation streaming (2024-2025)
-streaming-v2 = []  # Production-ready streaming architecture with bounded memory
-dual-run-validation = []  # Enable parallel processing for migration validation
-arrow-support = ["dep:arrow", "dep:parquet"]
+# Execution modes (dual-path architecture)
+streaming-mode = ["streaming-stats", "real-time-indicators"]
+batch-mode = ["polars-analytics", "advanced-analytics"]
+hybrid-mode = ["streaming-mode", "batch-mode"]
+
+# Output capabilities
+polars-io = ["dep:polars"]
+arrow-export = ["polars-io", "dep:arrow"]
+parquet-export = ["polars-io"]
+export-formats = ["polars-io", "arrow-export", "parquet-export"]
+
+# Analytics levels
+basic-analytics = ["streaming-stats"]
+advanced-analytics = ["polars-analytics", "cross-symbol-analysis"]
+research-analytics = ["advanced-analytics", "market-microstructure"]
+
+# Core feature groups
+streaming-stats = ["dep:ta-statistics", "dep:rolling-stats", "dep:tdigests"]
+polars-analytics = ["polars-io", "dep:statrs", "dep:quantiles"]
+real-time-indicators = []  # Technical indicators for live trading
+cross-symbol-analysis = ["polars-analytics"]
+market-microstructure = ["advanced-analytics"]
+statistics = ["dep:statrs", "dep:quantiles", "dep:nalgebra"]  # Legacy compatibility
+streaming-v2 = []  # Production-ready streaming architecture
 data-integrity = ["dep:sha2", "dep:crc32fast", "dep:md5"]
+arrow-support = ["dep:arrow", "dep:parquet"]
+memory-optimized = ["dep:mempool", "dep:bufferpool", "dep:tikv-jemallocator"]
 
 # Web API and service capabilities
 api = ["dep:axum", "dep:tower", "dep:tower-http", "dep:utoipa", "dep:utoipa-swagger-ui",
        "dep:anyhow", "dep:tracing", "dep:tracing-subscriber", "dep:validator", "dep:uuid"]
 
-# Python integration (2024 best practices)
-python = ["dep:pyo3", "statistics"]  # Python requires statistics for full functionality
+# Python integration
+python = ["dep:pyo3", "polars-analytics"]
 
-# Combined feature sets
-full-analytics = ["statistics", "data-integrity"]
-streaming-analytics = ["streaming-stats", "data-integrity"]  # Memory-efficient analytics
-production = ["full-analytics", "arrow-support"]
-streaming-production = ["streaming-analytics", "arrow-support"]  # Memory-efficient production
-api-service = ["api", "streaming-analytics"]  # Complete API service with streaming analytics
-python-bindings = ["dep:pyo3", "statistics"]  # Optional Python bindings for those who want them
+# Combined feature sets (user-friendly)
+researcher = ["polars-analytics", "arrow-export", "research-analytics"]
+trader = ["streaming-mode", "real-time-indicators", "api"]
+full-suite = ["researcher", "trader", "hybrid-mode"]
+production = ["hybrid-mode", "arrow-support", "data-integrity"]

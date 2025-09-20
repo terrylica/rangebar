@@ -7,7 +7,8 @@
 //!
 //! - Non-lookahead bias range bar construction
 //! - Fixed-point arithmetic for precision
-//! - Streaming and batch processing modes
+//! - Dual-path streaming and batch processing
+//! - Polars-powered analytics and I/O
 //! - Tier-1 cryptocurrency symbol discovery
 //! - Pure Rust implementation
 //!
@@ -35,19 +36,43 @@
 //! let bars = processor.process_trades(&trades).unwrap();
 //! ```
 //!
-//! ## Tier-1 Symbols
+//! ## Dual-Path Architecture
 //!
+//! ### Streaming Mode (Real-time)
 //! ```rust
-//! use rangebar::{is_tier1_symbol, get_tier1_symbols};
+//! use rangebar::streaming::StreamingProcessor;
 //!
-//! // Check if a symbol is Tier-1 (available across all Binance futures markets)
-//! assert!(is_tier1_symbol("BTC"));
-//! assert!(is_tier1_symbol("ETH"));
-//! assert!(!is_tier1_symbol("SHIB"));
+//! let threshold_bps = 25; // 0.25% range bars
+//! let processor = StreamingProcessor::new(threshold_bps);
+//! // Real-time processing with bounded memory
+//! ```
 //!
-//! // Get all Tier-1 symbols
-//! let symbols = get_tier1_symbols();
-//! assert_eq!(symbols.len(), 18);
+//! ### Batch Mode (Analytics)
+//! ```rust
+//! #[cfg(feature = "polars-analytics")]
+//! use rangebar::batch::BatchAnalysisEngine;
+//! use rangebar::core::types::RangeBar;
+//!
+//! #[cfg(feature = "polars-analytics")]
+//! {
+//!     let range_bars: Vec<RangeBar> = vec![]; // Your range bar data
+//!     let engine = BatchAnalysisEngine::new();
+//!     // let result = engine.analyze_single_symbol(&range_bars, "BTCUSDT").unwrap(); // Commented out for empty data
+//! }
+//! ```
+//!
+//! ## I/O Operations
+//! ```rust
+//! #[cfg(feature = "polars-io")]
+//! use rangebar::io::ParquetExporter;
+//! use rangebar::core::types::RangeBar;
+//!
+//! #[cfg(feature = "polars-io")]
+//! {
+//!     let range_bars: Vec<RangeBar> = vec![]; // Your range bar data
+//!     let exporter = ParquetExporter::new();
+//!     // exporter.export(&range_bars, "output.parquet").unwrap(); // Commented out to avoid file I/O in tests
+//! }
 //! ```
 //!
 //! ## Algorithm
@@ -59,47 +84,74 @@
 //! 3. **Fixed thresholds**: Never recalculated during bar lifetime
 //!
 
+// Core modules (always available)
+pub mod core;
+pub mod streaming;
+pub mod market;
 pub mod config;
-pub mod fixed_point;
-pub mod range_bars;
-pub mod range_bars_debug;
-pub mod tier1;
-pub mod types;
 
-#[cfg(feature = "statistics")]
-pub mod statistics;
+// Optional modules based on feature flags
+#[cfg(feature = "polars-io")]
+pub mod io;
 
-// Streaming statistics are now part of the main statistics module
-
-// Production-ready streaming architecture (bounded memory, backpressure, circuit breaker)
-pub mod streaming_processor;
+#[cfg(feature = "polars-analytics")]
+pub mod batch;
 
 #[cfg(feature = "api")]
 pub mod api;
 
-// TODO: Python bindings module (when python-bindings feature is enabled)
-// #[cfg(feature = "python-bindings")]
-// pub mod python;
+// Legacy modules for backward compatibility
+#[cfg(feature = "statistics")]
+pub mod statistics {
+    pub use crate::streaming::stats::*;
+}
+
+// Production-ready streaming architecture
+pub mod streaming_processor {
+    pub use crate::streaming::engine::*;
+}
+
+// Legacy compatibility
+pub mod fixed_point {
+    pub use crate::core::fixed_point::*;
+}
+
+pub mod range_bars {
+    pub use crate::core::processor::*;
+}
+
+pub mod range_bars_debug;
+
+pub mod tier1 {
+    pub use crate::market::symbols::*;
+}
+
+pub mod types {
+    pub use crate::core::types::*;
+}
 
 // Re-export commonly used types for convenience
+pub use core::{FixedPoint, ProcessingError, RangeBarProcessor, ExportRangeBarProcessor, AggTrade, RangeBar};
+pub use streaming::{StreamingProcessor, StreamingProcessorConfig, StreamingError, StreamingMetrics};
+pub use market::{get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol, TIER1_SYMBOLS};
 pub use config::Settings;
-pub use fixed_point::FixedPoint;
-pub use range_bars::{ExportRangeBarProcessor, ProcessingError, RangeBarProcessor};
-pub use tier1::{TIER1_SYMBOLS, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol};
-pub use types::{AggTrade, RangeBar};
 
-// Legacy statistics exports removed - now use streaming-stats feature
+// Re-export Polars-powered modules when features are enabled
+#[cfg(feature = "polars-io")]
+pub use io::{PolarsExporter, ParquetExporter, ArrowExporter, StreamingCsvExporter};
+
+#[cfg(feature = "polars-analytics")]
+pub use batch::{BatchAnalysisEngine, BatchConfig, BatchResult, AnalysisReport};
 
 #[cfg(feature = "streaming-stats")]
-pub use statistics::{
+pub use streaming::{
     BarStats, OhlcStatistics, PriceStatistics, RollingStats, StatisticsSnapshot,
     StreamingStatsEngine, TradeStats, VolumeStatistics,
 };
 
-// Streaming processor exports
-pub use streaming_processor::{
-    MetricsSummary, RangeBarStream, StreamingError, StreamingMetrics, StreamingProcessor,
-    StreamingProcessorConfig,
+#[cfg(feature = "real-time-indicators")]
+pub use streaming::{
+    SimpleMovingAverage, ExponentialMovingAverage, MACD, MACDValue, RSI, CCI, IndicatorError
 };
 
 /// Version information

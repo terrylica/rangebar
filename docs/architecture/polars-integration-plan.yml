@@ -1,0 +1,422 @@
+openapi: 3.1.1
+info:
+  title: Rangebar Polars Integration Architecture Plan
+  version: 1.0.0
+  description: Technical specification for dual-path streaming and batch analytics architecture
+  contact:
+    name: Rangebar Development Team
+  license:
+    name: MIT
+
+paths: {}
+
+components:
+  schemas:
+    ArchitectureOverview:
+      type: object
+      description: Three-layer system architecture
+      properties:
+        layer1_streaming_core:
+          $ref: '#/components/schemas/StreamingCore'
+        layer2_polars_io:
+          $ref: '#/components/schemas/PolarsIOModule'
+        layer3_analytics_engine:
+          $ref: '#/components/schemas/AnalyticsEngine'
+
+    StreamingCore:
+      type: object
+      description: High-performance streaming processing (preserve unchanged)
+      properties:
+        performance_target:
+          type: string
+          enum: ["137M_trades_per_sec"]
+        components:
+          type: array
+          items:
+            type: string
+          enum:
+            - "RangeBarProcessor"
+            - "StreamingProcessor"
+            - "StreamingStatsEngine"
+        use_cases:
+          type: array
+          items:
+            type: string
+          enum:
+            - "live_trading_dashboards"
+            - "real_time_indicators"
+            - "websocket_streaming"
+            - "low_latency_feeds"
+        failure_policy:
+          type: string
+          enum: ["exception_only"]
+          description: "No fallbacks, no failsafes - immediate exception on failure"
+
+    PolarsIOModule:
+      type: object
+      description: Output optimization and format conversion
+      properties:
+        module_path:
+          type: string
+          enum: ["src/io/polars_io.rs"]
+        components:
+          type: object
+          properties:
+            PolarsExporter:
+              $ref: '#/components/schemas/PolarsExporter'
+            DataFrameConverter:
+              $ref: '#/components/schemas/DataFrameConverter'
+        performance_targets:
+          type: object
+          properties:
+            file_size_reduction:
+              type: string
+              enum: ["70_percent_parquet"]
+            python_load_speedup:
+              type: string
+              enum: ["10x_to_20x_faster"]
+            export_speedup:
+              type: string
+              enum: ["2x_to_5x_faster"]
+
+    AnalyticsEngine:
+      type: object
+      description: Polars-powered batch analytics
+      properties:
+        module_path:
+          type: string
+          enum: ["src/batch/analytics_engine.rs"]
+        components:
+          type: array
+          items:
+            type: string
+          enum:
+            - "BatchAnalysisEngine"
+            - "CrossSymbolAnalyzer"
+            - "MarketRegimeAnalyzer"
+        use_cases:
+          type: array
+          items:
+            type: string
+          enum:
+            - "historical_backtesting"
+            - "research_data_exploration"
+            - "cross_symbol_studies"
+            - "statistical_model_development"
+
+    ModuleStructure:
+      type: object
+      description: Unified module organization
+      properties:
+        core:
+          type: object
+          properties:
+            processor.rs:
+              type: string
+              description: "RangeBarProcessor (renamed from range_bars.rs)"
+            types.rs:
+              type: string
+              description: "AggTrade, RangeBar (unchanged)"
+            fixed_point.rs:
+              type: string
+              description: "FixedPoint arithmetic (unchanged)"
+        streaming:
+          type: object
+          properties:
+            engine.rs:
+              type: string
+              description: "StreamingEngine (renamed from streaming_processor.rs)"
+            stats.rs:
+              type: string
+              description: "StreamingStatsAnalyzer"
+            indicators.rs:
+              type: string
+              description: "Technical indicators (MACD, RSI, SMA)"
+        batch:
+          type: object
+          properties:
+            engine.rs:
+              type: string
+              description: "BatchAnalysisEngine (Polars-powered)"
+            analytics.rs:
+              type: string
+              description: "Advanced statistical analysis"
+            research.rs:
+              type: string
+              description: "Research-grade data exploration"
+        io:
+          type: object
+          properties:
+            readers.rs:
+              type: string
+              description: "CSV, Parquet, Arrow readers"
+            writers.rs:
+              type: string
+              description: "Output format writers"
+            formats.rs:
+              type: string
+              description: "Format definitions and conversions"
+
+    NamingConventions:
+      type: object
+      description: Consistent naming patterns
+      properties:
+        struct_patterns:
+          type: object
+          properties:
+            core_algorithm:
+              type: string
+              enum: ["RangeBarProcessor"]
+            orchestration:
+              type: array
+              items:
+                type: string
+              enum: ["StreamingEngine", "BatchAnalysisEngine"]
+            analysis:
+              type: array
+              items:
+                type: string
+              enum: ["StatsAnalyzer", "StreamingStatsAnalyzer", "BatchStatsAnalyzer"]
+            output:
+              type: array
+              items:
+                type: string
+              enum: ["FormatExporter", "ParquetExporter", "ArrowExporter"]
+        function_patterns:
+          type: object
+          properties:
+            processing_verbs:
+              type: array
+              items:
+                type: string
+              enum: ["process_", "analyze_", "compute_"]
+            output_verbs:
+              type: array
+              items:
+                type: string
+              enum: ["export_", "write_", "serialize_"]
+            input_verbs:
+              type: array
+              items:
+                type: string
+              enum: ["read_", "load_", "parse_"]
+
+    FeatureFlags:
+      type: object
+      description: Cargo feature configuration
+      properties:
+        execution_modes:
+          type: object
+          properties:
+            streaming-mode:
+              type: array
+              items:
+                type: string
+              enum: ["streaming-stats", "real-time-indicators"]
+            batch-mode:
+              type: array
+              items:
+                type: string
+              enum: ["polars-analytics", "advanced-statistics"]
+            hybrid-mode:
+              type: array
+              items:
+                type: string
+              enum: ["streaming-mode", "batch-mode"]
+        output_capabilities:
+          type: array
+          items:
+            type: string
+          enum: ["polars-io", "arrow-export", "parquet-export"]
+        analytics_levels:
+          type: object
+          properties:
+            basic-analytics:
+              type: array
+              items:
+                type: string
+              enum: ["streaming-stats"]
+            advanced-analytics:
+              type: array
+              items:
+                type: string
+              enum: ["polars-analytics", "cross-symbol-analysis"]
+            research-analytics:
+              type: array
+              items:
+                type: string
+              enum: ["advanced-analytics", "market-microstructure"]
+
+    PolarsExporter:
+      type: object
+      description: Polars-based data export functionality
+      properties:
+        methods:
+          type: object
+          properties:
+            to_dataframe:
+              type: string
+              description: "Convert Vec<RangeBar> to polars::DataFrame"
+            export_arrow:
+              type: string
+              description: "Export to Arrow IPC for zero-copy Python transfer"
+            export_parquet:
+              type: string
+              description: "Export to Parquet with optimal compression"
+            export_streaming_csv:
+              type: string
+              description: "Streaming CSV writer using Polars"
+
+    DataFrameConverter:
+      type: object
+      description: Bidirectional conversion between RangeBar and DataFrame
+      properties:
+        trait_definition:
+          type: string
+          description: "pub trait DataFrameConverter<T>"
+        methods:
+          type: object
+          properties:
+            to_polars_dataframe:
+              type: string
+              description: "fn to_polars_dataframe(&self) -> PolarsResult<DataFrame>"
+            from_polars_dataframe:
+              type: string
+              description: "fn from_polars_dataframe(df: DataFrame) -> Result<T, ConversionError>"
+
+    ImplementationPhases:
+      type: object
+      description: Sequential implementation strategy
+      properties:
+        phase1_structural_cleanup:
+          type: object
+          properties:
+            duration:
+              type: string
+              enum: ["1_to_2_days"]
+            tasks:
+              type: array
+              items:
+                type: string
+              enum:
+                - "create_new_module_structure"
+                - "rename_files_consistent_patterns"
+                - "update_internal_imports"
+                - "add_module_documentation"
+        phase2_polars_integration:
+          type: object
+          properties:
+            duration:
+              type: string
+              enum: ["2_to_3_days"]
+            tasks:
+              type: array
+              items:
+                type: string
+              enum:
+                - "implement_BatchAnalysisEngine"
+                - "add_format_converters"
+                - "create_analytics_modules"
+                - "add_export_capabilities"
+        phase3_documentation:
+          type: object
+          properties:
+            duration:
+              type: string
+              enum: ["1_day"]
+            tasks:
+              type: array
+              items:
+                type: string
+              enum:
+                - "write_module_documentation"
+                - "create_onboarding_guide"
+                - "add_use_case_examples"
+                - "performance_benchmarks"
+
+    PerformanceGuarantees:
+      type: object
+      description: Performance requirements and validation
+      properties:
+        never_changes:
+          type: array
+          items:
+            type: string
+          enum:
+            - "core_rangebar_algorithm_137M_trades_per_sec"
+            - "streaming_processor_bounded_memory"
+            - "real_time_indicator_sub_millisecond_latency"
+            - "temporal_integrity_zero_tolerance"
+        improvements:
+          type: object
+          properties:
+            export_file_sizes:
+              type: string
+              enum: ["70_percent_smaller_parquet"]
+            python_integration:
+              type: string
+              enum: ["zero_copy_arrow"]
+            analysis_capabilities:
+              type: string
+              enum: ["vectorized_polars_operations"]
+            multi_symbol_processing:
+              type: string
+              enum: ["parallel_dataframes"]
+
+    ValidationStrategy:
+      type: object
+      description: Testing and validation approach
+      properties:
+        backward_compatibility:
+          type: array
+          items:
+            type: string
+          enum:
+            - "preserve_existing_export_formats"
+            - "feature_flags_prevent_breaking_changes"
+            - "optional_polars_integration"
+        validation_methods:
+          type: array
+          items:
+            type: string
+          enum:
+            - "benchmark_export_formats_against_current"
+            - "temporal_integrity_tests_polars_transformations"
+            - "performance_regression_tests_core_algorithm"
+        failure_handling:
+          type: string
+          enum: ["exception_only"]
+          description: "No fallbacks - immediate failure with rich debug context"
+
+  x-implementation-notes:
+    implementation_status: "phase_1_structural_cleanup_completed"
+    completed_modules:
+      - "src/core/mod.rs"
+      - "src/streaming/mod.rs"
+      - "src/market/mod.rs"
+      - "src/io/polars_io.rs"
+      - "src/io/formats.rs"
+      - "src/batch/engine.rs"
+      - "src/streaming/indicators.rs"
+    dependencies:
+      polars_version: "0.49"
+      polars_features: ["lazy", "temporal", "strings", "parquet", "csv"]
+      tempfile_version: "3.8"
+    out_of_box_algorithms:
+      statistical_operations: "polars built-in functions only"
+      data_transformations: "polars expressions and lazy operations"
+      file_operations: "polars native readers/writers"
+    exception_handling:
+      policy: "exception_only_no_fallbacks"
+      debug_context: "rich_error_information"
+      recovery: "fail_fast_with_context"
+    current_issues: []
+    completed_items:
+      - "compilation_errors_in_batch_engine_fixed"
+      - "polars_api_compatibility_achieved"
+      - "basic_functionality_validated"
+      - "all_tests_passing"
+    next_steps:
+      - "fix_doctests_api_compatibility"
+      - "benchmark_performance_targets"
+      - "validate_temporal_integrity"

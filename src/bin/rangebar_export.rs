@@ -779,7 +779,7 @@ impl RangeBarExporter {
         // #[cfg(not(feature = "statistics"))]
         // let metadata = None;
 
-        self.export_to_json_with_metadata(&all_range_bars, &json_filename)?;
+        self.export_to_json_with_metadata(&all_range_bars, &json_filename, None)?;
 
         println!("\n✅ Export Complete!");
         println!("   📊 Total Bars: {}", all_range_bars.len());
