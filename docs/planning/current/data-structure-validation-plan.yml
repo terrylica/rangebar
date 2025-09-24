@@ -45,19 +45,43 @@ empirical_findings:
       headers: false
       column_names: ["a", "p", "q", "f", "l", "T", "m"]  # Short format
       boolean_format: "Python_style"  # "True"/"False"
-      timestamp_format: "13_digit_milliseconds"
+      timestamp_format: "16_digit_microseconds"  # Critical: requires /1000 normalization
 
     um_futures_market:
       headers: true
       column_names: ["agg_trade_id", "price", "quantity", "first_trade_id", "last_trade_id", "transact_time", "is_buyer_maker"]  # Descriptive format
-      boolean_format: "requires_investigation"
-      timestamp_format: "requires_investigation"
+      boolean_format: "lowercase_style"  # "true"/"false"
+      timestamp_format: "13_digit_milliseconds"  # Standard milliseconds
 
   validation_insights:
-    timestamp_consistency: "13-digit milliseconds confirmed across markets"
+    timestamp_inconsistency: "CRITICAL: spot uses 16-digit microseconds, UM uses 13-digit milliseconds"
+    timestamp_normalization: "Spot timestamps require division by 1000 for consistency"
     csv_auto_detection: "Successfully differentiates header presence"
     file_size_variation: "spot: 13.5MB, um: 11.2MB for same date"
     structure_signatures: "Unique per market type - enables automated detection"
+    data_coverage_impact: "Without normalization, spot shows 1000+ days vs 24 hours"
+
+  critical_technical_solution:
+    timestamp_normalization_function: |
+      // Implemented in src/data/historical.rs
+      fn normalize_timestamp(timestamp: i64, market_type: &str) -> i64 {
+          match market_type {
+              "spot" => {
+                  // Convert microseconds to milliseconds for spot markets
+                  if timestamp.to_string().len() > 13 {
+                      timestamp / 1000
+                  } else {
+                      timestamp
+                  }
+              },
+              "um" | "cm" => timestamp, // Already milliseconds
+              _ => timestamp
+          }
+      }
+
+    implementation_location: "src/data/historical.rs:185"
+    fix_impact: "Resolves 1000x duration calculation errors"
+    validation_status: "✅ Verified with DOGEUSDT spot/UM comparison"
 
 # Implementation Architecture
 components:

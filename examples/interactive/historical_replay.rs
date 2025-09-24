@@ -216,7 +216,7 @@ impl TerminalDisplay {
             self.down_bars += 1;
         }
 
-        // Calculate duration
+        // Calculate duration (real market time)
         let duration_ms = close_time - open_time;
         let duration_str = format_duration(duration_ms);
 
@@ -253,7 +253,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Parse command line arguments: [symbol] [market_type]
     let symbol = args.get(1).map(|s| s.as_str()).unwrap_or("DOGEUSDT");
-    let market_type = args.get(2).map(|s| s.as_str()).unwrap_or("spot");
+    let market_type = args.get(2).map(|s| s.as_str()).unwrap_or("um"); // Back to UM for performance
 
     // Validate market type
     match market_type {
@@ -270,6 +270,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🚀 Historical Range Bar Visualizer - {} ({} market, 25 BPS)", symbol.to_uppercase(), market_type.to_uppercase());
     println!("=========================================================================");
     println!("Controls: q=quit, +=faster, -=slower, p=pause");
+    println!("Note: Duration shows real market time (spot: hours/days, UM: minutes/hours)");
     println!("");
 
     // Try to enable raw mode for keyboard input (optional for speed controls)

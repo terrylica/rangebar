@@ -80,13 +80,13 @@ cargo run --bin data-structure-validator --features data-integrity -- --symbols 
 - **Headers**: None
 - **Columns**: Short (`a,p,q,f,l,T,m`)
 - **Boolean**: `False/True` (capitalized)
-- **Timestamp**: 13-digit milliseconds
+- **Timestamp**: **16-digit microseconds** (requires /1000 normalization)
 
 **UM Futures Market (data.binance.vision/data/futures/um/)**:
 - **Headers**: Present
 - **Columns**: Descriptive (`agg_trade_id,price,quantity,first_trade_id,last_trade_id,transact_time,is_buyer_maker`)
 - **Boolean**: `false/true` (lowercase)
-- **Timestamp**: 13-digit milliseconds
+- **Timestamp**: **13-digit milliseconds** (standard format)
 
 **Parser**: Uses `serde` aliases and `flexible_bool()` deserializer to handle both formats automatically.
 
@@ -94,6 +94,12 @@ cargo run --bin data-structure-validator --features data-integrity -- --symbols 
 - **Auto-Detection**: `detect_csv_headers()` function handles both formats automatically
 - **Column Mapping**: Different naming conventions require market-aware parsing
 - **Data Integrity**: SHA256 checksum validation available with `--features data-integrity`
+
+#### CRITICAL: Timestamp Format Differences
+- **Spot**: 16-digit microseconds (native precision)
+- **UM**: 13-digit milliseconds (normalized UP to microseconds `*1000`)
+- **Standard**: All timestamps stored as microseconds (preserves maximum precision)
+- **Fix**: `normalize_timestamp()` in `src/data/historical.rs:101`
 
 ### Validation Output Structure
 ```

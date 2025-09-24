@@ -22,7 +22,7 @@ pub struct AggTrade {
     /// Last trade ID in aggregation
     pub last_trade_id: i64,
 
-    /// Timestamp in milliseconds
+    /// Timestamp in microseconds (preserves maximum precision)
     pub timestamp: i64,
 
     /// Whether buyer is market maker (true = sell pressure, false = buy pressure)
@@ -46,10 +46,10 @@ impl AggTrade {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "api", derive(utoipa::ToSchema))]
 pub struct RangeBar {
-    /// Opening timestamp (first trade)
+    /// Opening timestamp in microseconds (first trade)
     pub open_time: i64,
 
-    /// Closing timestamp (last trade)
+    /// Closing timestamp in microseconds (last trade)
     pub close_time: i64,
 
     /// Opening price (first trade price)

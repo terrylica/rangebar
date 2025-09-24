@@ -126,6 +126,15 @@ path = "examples/validation/validate_25bps_threshold.rs"
 name = "validate-custom-threshold"
 path = "examples/validation/validate_custom_threshold.rs"
 
+# Investigation Examples
+[[example]]
+name = "investigation-date-availability"
+path = "examples/investigation/date_availability_investigation.rs"
+
+[[example]]
+name = "investigation-timestamp-analysis"
+path = "examples/investigation/timestamp_analysis.rs"
+
 [[bench]]
 name = "rangebar_bench"
 harness = false
