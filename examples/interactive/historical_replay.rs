@@ -15,17 +15,18 @@ use rangebar::AggTrade;
 use rangebar::data::HistoricalDataLoader;
 use rangebar::range_bars::ExportRangeBarProcessor;
 
-/// Format duration in milliseconds to human-readable string
-fn format_duration(duration_ms: i64) -> String {
-    if duration_ms < 0 {
+/// Format duration in microseconds to human-readable string
+fn format_duration(duration_microseconds: i64) -> String {
+    if duration_microseconds < 0 {
         return "0s".to_string();
     }
 
-    let total_seconds = duration_ms / 1000;
-    let milliseconds = duration_ms % 1000;
+    let total_milliseconds = duration_microseconds / 1000;
+    let total_seconds = total_milliseconds / 1000;
+    let milliseconds = total_milliseconds % 1000;
 
     if total_seconds == 0 {
-        return format!("{}ms", duration_ms);
+        return format!("{}ms", total_milliseconds);
     }
 
     let hours = total_seconds / 3600;
@@ -57,16 +58,16 @@ fn format_duration(duration_ms: i64) -> String {
 
 /// Time-aware playback engine with acceleration
 struct PlaybackEngine {
-    trades: Vec<AggTrade>,
+    agg_trades: Vec<AggTrade>,
     current_index: usize,
     acceleration_factor: f64,
     paused: bool,
 }
 
 impl PlaybackEngine {
-    fn new(trades: Vec<AggTrade>, acceleration_factor: f64) -> Self {
+    fn new(agg_trades: Vec<AggTrade>, acceleration_factor: f64) -> Self {
         Self {
-            trades,
+            agg_trades,
             current_index: 0,
             acceleration_factor,
             paused: false,
@@ -87,41 +88,41 @@ impl PlaybackEngine {
         }
     }
 
-    async fn next_trade(&mut self) -> Option<AggTrade> {
-        if self.paused || self.current_index >= self.trades.len() {
+    async fn next_agg_trade(&mut self) -> Option<AggTrade> {
+        if self.paused || self.current_index >= self.agg_trades.len() {
             return None;
         }
 
-        let trade = self.trades[self.current_index].clone();
+        let agg_trade = self.agg_trades[self.current_index].clone();
 
-        // Calculate time delta to next trade
-        if self.current_index + 1 < self.trades.len() {
-            let current_timestamp = self.trades[self.current_index].timestamp;
-            let next_timestamp = self.trades[self.current_index + 1].timestamp;
-            let delta_ms = (next_timestamp - current_timestamp) as f64;
+        // Calculate time delta to next aggTrade
+        if self.current_index + 1 < self.agg_trades.len() {
+            let current_timestamp = self.agg_trades[self.current_index].timestamp;
+            let next_timestamp = self.agg_trades[self.current_index + 1].timestamp;
+            let delta_microseconds = (next_timestamp - current_timestamp) as f64;
 
-            // Apply acceleration and sleep
-            let accelerated_delay_ms = delta_ms / self.acceleration_factor;
-            if accelerated_delay_ms > 0.1 {
-                tokio::time::sleep(Duration::from_millis(accelerated_delay_ms as u64)).await;
+            // Apply acceleration and sleep (keep in microseconds)
+            let accelerated_delay_microseconds = delta_microseconds / self.acceleration_factor;
+            if accelerated_delay_microseconds > 100.0 { // 0.1ms minimum
+                tokio::time::sleep(Duration::from_micros(accelerated_delay_microseconds as u64)).await;
             }
         }
 
         self.current_index += 1;
-        Some(trade)
+        Some(agg_trade)
     }
 
     fn progress(&self) -> (usize, usize, f64) {
-        let percent = (self.current_index as f64 / self.trades.len() as f64) * 100.0;
-        (self.current_index, self.trades.len(), percent)
+        let percent = (self.current_index as f64 / self.agg_trades.len() as f64) * 100.0;
+        (self.current_index, self.agg_trades.len(), percent)
     }
 }
 
 /// Terminal display manager with rate limiting
 struct TerminalDisplay {
     bar_count: u32,
-    trade_count: u64,
-    current_bar_trades: u64,
+    agg_trade_count: u64,
+    current_bar_agg_trades: u64,
     current_bar_open: Option<f64>,
     last_update: Instant,
     last_price: f64,
@@ -135,8 +136,8 @@ impl TerminalDisplay {
     fn new() -> Self {
         Self {
             bar_count: 0,
-            trade_count: 0,
-            current_bar_trades: 0,
+            agg_trade_count: 0,
+            current_bar_agg_trades: 0,
             current_bar_open: None,
             last_update: Instant::now(),
             last_price: 0.0,
@@ -148,8 +149,8 @@ impl TerminalDisplay {
     }
 
     fn update_building_bar(&mut self, price: f64) {
-        self.trade_count += 1;
-        self.current_bar_trades += 1;
+        self.agg_trade_count += 1;
+        self.current_bar_agg_trades += 1;
         self.last_price = price;
 
         if self.current_bar_open.is_none() {
@@ -171,9 +172,9 @@ impl TerminalDisplay {
         // Clear current line completely before writing new content
         print!("\r\x1b[K"); // Clear entire line
         print!(
-            "Building bar #{}: {} trades, current: ${:.2}, open: ${:.2}",
+            "Building bar #{}: {} aggTrades, current: ${:.2}, open: ${:.2}",
             self.bar_count + 1,
-            self.current_bar_trades,
+            self.current_bar_agg_trades,
             self.last_price,
             self.current_bar_open.unwrap_or(self.last_price)
         );
@@ -216,23 +217,23 @@ impl TerminalDisplay {
             self.down_bars += 1;
         }
 
-        // Calculate duration (real market time)
-        let duration_ms = close_time - open_time;
-        let duration_str = format_duration(duration_ms);
+        // Calculate duration (real market time) - now in microseconds
+        let duration_microseconds = close_time - open_time;
+        let duration_str = format_duration(duration_microseconds);
 
         // Clear current line and print completed bar with smart alignment
         println!(
-            "\r\x1b[K{} BAR {:>4} • O:{:.4} H:{:.4} L:{:.4} C:{:.4} • Vol:{:>12.2} • Trades:{:>6} • {:>10}",
+            "\r\x1b[K{} BAR {:>4} • O:{:.4} H:{:.4} L:{:.4} C:{:.4} • Vol:{:>12.2} • aggTrades:{:>6} • {:>10}",
             direction,
             self.bar_count,
             open, high, low, close,
             volume,
-            self.current_bar_trades,
+            self.current_bar_agg_trades,
             duration_str
         );
 
         // Reset for next bar
-        self.current_bar_trades = 0;
+        self.current_bar_agg_trades = 0;
         self.current_bar_open = None;
         self.last_update = Instant::now();
         self.pending_updates = false;
@@ -279,12 +280,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("⚠️ Keyboard controls disabled (terminal not interactive)");
     }
 
-    // Load 2 days back of historical data for testing
+    // Load 2 days back of historical aggTrades data for testing
     let loader = HistoricalDataLoader::new_with_market(symbol, market_type);
-    let trades = loader.load_historical_range(2).await?;
+    let agg_trades = loader.load_historical_range(2).await?;
 
     // Initialize components
-    let mut playback = PlaybackEngine::new(trades, 10000.0); // 10000x acceleration
+    let mut playback = PlaybackEngine::new(agg_trades, 10000.0); // 10000x acceleration
     let mut processor = ExportRangeBarProcessor::new(25); // 25 BPS threshold
     let mut display = TerminalDisplay::new();
 
@@ -335,12 +336,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 break;
             }
-            trade_opt = playback.next_trade() => {
-                if let Some(trade) = trade_opt {
-                    display.update_building_bar(trade.price.to_f64());
+            agg_trade_opt = playback.next_agg_trade() => {
+                if let Some(agg_trade) = agg_trade_opt {
+                    display.update_building_bar(agg_trade.price.to_f64());
 
-                    // Process trade using continuous processor
-                    processor.process_trades_continuously(&[trade]);
+                    // Process aggTrade using continuous processor
+                    processor.process_trades_continuously(&[agg_trade]);
 
                     // Get any newly completed bars
                     let completed_bars = processor.get_all_completed_bars();
@@ -356,10 +357,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         );
                     }
 
-                    // Progress update every 100k trades
-                    if display.trade_count % 100_000 == 0 {
+                    // Progress update every 100k aggTrades
+                    if display.agg_trade_count % 100_000 == 0 {
                         let (current, total, percent) = playback.progress();
-                        let progress_msg = format!("📊 Progress: {}/{} trades ({:.1}%)", current, total, percent);
+                        let progress_msg = format!("📊 Progress: {}/{} aggTrades ({:.1}%)", current, total, percent);
                         display.print_message(&progress_msg);
                     }
                 } else if !playback.paused {
@@ -372,8 +373,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let final_stats = format!(
-        "📊 Final: {} bars (\x1b[32m↑{}\x1b[0m \x1b[31m↓{}\x1b[0m) from {} trades",
-        display.bar_count, display.up_bars, display.down_bars, display.trade_count
+        "📊 Final: {} bars (\x1b[32m↑{}\x1b[0m \x1b[31m↓{}\x1b[0m) from {} aggTrades",
+        display.bar_count, display.up_bars, display.down_bars, display.agg_trade_count
     );
     display.print_message(&final_stats);
 

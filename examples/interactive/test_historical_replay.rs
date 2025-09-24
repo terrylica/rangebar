@@ -143,11 +143,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     if trade_index + 1 < trades.len() {
                         let current_timestamp = trades[trade_index].timestamp;
                         let next_timestamp = trades[trade_index + 1].timestamp;
-                        let delta_ms = (next_timestamp - current_timestamp) as f64;
-                        let accelerated_delay = delta_ms / acceleration;
+                        let delta_microseconds = (next_timestamp - current_timestamp) as f64;
+                        let accelerated_delay = delta_microseconds / acceleration;
 
-                        if accelerated_delay > 0.1 {
-                            tokio::time::sleep(Duration::from_millis(accelerated_delay as u64)).await;
+                        if accelerated_delay > 100.0 { // 0.1ms minimum
+                            tokio::time::sleep(Duration::from_micros(accelerated_delay as u64)).await;
                         }
                     }
 

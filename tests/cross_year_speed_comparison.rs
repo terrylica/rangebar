@@ -313,7 +313,7 @@ fn generate_monthly_trade_data(
         let noise = (i as f64 * 0.1).sin() * 30.0;
 
         let price = base_price + monthly_trend + daily_cycle + weekly_cycle + volatility + noise;
-        let timestamp = base_timestamp + (i as u64 * 60_000); // 1-minute intervals
+        let timestamp = base_timestamp + (i as u64 * 60_000_000); // 1-minute intervals in microseconds
 
         trades.push(create_test_trade(i as u64 + 1_000_000, price, timestamp));
     }
@@ -348,7 +348,7 @@ fn generate_year_boundary_data(
 
         let noise = (i as f64 * 0.05).sin() * 50.0;
         let price = base_price + boundary_effect + noise;
-        let timestamp = base_timestamp + (i as u64 * 1000); // 1-second intervals for boundary cases
+        let timestamp = base_timestamp + (i as u64 * 1_000_000); // 1-second intervals for boundary cases in microseconds
 
         trades.push(create_test_trade(i as u64 + 2_000_000, price, timestamp));
     }

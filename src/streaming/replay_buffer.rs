@@ -72,9 +72,9 @@ impl ReplayBuffer {
     pub fn time_span(&self) -> Option<Duration> {
         let inner = self.inner.lock().unwrap();
         if let (Some(first), Some(last)) = (inner.trades.front(), inner.trades.back()) {
-            let span_ms = last.timestamp - first.timestamp;
-            if span_ms > 0 {
-                Some(Duration::from_millis(span_ms as u64))
+            let span_microseconds = last.timestamp - first.timestamp;
+            if span_microseconds > 0 {
+                Some(Duration::from_micros(span_microseconds as u64))
             } else {
                 None
             }
@@ -217,10 +217,10 @@ impl Stream for ReplayStream {
 
         // Calculate when this trade should be emitted based on timestamp differences
         if let (Some(base_timestamp), Some(start_time)) = (self.base_timestamp, self.start_time) {
-            let time_diff_ms = current_trade.timestamp - base_timestamp;
-            let real_time_diff = Duration::from_millis(time_diff_ms as u64);
-            let scaled_time_diff = Duration::from_millis(
-                (real_time_diff.as_millis() as f64 / self.speed_multiplier as f64) as u64,
+            let time_diff_microseconds = current_trade.timestamp - base_timestamp;
+            let real_time_diff = Duration::from_micros(time_diff_microseconds as u64);
+            let scaled_time_diff = Duration::from_micros(
+                (real_time_diff.as_micros() as f64 / self.speed_multiplier as f64) as u64,
             );
 
             let target_time = start_time + scaled_time_diff;

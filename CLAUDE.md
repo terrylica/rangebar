@@ -101,6 +101,12 @@ cargo run --bin data-structure-validator --features data-integrity -- --symbols 
 - **Standard**: All timestamps stored as microseconds (preserves maximum precision)
 - **Fix**: `normalize_timestamp()` in `src/data/historical.rs:101`
 
+#### CRITICAL: Data Source Nomenclature Alignment
+- **Source**: Binance **aggTrades** (aggregated trades), NOT individual trades
+- **Naming**: Variables, functions, comments must reflect actual data source
+- **Example**: `agg_trade_count`, `process_trades()` with aggTrade parameters
+- **Principle**: Inherit naming from data nature, never hardcode assumptions
+
 ### Validation Output Structure
 ```
 output/data_structure_validation/{timestamp}_validation_run/

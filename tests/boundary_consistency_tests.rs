@@ -195,7 +195,7 @@ fn create_synthetic_test_data() -> Vec<AggTrade> {
     for i in 0..1000 {
         let price_variation = (i as f64 * 0.1).sin() * 50.0; // ±50 price variation
         let price = base_price + price_variation;
-        let timestamp = base_time + (i as u64 * 1000); // 1 second intervals
+        let timestamp = base_time + (i as u64 * 1_000_000); // 1 second intervals in microseconds
 
         trades.push(create_test_trade(1000000 + i as u64, price, timestamp));
     }
@@ -481,7 +481,7 @@ fn create_large_test_dataset(count: usize) -> Vec<AggTrade> {
         // Create realistic price movements
         let price_change = ((i as f64 * 0.01).sin() * 100.0) + ((i as f64 * 0.001).cos() * 50.0); // Multi-frequency variation
         let price = base_price + price_change;
-        let timestamp = base_time + (i as u64 * 100); // 100ms intervals
+        let timestamp = base_time + (i as u64 * 100_000); // 100ms intervals in microseconds
 
         trades.push(create_test_trade(1000000 + i as u64, price, timestamp));
     }
