@@ -3,7 +3,7 @@
 //! This module provides asynchronous WebSocket connections to Binance streams
 //! for real-time aggTrade data feeding into range bar construction.
 
-use crate::core::FixedPoint;
+use crate::core::{FixedPoint, normalize_timestamp};
 use crate::types::AggTrade;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
@@ -94,7 +94,7 @@ impl BinanceAggTrade {
             volume,
             first_trade_id: self.first_trade_id,
             last_trade_id: self.last_trade_id,
-            timestamp: self.trade_time,
+            timestamp: normalize_timestamp(self.trade_time as u64),
             is_buyer_maker: self.is_buyer_maker,
         })
     }

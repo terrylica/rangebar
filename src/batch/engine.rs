@@ -448,7 +448,9 @@ impl BatchAnalysisEngine {
                 ((col("close") - col("vwap")) / col("vwap") * lit(100.0)).alias("vwap_deviation"),
             ])
             .select([
-                col("aggtrades_per_second").mean().alias("avg_aggtrade_intensity"),
+                col("aggtrades_per_second")
+                    .mean()
+                    .alias("avg_aggtrade_intensity"),
                 col("order_flow_imbalance")
                     .mean()
                     .alias("avg_order_flow_imbalance"),

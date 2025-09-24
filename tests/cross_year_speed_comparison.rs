@@ -113,7 +113,8 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
             batch_throughput_aggtrades_per_sec: batch_metrics.throughput_aggtrades_per_sec,
             streaming_v2_duration_ms: streaming_v2_metrics.duration_ms,
             streaming_v2_memory_peak_kb: streaming_v2_metrics.memory_peak_kb,
-            streaming_v2_throughput_aggtrades_per_sec: streaming_v2_metrics.throughput_aggtrades_per_sec,
+            streaming_v2_throughput_aggtrades_per_sec: streaming_v2_metrics
+                .throughput_aggtrades_per_sec,
             v2_speed_ratio,
             v2_memory_efficiency,
             v2_duration_ratio,

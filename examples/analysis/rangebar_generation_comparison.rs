@@ -33,7 +33,8 @@ impl MarketStats {
 
     fn calculate_efficiency(&mut self) {
         if self.agg_trades > 0 {
-            self.bars_per_1000_agg_trades = (self.range_bars as f64 / self.agg_trades as f64) * 1000.0;
+            self.bars_per_1000_agg_trades =
+                (self.range_bars as f64 / self.agg_trades as f64) * 1000.0;
         }
     }
 }
