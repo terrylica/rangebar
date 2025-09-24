@@ -4,10 +4,13 @@
 //! different sources (WebSocket, replay buffer, historical files) with
 //! consistent speed control and mode switching.
 
-use crate::types::AggTrade;
 use super::{BinanceWebSocketStream, ReplayBuffer, WebSocketError};
+use crate::types::AggTrade;
 use async_trait::async_trait;
-use std::sync::{Arc, atomic::{AtomicU32, Ordering}};
+use std::sync::{
+    Arc,
+    atomic::{AtomicU32, Ordering},
+};
 use std::time::Duration;
 use tokio::sync::Mutex;
 
@@ -17,10 +20,7 @@ pub enum StreamMode {
     /// Real-time live data from WebSocket
     Live,
     /// Replay from buffer starting N minutes ago
-    Replay {
-        minutes_ago: u32,
-        speed: f32,
-    },
+    Replay { minutes_ago: u32, speed: f32 },
     /// Paused state (no new trades)
     Paused,
 }
@@ -219,7 +219,10 @@ impl TradeStream for UniversalStream {
                 }
 
                 self.replay_stream = Some(self.replay_buffer.replay_from(*minutes_ago, *speed));
-                println!("🔄 Switched to replay mode: {} minutes ago at {}x speed", minutes_ago, speed);
+                println!(
+                    "🔄 Switched to replay mode: {} minutes ago at {}x speed",
+                    minutes_ago, speed
+                );
                 self.mode = mode;
             }
             (StreamMode::Replay { .. }, StreamMode::Live) => {
@@ -238,7 +241,8 @@ impl TradeStream for UniversalStream {
                 if let StreamMode::Replay { minutes_ago, speed } = &mode {
                     let trades = self.replay_buffer.get_trades_from(*minutes_ago);
                     if !trades.is_empty() {
-                        self.replay_stream = Some(self.replay_buffer.replay_from(*minutes_ago, *speed));
+                        self.replay_stream =
+                            Some(self.replay_buffer.replay_from(*minutes_ago, *speed));
                     }
                 }
                 self.mode = mode;
@@ -323,7 +327,11 @@ mod tests {
     fn test_stream_mode_display() {
         assert_eq!(StreamMode::Live.to_string(), "LIVE");
         assert_eq!(
-            StreamMode::Replay { minutes_ago: 5, speed: 2.0 }.to_string(),
+            StreamMode::Replay {
+                minutes_ago: 5,
+                speed: 2.0
+            }
+            .to_string(),
             "REPLAY 5m @ 2.0x"
         );
         assert_eq!(StreamMode::Paused.to_string(), "PAUSED");

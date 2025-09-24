@@ -85,12 +85,12 @@
 //!
 
 // Core modules (always available)
+pub mod config;
 pub mod core;
+pub mod data;
+pub mod market;
 pub mod streaming;
 pub mod streaming_processor;
-pub mod market;
-pub mod config;
-pub mod data;
 
 // Optional modules based on feature flags
 #[cfg(feature = "polars-io")]
@@ -131,17 +131,21 @@ pub mod types {
 }
 
 // Re-export commonly used types for convenience
-pub use core::{FixedPoint, ProcessingError, RangeBarProcessor, ExportRangeBarProcessor, AggTrade, RangeBar};
-pub use streaming_processor::{StreamingProcessor, StreamingProcessorConfig, StreamingError, StreamingMetrics};
-pub use market::{get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol, TIER1_SYMBOLS};
 pub use config::Settings;
+pub use core::{
+    AggTrade, ExportRangeBarProcessor, FixedPoint, ProcessingError, RangeBar, RangeBarProcessor,
+};
+pub use market::{TIER1_SYMBOLS, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol};
+pub use streaming_processor::{
+    StreamingError, StreamingMetrics, StreamingProcessor, StreamingProcessorConfig,
+};
 
 // Re-export Polars-powered modules when features are enabled
 #[cfg(feature = "polars-io")]
-pub use io::{PolarsExporter, ParquetExporter, ArrowExporter, StreamingCsvExporter};
+pub use io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
 
 #[cfg(feature = "polars-analytics")]
-pub use batch::{BatchAnalysisEngine, BatchConfig, BatchResult, AnalysisReport};
+pub use batch::{AnalysisReport, BatchAnalysisEngine, BatchConfig, BatchResult};
 
 #[cfg(feature = "streaming-stats")]
 pub use streaming::{
@@ -151,7 +155,7 @@ pub use streaming::{
 
 #[cfg(feature = "real-time-indicators")]
 pub use streaming::{
-    SimpleMovingAverage, ExponentialMovingAverage, MACD, MACDValue, RSI, CCI, IndicatorError
+    CCI, ExponentialMovingAverage, IndicatorError, MACD, MACDValue, RSI, SimpleMovingAverage,
 };
 
 /// Version information

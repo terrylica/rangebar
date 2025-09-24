@@ -9,5 +9,5 @@ pub mod types;
 
 // Re-export commonly used types
 pub use fixed_point::FixedPoint;
-pub use processor::{ProcessingError, RangeBarProcessor, ExportRangeBarProcessor};
+pub use processor::{ExportRangeBarProcessor, ProcessingError, RangeBarProcessor};
 pub use types::{AggTrade, RangeBar};

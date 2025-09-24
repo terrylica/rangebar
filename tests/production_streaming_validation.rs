@@ -1,4 +1,5 @@
 use rangebar::fixed_point::FixedPoint;
+use rangebar::types::{AggTrade, RangeBar};
 /// Production streaming validation tests
 ///
 /// These tests validate the new streaming v2 architecture against critical failures:
@@ -7,7 +8,6 @@ use rangebar::fixed_point::FixedPoint;
 /// - Circuit breaker resilience patterns
 /// - Single-bar streaming (no Vec<RangeBar> accumulation)
 use rangebar::{StreamingProcessor, StreamingProcessorConfig};
-use rangebar::types::{AggTrade, RangeBar};
 use std::time::{Duration, Instant};
 use tokio::time::timeout;
 

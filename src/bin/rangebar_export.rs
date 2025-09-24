@@ -13,8 +13,8 @@ use zip::ZipArchive;
 use sha2::{Digest, Sha256};
 
 // Use library types and consolidated data loading
-use rangebar::{AggTrade, RangeBar, Settings, ExportRangeBarProcessor};
 use rangebar::data::{CsvAggTrade, detect_csv_headers};
+use rangebar::{AggTrade, ExportRangeBarProcessor, RangeBar, Settings};
 
 // Legacy statistics support disabled - requires statistics module restructuring
 // #[cfg(feature = "statistics")]

@@ -109,7 +109,11 @@ impl MACD {
     }
 
     /// Create new MACD with custom periods
-    pub fn with_periods(fast_period: usize, slow_period: usize, signal_period: usize) -> Result<Self, IndicatorError> {
+    pub fn with_periods(
+        fast_period: usize,
+        slow_period: usize,
+        signal_period: usize,
+    ) -> Result<Self, IndicatorError> {
         Ok(Self {
             fast_ema: ExponentialMovingAverage::new(fast_period)?,
             slow_ema: ExponentialMovingAverage::new(slow_period)?,
@@ -260,9 +264,12 @@ impl CCI {
 
         if self.filled {
             let sma = self.typical_prices.iter().sum::<f64>() / self.period as f64;
-            let mean_deviation = self.typical_prices.iter()
+            let mean_deviation = self
+                .typical_prices
+                .iter()
                 .map(|&tp| (tp - sma).abs())
-                .sum::<f64>() / self.period as f64;
+                .sum::<f64>()
+                / self.period as f64;
 
             if mean_deviation == 0.0 {
                 Some(0.0)
@@ -276,11 +283,7 @@ impl CCI {
 
     /// Update with RangeBar OHLC values
     pub fn update_from_bar(&mut self, bar: &RangeBar) -> Option<f64> {
-        self.update(
-            bar.high.to_f64(),
-            bar.low.to_f64(),
-            bar.close.to_f64()
-        )
+        self.update(bar.high.to_f64(), bar.low.to_f64(), bar.close.to_f64())
     }
 }
 

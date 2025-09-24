@@ -7,13 +7,13 @@
 use std::io::Write;
 use std::time::{Duration, Instant};
 
-use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind};
-use crossterm::terminal::{enable_raw_mode, disable_raw_mode};
+use crossterm::event::{Event, KeyCode, KeyEventKind, poll, read};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use tokio::signal;
 
-use rangebar::{AggTrade};
-use rangebar::range_bars::ExportRangeBarProcessor;
+use rangebar::AggTrade;
 use rangebar::data::HistoricalDataLoader;
+use rangebar::range_bars::ExportRangeBarProcessor;
 
 /// Format duration in milliseconds to human-readable string
 fn format_duration(duration_ms: i64) -> String {
@@ -43,7 +43,10 @@ fn format_duration(duration_ms: i64) -> String {
     if seconds > 0 || parts.is_empty() {
         if milliseconds > 0 && parts.is_empty() && seconds < 10 {
             // Show decimals for short durations
-            parts.push(format!("{:.1}s", seconds as f64 + milliseconds as f64 / 1000.0));
+            parts.push(format!(
+                "{:.1}s",
+                seconds as f64 + milliseconds as f64 / 1000.0
+            ));
         } else {
             parts.push(format!("{}s", seconds));
         }
@@ -163,11 +166,13 @@ impl TerminalDisplay {
     fn render_building_bar(&self) {
         // Clear current line completely before writing new content
         print!("\r\x1b[K"); // Clear entire line
-        print!("Building bar #{}: {} trades, current: ${:.2}, open: ${:.2}",
-               self.bar_count + 1,
-               self.current_bar_trades,
-               self.last_price,
-               self.current_bar_open.unwrap_or(self.last_price));
+        print!(
+            "Building bar #{}: {} trades, current: ${:.2}, open: ${:.2}",
+            self.bar_count + 1,
+            self.current_bar_trades,
+            self.last_price,
+            self.current_bar_open.unwrap_or(self.last_price)
+        );
         std::io::stdout().flush().unwrap();
     }
 
@@ -179,7 +184,16 @@ impl TerminalDisplay {
         }
     }
 
-    fn complete_range_bar(&mut self, open: f64, high: f64, low: f64, close: f64, volume: f64, open_time: i64, close_time: i64) {
+    fn complete_range_bar(
+        &mut self,
+        open: f64,
+        high: f64,
+        low: f64,
+        close: f64,
+        volume: f64,
+        open_time: i64,
+        close_time: i64,
+    ) {
         // Ensure any pending updates are rendered first
         self.force_update();
 
@@ -190,15 +204,10 @@ impl TerminalDisplay {
         let duration_str = format_duration(duration_ms);
 
         // Clear current line and print completed bar with duration
-        println!("\r\x1b[K✅ RANGE BAR #{}: OHLC = {:.4}/{:.4}/{:.4}/{:.4}, Volume = {:.6}, Trades: {}, Duration: {}",
-                self.bar_count,
-                open,
-                high,
-                low,
-                close,
-                volume,
-                self.current_bar_trades,
-                duration_str);
+        println!(
+            "\r\x1b[K✅ RANGE BAR #{}: OHLC = {:.4}/{:.4}/{:.4}/{:.4}, Volume = {:.6}, Trades: {}, Duration: {}",
+            self.bar_count, open, high, low, close, volume, self.current_bar_trades, duration_str
+        );
 
         // Reset for next bar
         self.current_bar_trades = 0;
@@ -238,7 +247,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut processor = ExportRangeBarProcessor::new(25); // 25 BPS threshold
     let mut display = TerminalDisplay::new();
 
-    println!("▶️  Starting playback at {:.0}x speed...\n", playback.acceleration_factor);
+    println!(
+        "▶️  Starting playback at {:.0}x speed...\n",
+        playback.acceleration_factor
+    );
 
     loop {
         // Handle keyboard input (non-blocking) - only if raw mode is enabled
@@ -318,8 +330,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    let final_stats = format!("📈 Final stats: {} range bars formed from {} trades",
-                              display.bar_count, display.trade_count);
+    let final_stats = format!(
+        "📈 Final stats: {} range bars formed from {} trades",
+        display.bar_count, display.trade_count
+    );
     display.print_message(&final_stats);
 
     // Clean up terminal raw mode if it was enabled

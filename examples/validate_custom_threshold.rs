@@ -3,17 +3,24 @@
 //! Tests range bar algorithm with different BPS thresholds to ensure
 //! mathematical accuracy across various threshold levels.
 
-use rangebar::range_bars::ExportRangeBarProcessor;
 use rangebar::data::HistoricalDataLoader;
+use rangebar::range_bars::ExportRangeBarProcessor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let symbol = std::env::args().nth(1).unwrap_or_else(|| "BTCUSDT".to_string());
-    let threshold_bps: u32 = std::env::args().nth(2)
+    let symbol = std::env::args()
+        .nth(1)
+        .unwrap_or_else(|| "BTCUSDT".to_string());
+    let threshold_bps: u32 = std::env::args()
+        .nth(2)
         .and_then(|s| s.parse().ok())
         .unwrap_or(50); // Default 50 BPS = 0.50%
 
-    println!("🔬 Custom Threshold Validation: {} BPS ({:.2}%)", threshold_bps, threshold_bps as f64 / 100.0);
+    println!(
+        "🔬 Custom Threshold Validation: {} BPS ({:.2}%)",
+        threshold_bps,
+        threshold_bps as f64 / 100.0
+    );
     println!("Symbol: {}", symbol);
     println!("========================================");
 
@@ -30,7 +37,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📈 Generated {} range bars", bars.len());
 
     if bars.is_empty() {
-        println!("⚠️ No range bars generated - market too stable for {} BPS threshold", threshold_bps);
+        println!(
+            "⚠️ No range bars generated - market too stable for {} BPS threshold",
+            threshold_bps
+        );
         return Ok(());
     }
 
@@ -75,46 +85,81 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let status = if is_valid { "✅" } else { "❌" };
 
-        println!("Bar #{}: {} | Open: {:.6} | Close: {:.6} | Movement: {:.4}% | Breach: {}",
-                 i + 1, status, open, close, actual_movement_pct, breach_type);
-        println!("  Expected Thresholds: Upper {:.8} | Lower {:.8}", expected_upper, expected_lower);
+        println!(
+            "Bar #{}: {} | Open: {:.6} | Close: {:.6} | Movement: {:.4}% | Breach: {}",
+            i + 1,
+            status,
+            open,
+            close,
+            actual_movement_pct,
+            breach_type
+        );
+        println!(
+            "  Expected Thresholds: Upper {:.8} | Lower {:.8}",
+            expected_upper, expected_lower
+        );
         println!("  Actual OHLC: High {:.8} | Low {:.8}", high, low);
 
         // Verify close matches expected threshold
         if breach_type == "UPPER" {
             let threshold_error = ((close - expected_upper) / expected_upper) * 100.0;
-            println!("  Threshold accuracy: {:.6}% error from upper threshold", threshold_error.abs());
+            println!(
+                "  Threshold accuracy: {:.6}% error from upper threshold",
+                threshold_error.abs()
+            );
         } else if breach_type == "LOWER" {
             let threshold_error = ((expected_lower - close) / expected_lower) * 100.0;
-            println!("  Threshold accuracy: {:.6}% error from lower threshold", threshold_error.abs());
+            println!(
+                "  Threshold accuracy: {:.6}% error from lower threshold",
+                threshold_error.abs()
+            );
         }
         println!();
     }
 
     // Overall statistics
-    let valid_count = bars.iter().take(sample_size).enumerate().filter(|(_i, bar)| {
-        let open = bar.open.to_f64();
-        let close = bar.close.to_f64();
-        let high = bar.high.to_f64();
-        let low = bar.low.to_f64();
+    let valid_count = bars
+        .iter()
+        .take(sample_size)
+        .enumerate()
+        .filter(|(_i, bar)| {
+            let open = bar.open.to_f64();
+            let close = bar.close.to_f64();
+            let high = bar.high.to_f64();
+            let low = bar.low.to_f64();
 
-        let expected_upper = open * (1.0 + threshold_pct);
-        let expected_lower = open * (1.0 - threshold_pct);
+            let expected_upper = open * (1.0 + threshold_pct);
+            let expected_lower = open * (1.0 - threshold_pct);
 
-        (close >= expected_upper && (high >= expected_upper || low <= expected_lower)) ||
-        (close <= expected_lower && (high >= expected_upper || low <= expected_lower))
-    }).count();
+            (close >= expected_upper && (high >= expected_upper || low <= expected_lower))
+                || (close <= expected_lower && (high >= expected_upper || low <= expected_lower))
+        })
+        .count();
 
     println!("📊 SUMMARY:");
     println!("============");
     println!("Tested Bars: {}", sample_size);
-    println!("Valid Bars: {} ({:.1}%)", valid_count, (valid_count as f64 / sample_size as f64) * 100.0);
-    println!("Threshold: {} BPS ({:.2}%)", threshold_bps, threshold_pct * 100.0);
+    println!(
+        "Valid Bars: {} ({:.1}%)",
+        valid_count,
+        (valid_count as f64 / sample_size as f64) * 100.0
+    );
+    println!(
+        "Threshold: {} BPS ({:.2}%)",
+        threshold_bps,
+        threshold_pct * 100.0
+    );
 
     if all_valid {
-        println!("\n✅ SUCCESS: All sampled bars correctly implement {} BPS threshold!", threshold_bps);
+        println!(
+            "\n✅ SUCCESS: All sampled bars correctly implement {} BPS threshold!",
+            threshold_bps
+        );
     } else {
-        println!("\n🚨 FAILURE: Some bars failed {} BPS threshold validation!", threshold_bps);
+        println!(
+            "\n🚨 FAILURE: Some bars failed {} BPS threshold validation!",
+            threshold_bps
+        );
         std::process::exit(1);
     }
 

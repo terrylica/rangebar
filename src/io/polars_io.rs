@@ -4,7 +4,7 @@
 //! file format conversion and streaming operations.
 
 use crate::core::types::RangeBar;
-use crate::io::formats::{DataFrameConverter, ConversionError};
+use crate::io::formats::{ConversionError, DataFrameConverter};
 use polars::prelude::*;
 use std::path::Path;
 use thiserror::Error;
@@ -66,14 +66,15 @@ impl PolarsExporter {
         }
 
         // Convert to DataFrame
-        let df = range_bars.to_vec().to_polars_dataframe()
-            .map_err(|e| ExportError::ConversionFailed {
-                source: ConversionError::PolarsError(e)
-            })?;
+        let df = range_bars.to_vec().to_polars_dataframe().map_err(|e| {
+            ExportError::ConversionFailed {
+                source: ConversionError::PolarsError(e),
+            }
+        })?;
 
         // Write Parquet file directly
-        let mut file = std::fs::File::create(path.as_ref())
-            .map_err(|e| ExportError::WriteFailed {
+        let mut file =
+            std::fs::File::create(path.as_ref()).map_err(|e| ExportError::WriteFailed {
                 format: "parquet".to_string(),
                 path: path.as_ref().to_string_lossy().to_string(),
                 source: e.into(),
@@ -81,7 +82,11 @@ impl PolarsExporter {
 
         ParquetWriter::new(&mut file)
             .with_compression(ParquetCompression::Snappy)
-            .with_statistics(if self.config.parquet_statistics { StatisticsOptions::default() } else { StatisticsOptions::empty() })
+            .with_statistics(if self.config.parquet_statistics {
+                StatisticsOptions::default()
+            } else {
+                StatisticsOptions::empty()
+            })
             .finish(&mut df.clone())
             .map_err(|e| ExportError::WriteFailed {
                 format: "parquet".to_string(),
@@ -105,14 +110,15 @@ impl PolarsExporter {
             return Err(ExportError::EmptyData);
         }
 
-        let df = range_bars.to_vec().to_polars_dataframe()
-            .map_err(|e| ExportError::ConversionFailed {
-                source: ConversionError::PolarsError(e)
-            })?;
+        let df = range_bars.to_vec().to_polars_dataframe().map_err(|e| {
+            ExportError::ConversionFailed {
+                source: ConversionError::PolarsError(e),
+            }
+        })?;
 
         // Write Arrow IPC file directly
-        let mut file = std::fs::File::create(path.as_ref())
-            .map_err(|e| ExportError::WriteFailed {
+        let mut file =
+            std::fs::File::create(path.as_ref()).map_err(|e| ExportError::WriteFailed {
                 format: "arrow".to_string(),
                 path: path.as_ref().to_string_lossy().to_string(),
                 source: e.into(),
@@ -142,14 +148,15 @@ impl PolarsExporter {
             return Err(ExportError::EmptyData);
         }
 
-        let df = range_bars.to_vec().to_polars_dataframe()
-            .map_err(|e| ExportError::ConversionFailed {
-                source: ConversionError::PolarsError(e)
-            })?;
+        let df = range_bars.to_vec().to_polars_dataframe().map_err(|e| {
+            ExportError::ConversionFailed {
+                source: ConversionError::PolarsError(e),
+            }
+        })?;
 
         // Write CSV file directly
-        let mut file = std::fs::File::create(path.as_ref())
-            .map_err(|e| ExportError::WriteFailed {
+        let mut file =
+            std::fs::File::create(path.as_ref()).map_err(|e| ExportError::WriteFailed {
                 format: "csv".to_string(),
                 path: path.as_ref().to_string_lossy().to_string(),
                 source: e.into(),
@@ -391,7 +398,9 @@ mod tests {
         let temp_dir = tempdir().unwrap();
         let file_path = temp_dir.path().join("test.csv");
 
-        let result = exporter.export_streaming_csv(&range_bars, &file_path).unwrap();
+        let result = exporter
+            .export_streaming_csv(&range_bars, &file_path)
+            .unwrap();
 
         assert_eq!(result.records_written, 2);
         assert!(file_path.exists());

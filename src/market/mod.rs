@@ -6,6 +6,4 @@
 pub mod symbols;
 
 // Re-export commonly used types
-pub use symbols::{
-    get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol, TIER1_SYMBOLS
-};
+pub use symbols::{TIER1_SYMBOLS, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol};

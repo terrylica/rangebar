@@ -4,7 +4,7 @@
 //! backtesting, and research with exception-only failure handling.
 
 use crate::core::types::RangeBar;
-use crate::io::formats::{DataFrameConverter, ConversionError};
+use crate::io::formats::{ConversionError, DataFrameConverter};
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -97,15 +97,18 @@ impl BatchAnalysisEngine {
         symbol: &str,
     ) -> Result<BatchResult, BatchError> {
         if range_bars.is_empty() {
-            return Err(BatchError::EmptyData { symbol: symbol.to_string() });
+            return Err(BatchError::EmptyData {
+                symbol: symbol.to_string(),
+            });
         }
 
         // Convert to DataFrame for analysis
-        let df = range_bars.to_vec().to_polars_dataframe()
-            .map_err(|e| BatchError::ConversionFailed {
+        let df = range_bars.to_vec().to_polars_dataframe().map_err(|e| {
+            BatchError::ConversionFailed {
                 symbol: symbol.to_string(),
                 source: ConversionError::PolarsError(e),
-            })?;
+            }
+        })?;
 
         let mut analysis_report = AnalysisReport::new(symbol.to_string());
 
@@ -171,16 +174,13 @@ impl BatchAnalysisEngine {
                 col("close").min().alias("close_min"),
                 col("close").max().alias("close_max"),
                 col("close").median().alias("close_median"),
-
                 // Volume statistics
                 col("volume").mean().alias("volume_mean"),
                 col("volume").std(1).alias("volume_std"),
                 col("volume").sum().alias("volume_total"),
-
                 // Count statistics
                 len().alias("total_bars"),
                 col("trade_count").sum().alias("total_trades"),
-
                 // Time span
                 col("open_time").min().alias("first_time"),
                 col("close_time").max().alias("last_time"),
@@ -192,7 +192,8 @@ impl BatchAnalysisEngine {
             })?;
 
         // Extract values from the result
-        let row = stats_df.get_row(0)
+        let row = stats_df
+            .get_row(0)
             .map_err(|e| BatchError::ComputationFailed {
                 operation: "extract_basic_stats".to_string(),
                 source: e.into(),
@@ -218,17 +219,36 @@ impl BatchAnalysisEngine {
     fn compute_rolling_statistics(&self, df: &DataFrame) -> Result<RollingStatistics, BatchError> {
         let window = self.config.statistics_config.rolling_window_size;
 
-        let rolling_df = df.clone()
+        let rolling_df = df
+            .clone()
             .lazy()
             .with_columns([
                 // Rolling price statistics
-                col("close").rolling_mean(RollingOptions::default().window_size(Duration::new().with_time_zones(window as i64))).alias("close_sma"),
-                col("close").rolling_std(RollingOptions::default().window_size(Duration::new().with_time_zones(window as i64))).alias("close_rolling_std"),
-
+                col("close")
+                    .rolling_mean(
+                        RollingOptions::default()
+                            .window_size(Duration::new().with_time_zones(window as i64)),
+                    )
+                    .alias("close_sma"),
+                col("close")
+                    .rolling_std(
+                        RollingOptions::default()
+                            .window_size(Duration::new().with_time_zones(window as i64)),
+                    )
+                    .alias("close_rolling_std"),
                 // Rolling volume statistics
-                col("volume").rolling_mean(RollingOptions::default().window_size(Duration::new().with_time_zones(window as i64))).alias("volume_sma"),
-                col("volume").rolling_std(RollingOptions::default().window_size(Duration::new().with_time_zones(window as i64))).alias("volume_rolling_std"),
-
+                col("volume")
+                    .rolling_mean(
+                        RollingOptions::default()
+                            .window_size(Duration::new().with_time_zones(window as i64)),
+                    )
+                    .alias("volume_sma"),
+                col("volume")
+                    .rolling_std(
+                        RollingOptions::default()
+                            .window_size(Duration::new().with_time_zones(window as i64)),
+                    )
+                    .alias("volume_rolling_std"),
                 // Price returns
                 (col("close") / col("close").shift(1) - lit(1.0)).alias("returns"),
             ])
@@ -244,7 +264,8 @@ impl BatchAnalysisEngine {
                 source: e.into(),
             })?;
 
-        let row = rolling_df.get_row(0)
+        let row = rolling_df
+            .get_row(0)
             .map_err(|e| BatchError::ComputationFailed {
                 operation: "extract_rolling_stats".to_string(),
                 source: e.into(),
@@ -267,7 +288,8 @@ impl BatchAnalysisEngine {
 
         for &level in quantile_levels {
             // Price quantiles
-            let price_q = df.clone()
+            let price_q = df
+                .clone()
                 .lazy()
                 .select([col("close").quantile(lit(level), QuantileInterpolOptions::Linear)])
                 .collect()
@@ -276,7 +298,8 @@ impl BatchAnalysisEngine {
                     source: e.into(),
                 })?;
 
-            let price_value = price_q.get_row(0)
+            let price_value = price_q
+                .get_row(0)
                 .and_then(|row| extract_f64_value(&row, 0))
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("extract_price_quantile_{}", level),
@@ -286,7 +309,8 @@ impl BatchAnalysisEngine {
             price_quantiles.insert(level, price_value);
 
             // Volume quantiles
-            let volume_q = df.clone()
+            let volume_q = df
+                .clone()
                 .lazy()
                 .select([col("volume").quantile(lit(level), QuantileInterpolOptions::Linear)])
                 .collect()
@@ -295,7 +319,8 @@ impl BatchAnalysisEngine {
                     source: e.into(),
                 })?;
 
-            let volume_value = volume_q.get_row(0)
+            let volume_value = volume_q
+                .get_row(0)
                 .and_then(|row| extract_f64_value(&row, 0))
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("extract_volume_quantile_{}", level),
@@ -314,14 +339,14 @@ impl BatchAnalysisEngine {
 
     /// Compute price movement analysis
     fn compute_price_analysis(&self, df: &DataFrame) -> Result<PriceAnalysis, BatchError> {
-        let price_df = df.clone()
+        let price_df = df
+            .clone()
             .lazy()
             .with_columns([
                 // Price ranges
                 (col("high") - col("low")).alias("price_range"),
                 (col("close") - col("open")).alias("price_change"),
                 ((col("close") - col("open")) / col("open") * lit(100.0)).alias("price_change_pct"),
-
                 // OHLC analysis
                 (col("close") > col("open")).alias("is_bullish"),
                 (col("high") == col("close")).alias("is_high_close"),
@@ -342,7 +367,8 @@ impl BatchAnalysisEngine {
                 source: e.into(),
             })?;
 
-        let row = price_df.get_row(0)
+        let row = price_df
+            .get_row(0)
             .map_err(|e| BatchError::ComputationFailed {
                 operation: "extract_price_analysis".to_string(),
                 source: e.into(),
@@ -361,7 +387,8 @@ impl BatchAnalysisEngine {
 
     /// Compute volume analysis
     fn compute_volume_analysis(&self, df: &DataFrame) -> Result<VolumeAnalysis, BatchError> {
-        let volume_df = df.clone()
+        let volume_df = df
+            .clone()
             .lazy()
             .with_columns([
                 // Buy/sell analysis
@@ -384,7 +411,8 @@ impl BatchAnalysisEngine {
                 source: e.into(),
             })?;
 
-        let row = volume_df.get_row(0)
+        let row = volume_df
+            .get_row(0)
             .map_err(|e| BatchError::ComputationFailed {
                 operation: "extract_volume_analysis".to_string(),
                 source: e.into(),
@@ -402,25 +430,35 @@ impl BatchAnalysisEngine {
     }
 
     /// Compute microstructure analysis
-    fn compute_microstructure_analysis(&self, df: &DataFrame) -> Result<MicrostructureAnalysis, BatchError> {
-        let micro_df = df.clone()
+    fn compute_microstructure_analysis(
+        &self,
+        df: &DataFrame,
+    ) -> Result<MicrostructureAnalysis, BatchError> {
+        let micro_df = df
+            .clone()
             .lazy()
             .with_columns([
                 // Trade intensity
-                (col("trade_count") / ((col("close_time") - col("open_time")) / lit(1000.0))).alias("trades_per_second"),
-
+                (col("trade_count") / ((col("close_time") - col("open_time")) / lit(1000.0)))
+                    .alias("trades_per_second"),
                 // Order flow imbalance
-                ((col("buy_volume") - col("sell_volume")) / col("volume")).alias("order_flow_imbalance"),
-
+                ((col("buy_volume") - col("sell_volume")) / col("volume"))
+                    .alias("order_flow_imbalance"),
                 // VWAP deviation
                 ((col("close") - col("vwap")) / col("vwap") * lit(100.0)).alias("vwap_deviation"),
             ])
             .select([
                 col("trades_per_second").mean().alias("avg_trade_intensity"),
-                col("order_flow_imbalance").mean().alias("avg_order_flow_imbalance"),
-                col("order_flow_imbalance").std(1).alias("order_flow_volatility"),
+                col("order_flow_imbalance")
+                    .mean()
+                    .alias("avg_order_flow_imbalance"),
+                col("order_flow_imbalance")
+                    .std(1)
+                    .alias("order_flow_volatility"),
                 col("vwap_deviation").mean().alias("avg_vwap_deviation"),
-                col("vwap_deviation").std(1).alias("vwap_deviation_volatility"),
+                col("vwap_deviation")
+                    .std(1)
+                    .alias("vwap_deviation_volatility"),
             ])
             .collect()
             .map_err(|e| BatchError::ComputationFailed {
@@ -428,7 +466,8 @@ impl BatchAnalysisEngine {
                 source: e.into(),
             })?;
 
-        let row = micro_df.get_row(0)
+        let row = micro_df
+            .get_row(0)
             .map_err(|e| BatchError::ComputationFailed {
                 operation: "extract_microstructure_analysis".to_string(),
                 source: e.into(),
@@ -688,7 +727,9 @@ mod tests {
         let engine = BatchAnalysisEngine::new();
         let range_bars = create_test_range_bars();
 
-        let result = engine.analyze_single_symbol(&range_bars, "BTCUSDT").unwrap();
+        let result = engine
+            .analyze_single_symbol(&range_bars, "BTCUSDT")
+            .unwrap();
 
         assert_eq!(result.symbol, "BTCUSDT");
         assert_eq!(result.records_processed, 2);

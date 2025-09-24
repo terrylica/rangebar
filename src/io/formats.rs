@@ -3,8 +3,8 @@
 //! Provides bidirectional conversion between RangeBar and Polars DataFrame
 //! with exception-only failure handling.
 
-use crate::core::types::{AggTrade, RangeBar};
 use crate::core::FixedPoint;
+use crate::core::types::{AggTrade, RangeBar};
 use polars::prelude::*;
 use thiserror::Error;
 
@@ -42,16 +42,35 @@ pub enum ConversionError {
 
 /// Required columns for RangeBar DataFrame
 pub const RANGEBAR_COLUMNS: &[&str] = &[
-    "open_time", "close_time", "open", "high", "low", "close",
-    "volume", "turnover", "trade_count", "first_id", "last_id",
-    "buy_volume", "sell_volume", "buy_trade_count", "sell_trade_count",
-    "vwap", "buy_turnover", "sell_turnover"
+    "open_time",
+    "close_time",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "turnover",
+    "trade_count",
+    "first_id",
+    "last_id",
+    "buy_volume",
+    "sell_volume",
+    "buy_trade_count",
+    "sell_trade_count",
+    "vwap",
+    "buy_turnover",
+    "sell_turnover",
 ];
 
 /// Required columns for AggTrade DataFrame
 pub const AGGTRADE_COLUMNS: &[&str] = &[
-    "agg_trade_id", "price", "volume", "first_trade_id",
-    "last_trade_id", "timestamp", "is_buyer_maker"
+    "agg_trade_id",
+    "price",
+    "volume",
+    "first_trade_id",
+    "last_trade_id",
+    "timestamp",
+    "is_buyer_maker",
 ];
 
 impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
@@ -231,7 +250,11 @@ impl DataFrameConverter<Vec<AggTrade>> for Vec<AggTrade> {
 /// Validate RangeBar DataFrame has required columns
 fn validate_rangebar_columns(df: &DataFrame) -> Result<(), ConversionError> {
     for &column in RANGEBAR_COLUMNS {
-        if !df.get_column_names().iter().any(|name| name.as_str() == column) {
+        if !df
+            .get_column_names()
+            .iter()
+            .any(|name| name.as_str() == column)
+        {
             return Err(ConversionError::MissingColumn {
                 column: column.to_string(),
             });
@@ -243,7 +266,11 @@ fn validate_rangebar_columns(df: &DataFrame) -> Result<(), ConversionError> {
 /// Validate AggTrade DataFrame has required columns
 fn validate_aggtrade_columns(df: &DataFrame) -> Result<(), ConversionError> {
     for &column in AGGTRADE_COLUMNS {
-        if !df.get_column_names().iter().any(|name| name.as_str() == column) {
+        if !df
+            .get_column_names()
+            .iter()
+            .any(|name| name.as_str() == column)
+        {
             return Err(ConversionError::MissingColumn {
                 column: column.to_string(),
             });
@@ -254,11 +281,14 @@ fn validate_aggtrade_columns(df: &DataFrame) -> Result<(), ConversionError> {
 
 /// Extract i64 column with error handling
 fn extract_i64_column(df: &DataFrame, column_name: &str) -> Result<Vec<i64>, ConversionError> {
-    let series = df.column(column_name).map_err(|_| ConversionError::MissingColumn {
-        column: column_name.to_string(),
-    })?;
+    let series = df
+        .column(column_name)
+        .map_err(|_| ConversionError::MissingColumn {
+            column: column_name.to_string(),
+        })?;
 
-    Ok(series.i64()
+    Ok(series
+        .i64()
         .map_err(|_| ConversionError::InvalidDataType {
             column: column_name.to_string(),
             expected: "i64".to_string(),
@@ -270,11 +300,14 @@ fn extract_i64_column(df: &DataFrame, column_name: &str) -> Result<Vec<i64>, Con
 
 /// Extract boolean column with error handling
 fn extract_bool_column(df: &DataFrame, column_name: &str) -> Result<Vec<bool>, ConversionError> {
-    let series = df.column(column_name).map_err(|_| ConversionError::MissingColumn {
-        column: column_name.to_string(),
-    })?;
+    let series = df
+        .column(column_name)
+        .map_err(|_| ConversionError::MissingColumn {
+            column: column_name.to_string(),
+        })?;
 
-    Ok(series.bool()
+    Ok(series
+        .bool()
         .map_err(|_| ConversionError::InvalidDataType {
             column: column_name.to_string(),
             expected: "bool".to_string(),
@@ -289,8 +322,10 @@ fn validate_range_bar(bar: &RangeBar) -> Result<(), ConversionError> {
     // Temporal validation
     if bar.close_time <= bar.open_time {
         return Err(ConversionError::ValidationFailed {
-            message: format!("Invalid time sequence: close_time ({}) <= open_time ({})",
-                           bar.close_time, bar.open_time),
+            message: format!(
+                "Invalid time sequence: close_time ({}) <= open_time ({})",
+                bar.close_time, bar.open_time
+            ),
         });
     }
 
@@ -379,10 +414,10 @@ mod tests {
         RangeBar {
             open_time: 1000000,
             close_time: 1000001,
-            open: FixedPoint(100000000),  // 1.0
-            high: FixedPoint(110000000),  // 1.1
-            low: FixedPoint(90000000),    // 0.9
-            close: FixedPoint(105000000), // 1.05
+            open: FixedPoint(100000000),    // 1.0
+            high: FixedPoint(110000000),    // 1.1
+            low: FixedPoint(90000000),      // 0.9
+            close: FixedPoint(105000000),   // 1.05
             volume: FixedPoint(1000000000), // 10.0
             turnover: 1050000000,
             trade_count: 5,
@@ -441,7 +476,8 @@ mod tests {
         let df = DataFrame::new(vec![
             Column::new("open_time".into(), vec![1000000i64]),
             // Missing other required columns
-        ]).unwrap();
+        ])
+        .unwrap();
 
         let result = Vec::<RangeBar>::from_polars_dataframe(df);
         assert!(matches!(result, Err(ConversionError::MissingColumn { .. })));
@@ -453,6 +489,9 @@ mod tests {
         invalid_bar.high = FixedPoint(50000000); // Invalid: high < low
 
         let result = validate_range_bar(&invalid_bar);
-        assert!(matches!(result, Err(ConversionError::ValidationFailed { .. })));
+        assert!(matches!(
+            result,
+            Err(ConversionError::ValidationFailed { .. })
+        ));
     }
 }

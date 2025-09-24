@@ -95,7 +95,8 @@ impl ReplayBuffer {
         let latest_timestamp = inner.trades.back().unwrap().timestamp;
         let cutoff_timestamp = latest_timestamp - (minutes_ago as i64 * 60 * 1000);
 
-        inner.trades
+        inner
+            .trades
             .iter()
             .filter(|trade| trade.timestamp >= cutoff_timestamp)
             .cloned()
@@ -112,12 +113,12 @@ impl ReplayBuffer {
     pub fn stats(&self) -> ReplayBufferStats {
         let inner = self.inner.lock().unwrap();
 
-        let (first_timestamp, last_timestamp) = if let (Some(first), Some(last)) =
-            (inner.trades.front(), inner.trades.back()) {
-            (Some(first.timestamp), Some(last.timestamp))
-        } else {
-            (None, None)
-        };
+        let (first_timestamp, last_timestamp) =
+            if let (Some(first), Some(last)) = (inner.trades.front(), inner.trades.back()) {
+                (Some(first.timestamp), Some(last.timestamp))
+            } else {
+                (None, None)
+            };
 
         ReplayBufferStats {
             capacity: inner.capacity,
@@ -219,7 +220,7 @@ impl Stream for ReplayStream {
             let time_diff_ms = current_trade.timestamp - base_timestamp;
             let real_time_diff = Duration::from_millis(time_diff_ms as u64);
             let scaled_time_diff = Duration::from_millis(
-                (real_time_diff.as_millis() as f64 / self.speed_multiplier as f64) as u64
+                (real_time_diff.as_millis() as f64 / self.speed_multiplier as f64) as u64,
             );
 
             let target_time = start_time + scaled_time_diff;
@@ -282,7 +283,11 @@ mod tests {
 
         // Should only keep the last 60 seconds worth
         let stats = buffer.stats();
-        assert!(stats.trade_count <= 120, "Expected <= 120 trades, got {}", stats.trade_count);
+        assert!(
+            stats.trade_count <= 120,
+            "Expected <= 120 trades, got {}",
+            stats.trade_count
+        );
 
         let trades = buffer.get_trades_from(1); // Last 1 minute
         assert!(!trades.is_empty());

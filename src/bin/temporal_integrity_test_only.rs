@@ -3,11 +3,11 @@
 //! Tests only the critical temporal integrity aspects without
 //! problematic round-trip conversion that has data corruption issues.
 
-use csv::ReaderBuilder;
-use rangebar::core::types::RangeBar;
-use rangebar::core::FixedPoint;
-use std::time::Instant;
 use clap::{Arg, Command};
+use csv::ReaderBuilder;
+use rangebar::core::FixedPoint;
+use rangebar::core::types::RangeBar;
+use std::time::Instant;
 
 #[cfg(feature = "polars-io")]
 use rangebar::io::formats::DataFrameConverter;
@@ -37,7 +37,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let range_bars = load_range_bars(input_file)?;
     let load_time = start.elapsed();
 
-    println!("✅ Loaded {} range bars in {:.2}ms", range_bars.len(), load_time.as_millis());
+    println!(
+        "✅ Loaded {} range bars in {:.2}ms",
+        range_bars.len(),
+        load_time.as_millis()
+    );
     println!();
 
     #[cfg(feature = "polars-io")]
@@ -104,12 +108,14 @@ fn test_temporal_integrity_only(range_bars: &[RangeBar]) -> Result<(), Box<dyn s
     let df = range_bars.to_vec().to_polars_dataframe()?;
 
     // Extract timestamps and verify temporal ordering is preserved
-    let open_times = df.column("open_time")?
+    let open_times = df
+        .column("open_time")?
         .i64()?
         .into_no_null_iter()
         .collect::<Vec<_>>();
 
-    let close_times = df.column("close_time")?
+    let close_times = df
+        .column("close_time")?
         .i64()?
         .into_no_null_iter()
         .collect::<Vec<_>>();
@@ -117,10 +123,10 @@ fn test_temporal_integrity_only(range_bars: &[RangeBar]) -> Result<(), Box<dyn s
     // Validate temporal ordering preservation
     let mut temporal_violations = 0;
     for i in 1..open_times.len() {
-        if open_times[i] < open_times[i-1] {
+        if open_times[i] < open_times[i - 1] {
             temporal_violations += 1;
         }
-        if close_times[i] < close_times[i-1] {
+        if close_times[i] < close_times[i - 1] {
             temporal_violations += 1;
         }
     }
@@ -128,7 +134,10 @@ fn test_temporal_integrity_only(range_bars: &[RangeBar]) -> Result<(), Box<dyn s
     let test1_time = start.elapsed();
 
     if temporal_violations == 0 {
-        println!("✅ Temporal ordering preserved: {} range bars", range_bars.len());
+        println!(
+            "✅ Temporal ordering preserved: {} range bars",
+            range_bars.len()
+        );
         println!("   • Open times: Monotonically increasing ✅");
         println!("   • Close times: Monotonically increasing ✅");
     } else {
@@ -144,7 +153,8 @@ fn test_temporal_integrity_only(range_bars: &[RangeBar]) -> Result<(), Box<dyn s
 
     // Test sorting operation (should not change order if already sorted)
     let sorted_df = df.clone().sort(["open_time"], Default::default())?;
-    let sorted_open_times = sorted_df.column("open_time")?
+    let sorted_open_times = sorted_df
+        .column("open_time")?
         .i64()?
         .into_no_null_iter()
         .collect::<Vec<_>>();
@@ -166,8 +176,14 @@ fn test_temporal_integrity_only(range_bars: &[RangeBar]) -> Result<(), Box<dyn s
     let test2_time = start.elapsed();
 
     println!("✅ DataFrame operations maintain temporal safety");
-    println!("   • Sort operation changes: {} (expected: 0)", sort_changes);
-    println!("   • Column access preserved: {} volume, {} trade count records", volume_len, trade_count_len);
+    println!(
+        "   • Sort operation changes: {} (expected: 0)",
+        sort_changes
+    );
+    println!(
+        "   • Column access preserved: {} volume, {} trade count records",
+        volume_len, trade_count_len
+    );
     println!("⏱️  Validation time: {:.2}ms", test2_time.as_millis());
     println!();
 
@@ -185,7 +201,15 @@ fn test_temporal_integrity_only(range_bars: &[RangeBar]) -> Result<(), Box<dyn s
         return Err("DataFrame height doesn't match input data length".into());
     }
 
-    let expected_columns = ["open_time", "close_time", "open", "high", "low", "close", "volume"];
+    let expected_columns = [
+        "open_time",
+        "close_time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+    ];
     let mut missing_columns = Vec::new();
     for &col in &expected_columns {
         if !column_names.iter().any(|name| name.as_str() == col) {

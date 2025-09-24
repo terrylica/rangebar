@@ -1,5 +1,6 @@
 # Rust formatting configuration for rangebar project
 # Compatible with stable rustfmt - ensures consistent formatting between local and CI
+# Version consistency: rustfmt 1.8.0 (pinned via rust-toolchain.toml using Rust 1.90.0)
 
 # Basic layout settings (stable)
 edition = "2024"

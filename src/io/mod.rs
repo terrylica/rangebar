@@ -11,10 +11,10 @@ pub mod formats;
 
 // Re-export commonly used types when polars feature is enabled
 #[cfg(feature = "polars-io")]
-pub use formats::{DataFrameConverter, ConversionError};
+pub use formats::{ConversionError, DataFrameConverter};
 
 #[cfg(feature = "polars-io")]
 pub use polars_io::{
-    PolarsExporter, PolarsExporterConfig, ParquetExporter, ArrowExporter,
-    StreamingCsvExporter, ExportError
+    ArrowExporter, ExportError, ParquetExporter, PolarsExporter, PolarsExporterConfig,
+    StreamingCsvExporter,
 };

@@ -3,23 +3,23 @@
 //! This module provides asynchronous WebSocket connections to Binance streams
 //! for real-time aggTrade data feeding into range bar construction.
 
-use crate::types::AggTrade;
 use crate::core::FixedPoint;
+use crate::types::AggTrade;
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::pin::Pin;
 use std::task::{Context, Poll};
+use thiserror::Error;
+use tokio::net::TcpStream;
 use tokio::sync::mpsc;
 use tokio_stream::Stream;
-use tokio_tungstenite::{connect_async, tungstenite::Message, WebSocketStream, MaybeTlsStream};
-use tokio::net::TcpStream;
-use thiserror::Error;
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async, tungstenite::Message};
 
 /// WebSocket specific errors
 #[derive(Error, Debug)]
 pub enum WebSocketError {
     #[error("Connection failed: {0}")]
-    ConnectionFailed(#[from] tokio_tungstenite::tungstenite::Error),
+    ConnectionFailed(Box<tokio_tungstenite::tungstenite::Error>),
 
     #[error("JSON parsing failed: {0}")]
     JsonParsingFailed(#[from] serde_json::Error),
@@ -32,6 +32,12 @@ pub enum WebSocketError {
 
     #[error("Connection closed unexpectedly")]
     ConnectionClosed,
+}
+
+impl From<tokio_tungstenite::tungstenite::Error> for WebSocketError {
+    fn from(error: tokio_tungstenite::tungstenite::Error) -> Self {
+        WebSocketError::ConnectionFailed(Box::new(error))
+    }
 }
 
 /// Binance WebSocket aggTrade message format
@@ -74,15 +80,13 @@ struct BinanceAggTrade {
 impl BinanceAggTrade {
     /// Convert Binance WebSocket format to internal AggTrade format
     fn to_agg_trade(&self) -> Result<AggTrade, WebSocketError> {
-        let price = FixedPoint::from_str(&self.price)
-            .map_err(|_| WebSocketError::JsonParsingFailed(
-                serde_json::from_str::<()>("{}").unwrap_err()
-            ))?;
+        let price = FixedPoint::from_str(&self.price).map_err(|_| {
+            WebSocketError::JsonParsingFailed(serde_json::from_str::<()>("{}").unwrap_err())
+        })?;
 
-        let volume = FixedPoint::from_str(&self.quantity)
-            .map_err(|_| WebSocketError::JsonParsingFailed(
-                serde_json::from_str::<()>("{}").unwrap_err()
-            ))?;
+        let volume = FixedPoint::from_str(&self.quantity).map_err(|_| {
+            WebSocketError::JsonParsingFailed(serde_json::from_str::<()>("{}").unwrap_err())
+        })?;
 
         Ok(AggTrade {
             agg_trade_id: self.agg_trade_id,
@@ -157,10 +161,14 @@ impl BinanceWebSocketStream {
                 while let Some(msg) = ws_stream.next().await {
                     match msg {
                         Ok(Message::Text(text)) => {
-                            if let Ok(binance_trade) = serde_json::from_str::<BinanceAggTrade>(&text) {
+                            if let Ok(binance_trade) =
+                                serde_json::from_str::<BinanceAggTrade>(&text)
+                            {
                                 if let Ok(agg_trade) = binance_trade.to_agg_trade() {
                                     if sender.send(agg_trade).await.is_err() {
-                                        println!("❌ Channel closed, stopping WebSocket processing");
+                                        println!(
+                                            "❌ Channel closed, stopping WebSocket processing"
+                                        );
                                         break;
                                     }
                                 } else {
@@ -259,6 +267,9 @@ mod tests {
     async fn test_invalid_symbol() {
         let stream = BinanceWebSocketStream::new("BTC-USD").await;
         assert!(stream.is_err());
-        assert!(matches!(stream.unwrap_err(), WebSocketError::InvalidSymbol(_)));
+        assert!(matches!(
+            stream.unwrap_err(),
+            WebSocketError::InvalidSymbol(_)
+        ));
     }
 }

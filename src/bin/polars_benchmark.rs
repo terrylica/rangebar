@@ -5,15 +5,15 @@
 //! - 10x-20x faster Python loading (Arrow format)
 //! - 2x-5x faster export operations
 
+use clap::{Arg, Command};
 use csv::ReaderBuilder;
-use rangebar::core::types::RangeBar;
 use rangebar::core::FixedPoint;
+use rangebar::core::types::RangeBar;
 use std::fs;
 use std::time::Instant;
-use clap::{Arg, Command};
 
 #[cfg(feature = "polars-io")]
-use rangebar::io::{PolarsExporter, ParquetExporter, ArrowExporter, StreamingCsvExporter};
+use rangebar::io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("polars-benchmark")
@@ -53,11 +53,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let range_bars = load_range_bars(input_file)?;
     let load_time = start.elapsed();
 
-    println!("✅ Loaded {} range bars in {:.2}ms", range_bars.len(), load_time.as_millis());
+    println!(
+        "✅ Loaded {} range bars in {:.2}ms",
+        range_bars.len(),
+        load_time.as_millis()
+    );
 
     // Get original CSV file size
     let original_size = fs::metadata(input_file)?.len();
-    println!("📏 Original CSV size: {:.2} MB", original_size as f64 / 1_048_576.0);
+    println!(
+        "📏 Original CSV size: {:.2} MB",
+        original_size as f64 / 1_048_576.0
+    );
     println!();
 
     #[cfg(feature = "polars-io")]
@@ -117,7 +124,7 @@ fn load_range_bars(file_path: &str) -> Result<Vec<RangeBar>, Box<dyn std::error:
 fn benchmark_polars_exports(
     range_bars: &[RangeBar],
     output_dir: &str,
-    original_csv_size: u64
+    original_csv_size: u64,
 ) -> Result<(), Box<dyn std::error::Error>> {
     println!("🎯 Benchmarking Polars Export Performance");
     println!();
@@ -135,13 +142,19 @@ fn benchmark_polars_exports(
     let size_reduction = (1.0 - (parquet_size as f64 / original_csv_size as f64)) * 100.0;
 
     println!("✅ Parquet export: {:.2}ms", parquet_time.as_millis());
-    println!("📏 Parquet size: {:.2} MB ({:.1}% reduction)",
-             parquet_size as f64 / 1_048_576.0, size_reduction);
+    println!(
+        "📏 Parquet size: {:.2} MB ({:.1}% reduction)",
+        parquet_size as f64 / 1_048_576.0,
+        size_reduction
+    );
 
     if size_reduction >= 70.0 {
         println!("🎯 TARGET MET: ≥70% file size reduction ✅");
     } else {
-        println!("⚠️  TARGET MISSED: Expected ≥70%, got {:.1}%", size_reduction);
+        println!(
+            "⚠️  TARGET MISSED: Expected ≥70%, got {:.1}%",
+            size_reduction
+        );
     }
     println!();
 
@@ -174,7 +187,10 @@ fn benchmark_polars_exports(
     let baseline_csv_time = parquet_time.as_millis() * 2; // Conservative estimate
     let speedup = baseline_csv_time as f64 / streaming_csv_time.as_millis() as f64;
 
-    println!("✅ Streaming CSV export: {:.2}ms", streaming_csv_time.as_millis());
+    println!(
+        "✅ Streaming CSV export: {:.2}ms",
+        streaming_csv_time.as_millis()
+    );
     println!("📈 Estimated speedup vs standard: {:.1}x", speedup);
 
     if speedup >= 2.0 {
@@ -198,21 +214,34 @@ fn benchmark_polars_exports(
     for (format_name, path) in &formats {
         let start = Instant::now();
         match format_name {
-            &"parquet" => { polars_exporter.export_parquet(range_bars, path)?; }
-            &"arrow" => { polars_exporter.export_arrow_ipc(range_bars, path)?; }
-            &"csv" => { polars_exporter.export_streaming_csv(range_bars, path)?; }
+            &"parquet" => {
+                polars_exporter.export_parquet(range_bars, path)?;
+            }
+            &"arrow" => {
+                polars_exporter.export_arrow_ipc(range_bars, path)?;
+            }
+            &"csv" => {
+                polars_exporter.export_streaming_csv(range_bars, path)?;
+            }
             _ => unreachable!(),
         }
         let export_time = start.elapsed();
         let file_size = fs::metadata(path)?.len();
 
-        println!("✅ {} export: {:.2}ms ({:.2} MB)",
-                 format_name, export_time.as_millis(), file_size as f64 / 1_048_576.0);
+        println!(
+            "✅ {} export: {:.2}ms ({:.2} MB)",
+            format_name,
+            export_time.as_millis(),
+            file_size as f64 / 1_048_576.0
+        );
     }
 
     println!();
     println!("🎯 Performance Summary:");
-    println!("• File size reduction: {:.1}% (target: ≥70%)", size_reduction);
+    println!(
+        "• File size reduction: {:.1}% (target: ≥70%)",
+        size_reduction
+    );
     println!("• Arrow format: Zero-copy Python capability ✅");
     println!("• Export performance: 2x-5x improvement estimated ✅");
     println!("• All exports completed successfully ✅");

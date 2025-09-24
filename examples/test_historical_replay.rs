@@ -3,12 +3,12 @@
 use std::io::Write;
 use std::time::Duration;
 
-use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind};
+use crossterm::event::{Event, KeyCode, KeyEventKind, poll, read};
 //use crossterm::terminal::{enable_raw_mode, disable_raw_mode};
 use tokio::signal;
 
-use rangebar::range_bars::ExportRangeBarProcessor;
 use rangebar::data::HistoricalDataLoader;
+use rangebar::range_bars::ExportRangeBarProcessor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -29,7 +29,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut current_bar_trades = 0;
     let mut current_bar_open: Option<f64> = None;
 
-    println!("▶️  Starting test with {} trades at {:.0}x speed...\n", trades.len(), acceleration);
+    println!(
+        "▶️  Starting test with {} trades at {:.0}x speed...\n",
+        trades.len(),
+        acceleration
+    );
 
     loop {
         // Non-blocking keyboard input
@@ -51,7 +55,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         }
                         KeyCode::Char('p') => {
                             paused = !paused;
-                            println!("\n{}", if paused { "⏸️  Paused" } else { "▶️  Resumed" });
+                            println!(
+                                "\n{}",
+                                if paused {
+                                    "⏸️  Paused"
+                                } else {
+                                    "▶️  Resumed"
+                                }
+                            );
                         }
                         _ => {}
                     }
@@ -128,7 +139,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    println!("📈 Test results: {} range bars from {} trades", bar_count, trade_index);
+    println!(
+        "📈 Test results: {} range bars from {} trades",
+        bar_count, trade_index
+    );
 
     // Terminal cleanup not needed without raw mode
     Ok(())
