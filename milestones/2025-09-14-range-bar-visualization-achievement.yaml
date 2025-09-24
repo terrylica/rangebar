@@ -163,12 +163,12 @@ files_modified:
       lines: 274
       significance: "Documents complete system validation including visualization"
 
-    - path: "docs/phase6/phase6-data-flow-architecture.md"
+    - path: "docs/planning/legacy/phase6-data-flow-architecture.md"
       purpose: "Phase 6 architectural documentation"
       lines: 246
       significance: "Foundation for future web-based visualization expansion"
 
-    - path: "docs/phase6/phase6-technical-specification.yaml"
+    - path: "docs/planning/legacy/phase6-technical-specification.yaml"
       purpose: "Comprehensive Phase 6 technical specification"
       lines: 470
       significance: "Complete technical roadmap for web visualization"
