@@ -40,7 +40,7 @@
 //!
 //! ### Streaming Mode (Real-time)
 //! ```rust
-//! use rangebar::streaming::StreamingProcessor;
+//! use rangebar::StreamingProcessor;
 //!
 //! let threshold_bps = 25; // 0.25% range bars
 //! let processor = StreamingProcessor::new(threshold_bps);
@@ -87,6 +87,7 @@
 // Core modules (always available)
 pub mod core;
 pub mod streaming;
+pub mod streaming_processor;
 pub mod market;
 pub mod config;
 pub mod data;
@@ -107,10 +108,7 @@ pub mod statistics {
     pub use crate::streaming::stats::*;
 }
 
-// Production-ready streaming architecture
-pub mod streaming_processor {
-    pub use crate::streaming::engine::*;
-}
+// Production-ready streaming architecture available via crate::streaming module
 
 // Legacy compatibility
 pub mod fixed_point {
@@ -133,7 +131,7 @@ pub mod types {
 
 // Re-export commonly used types for convenience
 pub use core::{FixedPoint, ProcessingError, RangeBarProcessor, ExportRangeBarProcessor, AggTrade, RangeBar};
-pub use streaming::{StreamingProcessor, StreamingProcessorConfig, StreamingError, StreamingMetrics};
+pub use streaming_processor::{StreamingProcessor, StreamingProcessorConfig, StreamingError, StreamingMetrics};
 pub use market::{get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol, TIER1_SYMBOLS};
 pub use config::Settings;
 

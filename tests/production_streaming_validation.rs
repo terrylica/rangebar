@@ -6,7 +6,7 @@ use rangebar::fixed_point::FixedPoint;
 /// - Backpressure mechanisms preventing OOM
 /// - Circuit breaker resilience patterns
 /// - Single-bar streaming (no Vec<RangeBar> accumulation)
-use rangebar::streaming_processor::{StreamingProcessor, StreamingProcessorConfig};
+use rangebar::{StreamingProcessor, StreamingProcessorConfig};
 use rangebar::types::{AggTrade, RangeBar};
 use std::time::{Duration, Instant};
 use tokio::time::timeout;

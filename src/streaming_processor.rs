@@ -5,7 +5,7 @@
 /// - Implements proper backpressure with bounded channels
 /// - Provides circuit breaker resilience patterns
 /// - Maintains temporal integrity for financial data
-use crate::range_bars::ExportRangeBarProcessor;
+use crate::core::processor::ExportRangeBarProcessor;
 use crate::types::{AggTrade, RangeBar};
 use futures::Stream;
 use std::pin::Pin;
