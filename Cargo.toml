@@ -74,7 +74,57 @@ path = "src/bin/polars_benchmark.rs"
 name = "temporal-integrity-validator"
 path = "src/bin/temporal_integrity_test_only.rs"
 
+# Analysis Examples
+[[example]]
+name = "analysis-market-efficiency"
+path = "examples/analysis/market_efficiency_analysis.rs"
 
+[[example]]
+name = "analysis-rangebar-generation"
+path = "examples/analysis/rangebar_generation_comparison.rs"
+
+[[example]]
+name = "analysis-tier1-volume"
+path = "examples/analysis/tier1_volume_comparison.rs"
+
+[[example]]
+name = "analysis-tier1-symbols"
+path = "examples/analysis/tier1_symbols.rs"
+
+# Interactive Examples
+[[example]]
+name = "historical-replay"
+path = "examples/interactive/historical_replay.rs"
+
+[[example]]
+name = "test-historical-replay"
+path = "examples/interactive/test_historical_replay.rs"
+
+[[example]]
+name = "format-demo"
+path = "examples/interactive/format_demo.rs"
+
+[[example]]
+name = "market-comparison-demo"
+path = "examples/interactive/market_comparison_demo.rs"
+
+# Educational Examples
+[[example]]
+name = "terminology-clarification"
+path = "examples/educational/terminology_clarification.rs"
+
+[[example]]
+name = "basic-usage"
+path = "examples/educational/basic_usage.rs"
+
+# Validation Examples
+[[example]]
+name = "validate-25bps-threshold"
+path = "examples/validation/validate_25bps_threshold.rs"
+
+[[example]]
+name = "validate-custom-threshold"
+path = "examples/validation/validate_custom_threshold.rs"
 
 [[bench]]
 name = "rangebar_bench"

@@ -46,11 +46,20 @@ cargo run --bin tier1-symbol-discovery -- --format comprehensive
 # Run parallel Tier-1 analysis (requires configuration)
 cargo run --bin rangebar-analyze
 
-# Export range bars for specific symbol
+# Export range bars for specific symbol (defaults to spot market)
 cargo run --bin rangebar-export
 
-# Generate range bars from aggTrades
+# Export from UM futures market
+cargo run --bin rangebar-export -- BTCUSDT 2024-01-01 2024-01-02 25 ./output um
+
+# Generate range bars from aggTrades (spot by default)
 ./target/release/rangebar BTCUSDT 2024-01-01 2024-01-02 0.008 ./output
+
+# Run historical replay (defaults to spot market)
+cargo run --example historical_replay
+
+# Run historical replay with UM futures
+cargo run --example historical_replay -- DOGEUSDT um
 
 # Validate data structure across markets and symbols
 cargo run --bin data-structure-validator --features data-integrity -- --symbols BTCUSDT,ETHUSDT --start-date 2024-01-01 --end-date 2024-07-01
@@ -142,10 +151,10 @@ lower_breach = bar_open * 0.992
 
 ### Data Source Requirements
 - **Source**: https://github.com/stas-prokopiev/binance_historical_data
-- **Primary Asset Class**: `"um"` (USD-M Futures) for USDT/USDC perpetuals
-- **Tier-1 Analysis**: `"cm"` (Coin-M Futures) for cross-market analysis
+- **Primary Asset Class**: `"spot"` (Default) for standard spot trading pairs
+- **Optional Markets**: `"um"` (USD-M Futures) for USDT/USDC perpetuals, `"cm"` (Coin-M Futures)
 - **Data Type**: `"aggTrades"` **ONLY**
-- **Not Used**: Spot markets, other data types
+- **Usage**: Specify market type via command line arguments or use spot by default
 
 ### Tier-1 Instruments Definition
 **Tier-1 instruments** are crypto assets that Binance respects highly enough to list across **ALL THREE** futures markets:
@@ -183,10 +192,11 @@ rangebar/
 - Update Rust to latest: `rustup update`
 - Clean build if needed: `cargo clean && cargo build --release`
 
-### Data Issues  
-- Verify UM futures (not spot) data: Check `asset_class="um"` parameter
+### Data Issues
+- **Default**: Spot market data (`asset_class="spot"`) - requires symbol like `BTCUSDT`
+- **Optional**: UM futures data (`asset_class="um"`) - use command line argument `um`
 - Sort aggTrades by `(timestamp, aggTradeId)` for deterministic processing
-- Validate schema: Required fields `[a, p, q, f, l, T, m]`
+- Validate schema: Spot `[a, p, q, f, l, T, m]` vs UM futures `[headers with descriptive names]`
 
 ### Algorithm Issues
 - Ensure thresholds computed from bar OPEN, not evolving high/low

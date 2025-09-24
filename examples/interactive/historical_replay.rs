@@ -127,6 +127,8 @@ struct TerminalDisplay {
     last_price: f64,
     update_throttle: Duration,
     pending_updates: bool,
+    up_bars: u32,
+    down_bars: u32,
 }
 
 impl TerminalDisplay {
@@ -140,6 +142,8 @@ impl TerminalDisplay {
             last_price: 0.0,
             update_throttle: Duration::from_millis(50), // Max 20 updates/sec
             pending_updates: false,
+            up_bars: 0,
+            down_bars: 0,
         }
     }
 
@@ -199,14 +203,32 @@ impl TerminalDisplay {
 
         self.bar_count += 1;
 
+        // Determine direction and track statistics
+        let (direction, is_up) = if close > open {
+            ("\x1b[32m↑\x1b[0m", true)  // Green up arrow
+        } else {
+            ("\x1b[31m↓\x1b[0m", false) // Red down arrow
+        };
+
+        if is_up {
+            self.up_bars += 1;
+        } else {
+            self.down_bars += 1;
+        }
+
         // Calculate duration
         let duration_ms = close_time - open_time;
         let duration_str = format_duration(duration_ms);
 
-        // Clear current line and print completed bar with duration
+        // Clear current line and print completed bar with smart alignment
         println!(
-            "\r\x1b[K✅ RANGE BAR #{}: OHLC = {:.4}/{:.4}/{:.4}/{:.4}, Volume = {:.6}, Trades: {}, Duration: {}",
-            self.bar_count, open, high, low, close, volume, self.current_bar_trades, duration_str
+            "\r\x1b[K{} BAR {:>4} • O:{:.4} H:{:.4} L:{:.4} C:{:.4} • Vol:{:>12.2} • Trades:{:>6} • {:>10}",
+            direction,
+            self.bar_count,
+            open, high, low, close,
+            volume,
+            self.current_bar_trades,
+            duration_str
         );
 
         // Reset for next bar
@@ -227,8 +249,26 @@ impl TerminalDisplay {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 Historical Range Bar Visualizer - DOGEUSDT (25 BPS)");
-    println!("========================================================");
+    let args: Vec<String> = std::env::args().collect();
+
+    // Parse command line arguments: [symbol] [market_type]
+    let symbol = args.get(1).map(|s| s.as_str()).unwrap_or("DOGEUSDT");
+    let market_type = args.get(2).map(|s| s.as_str()).unwrap_or("spot");
+
+    // Validate market type
+    match market_type {
+        "spot" | "um" | "cm" => {},
+        _ => {
+            eprintln!("Error: market_type must be 'spot', 'um', or 'cm', got '{}'", market_type);
+            eprintln!("Usage: {} [symbol] [market_type]", args[0]);
+            eprintln!("  symbol: Trading symbol (default: DOGEUSDT)");
+            eprintln!("  market_type: spot (default), um (UM Futures), cm (CM Futures)");
+            std::process::exit(1);
+        }
+    }
+
+    println!("🚀 Historical Range Bar Visualizer - {} ({} market, 25 BPS)", symbol.to_uppercase(), market_type.to_uppercase());
+    println!("=========================================================================");
     println!("Controls: q=quit, +=faster, -=slower, p=pause");
     println!("");
 
@@ -239,7 +279,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Load 2 days back of historical data for testing
-    let loader = HistoricalDataLoader::new("DOGEUSDT");
+    let loader = HistoricalDataLoader::new_with_market(symbol, market_type);
     let trades = loader.load_historical_range(2).await?;
 
     // Initialize components
@@ -331,8 +371,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let final_stats = format!(
-        "📈 Final stats: {} range bars formed from {} trades",
-        display.bar_count, display.trade_count
+        "📊 Final: {} bars (\x1b[32m↑{}\x1b[0m \x1b[31m↓{}\x1b[0m) from {} trades",
+        display.bar_count, display.up_bars, display.down_bars, display.trade_count
     );
     display.print_message(&final_stats);
 

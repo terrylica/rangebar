@@ -12,14 +12,32 @@ use rangebar::range_bars::ExportRangeBarProcessor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🧪 Testing Historical Range Bar Visualizer - 1 Day BTCUSDT");
-    println!("==========================================================");
+    let args: Vec<String> = std::env::args().collect();
+
+    // Parse command line arguments: [symbol] [market_type]
+    let symbol = args.get(1).map(|s| s.as_str()).unwrap_or("BTCUSDT");
+    let market_type = args.get(2).map(|s| s.as_str()).unwrap_or("spot");
+
+    // Validate market type
+    match market_type {
+        "spot" | "um" | "cm" => {},
+        _ => {
+            eprintln!("Error: market_type must be 'spot', 'um', or 'cm', got '{}'", market_type);
+            eprintln!("Usage: {} [symbol] [market_type]", args[0]);
+            eprintln!("  symbol: Trading symbol (default: BTCUSDT)");
+            eprintln!("  market_type: spot (default), um (UM Futures), cm (CM Futures)");
+            std::process::exit(1);
+        }
+    }
+
+    println!("🧪 Testing Historical Range Bar Visualizer - 1 Day {} ({} market)", symbol.to_uppercase(), market_type.to_uppercase());
+    println!("==============================================================================");
     println!("Controls: q=quit, +=faster, -=slower, p=pause");
     println!("");
 
     // Raw mode disabled for clean terminal output
 
-    let loader = HistoricalDataLoader::new("BTCUSDT");
+    let loader = HistoricalDataLoader::new_with_market(symbol, market_type);
     let trades = loader.load_recent_day().await?;
     let mut processor = ExportRangeBarProcessor::new(25); // 25 BPS
     let mut acceleration = 1000.0; // Start at 1000x
@@ -100,7 +118,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let completed_bars = processor.get_all_completed_bars();
                     for bar in completed_bars {
                         bar_count += 1;
-                        println!("\n✅ RANGE BAR #{}: OHLC = {:.2}/{:.2}/{:.2}/{:.2}, Volume = {:.6}, Trades: {}",
+
+                        // Determine direction with colored arrows
+                        let direction = if bar.close.to_f64() > bar.open.to_f64() {
+                            "\x1b[32m↑\x1b[0m"  // Green up arrow
+                        } else {
+                            "\x1b[31m↓\x1b[0m"  // Red down arrow
+                        };
+
+                        println!("\n{} BAR {:>4} • O:{:.4} H:{:.4} L:{:.4} C:{:.4} • Vol:{:>12.2} • Trades:{:>6}",
+                                direction,
                                 bar_count,
                                 bar.open.to_f64(),
                                 bar.high.to_f64(),
