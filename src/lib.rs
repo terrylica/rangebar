@@ -119,6 +119,7 @@ pub mod range_bars {
     pub use crate::core::processor::*;
 }
 
+#[cfg(feature = "debug")]
 pub mod range_bars_debug;
 
 pub mod tier1 {
