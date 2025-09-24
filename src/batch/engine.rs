@@ -438,9 +438,9 @@ impl BatchAnalysisEngine {
             .clone()
             .lazy()
             .with_columns([
-                // Trade intensity
+                // AggTrade intensity
                 (col("trade_count") / ((col("close_time") - col("open_time")) / lit(1000.0)))
-                    .alias("trades_per_second"),
+                    .alias("aggtrades_per_second"),
                 // Order flow imbalance
                 ((col("buy_volume") - col("sell_volume")) / col("volume"))
                     .alias("order_flow_imbalance"),
@@ -448,7 +448,7 @@ impl BatchAnalysisEngine {
                 ((col("close") - col("vwap")) / col("vwap") * lit(100.0)).alias("vwap_deviation"),
             ])
             .select([
-                col("trades_per_second").mean().alias("avg_trade_intensity"),
+                col("aggtrades_per_second").mean().alias("avg_aggtrade_intensity"),
                 col("order_flow_imbalance")
                     .mean()
                     .alias("avg_order_flow_imbalance"),

@@ -16,7 +16,7 @@ struct MarketStats {
     agg_trades: usize,
     range_bars: usize,
     processing_time_ms: u128,
-    bars_per_1000_trades: f64,
+    bars_per_1000_agg_trades: f64,
 }
 
 impl MarketStats {
@@ -27,13 +27,13 @@ impl MarketStats {
             agg_trades: 0,
             range_bars: 0,
             processing_time_ms: 0,
-            bars_per_1000_trades: 0.0,
+            bars_per_1000_agg_trades: 0.0,
         }
     }
 
     fn calculate_efficiency(&mut self) {
         if self.agg_trades > 0 {
-            self.bars_per_1000_trades = (self.range_bars as f64 / self.agg_trades as f64) * 1000.0;
+            self.bars_per_1000_agg_trades = (self.range_bars as f64 / self.agg_trades as f64) * 1000.0;
         }
     }
 }
@@ -69,8 +69,8 @@ async fn analyze_symbol_market(
     stats.calculate_efficiency();
 
     println!(
-        "   ✅ {} aggTrades → {} range bars ({:.1} bars/1000 trades)",
-        stats.agg_trades, stats.range_bars, stats.bars_per_1000_trades
+        "   ✅ {} aggTrades → {} range bars ({:.1} bars/1000 aggTrades)",
+        stats.agg_trades, stats.range_bars, stats.bars_per_1000_agg_trades
     );
 
     Ok(stats)
@@ -127,7 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 spot.symbol,
                 spot.agg_trades,
                 spot.range_bars,
-                spot.bars_per_1000_trades,
+                spot.bars_per_1000_agg_trades,
                 spot.processing_time_ms
             );
         }
@@ -138,7 +138,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 futures.symbol,
                 futures.agg_trades,
                 futures.range_bars,
-                futures.bars_per_1000_trades,
+                futures.bars_per_1000_agg_trades,
                 futures.processing_time_ms
             );
         }
@@ -147,7 +147,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         if let (Some(spot), Some(futures)) = (spot_stats, futures_stats) {
             let agg_ratio = futures.agg_trades as f64 / spot.agg_trades as f64;
             let bar_ratio = futures.range_bars as f64 / spot.range_bars as f64;
-            let efficiency_ratio = futures.bars_per_1000_trades / spot.bars_per_1000_trades;
+            let efficiency_ratio = futures.bars_per_1000_agg_trades / spot.bars_per_1000_agg_trades;
 
             println!("                   │           │            │                  │");
             println!(

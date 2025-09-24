@@ -4,7 +4,7 @@ Thank you for your interest in contributing to the rangebar crate! This document
 
 ## 🎯 Project Overview
 
-Rangebar is a pure Rust implementation of non-lookahead bias range bar construction for cryptocurrency trading data. The library processes 137M+ trades/second with guaranteed temporal integrity for financial backtesting.
+Rangebar is a pure Rust implementation of non-lookahead bias range bar construction for cryptocurrency trading data. The library processes 137M+ aggTrades/second with guaranteed temporal integrity for financial backtesting.
 
 ## 🛠️ Development Setup
 

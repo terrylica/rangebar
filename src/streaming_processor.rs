@@ -397,8 +397,8 @@ pub struct MetricsSummary {
 }
 
 impl MetricsSummary {
-    /// Calculate bars per trade ratio
-    pub fn bars_per_trade(&self) -> f64 {
+    /// Calculate bars per aggTrade ratio
+    pub fn bars_per_aggtrade(&self) -> f64 {
         if self.trades_processed > 0 {
             self.bars_generated as f64 / self.trades_processed as f64
         } else {
@@ -450,7 +450,7 @@ mod tests {
         for i in 0..1000 {
             let trade = create_test_trade(i, 23000.0 + (i as f64), 1659312000000 + i);
             if let Ok(bar_opt) = processor.process_single_trade(trade).await {
-                // Verify no accumulation - at most one bar per trade
+                // Verify no accumulation - at most one bar per aggTrade
                 assert!(bar_opt.is_none() || bar_opt.is_some());
             }
         }
@@ -500,7 +500,7 @@ mod tests {
             memory_usage_bytes: 50_000_000,
         };
 
-        assert_eq!(metrics.bars_per_trade(), 0.05);
+        assert_eq!(metrics.bars_per_aggtrade(), 0.05);
         assert_eq!(metrics.error_rate(), 0.005);
         assert_eq!(metrics.memory_usage_mb(), 50.0);
     }

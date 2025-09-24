@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build and test infrastructure updated for simplified architecture
 
 ### Fixed
-- Production Streaming V2 final incomplete bar handling: automatic dispatch when trade channel closes
+- Production Streaming V2 final incomplete bar handling: automatic dispatch when aggTrade channel closes
 - Algorithmic consistency verification: identical bar counts across batch and V2 implementations
 - Bounded memory guarantee maintained: <172MB peak usage for infinite streaming capability
 

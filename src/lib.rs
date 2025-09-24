@@ -1,6 +1,6 @@
 //! Non-lookahead range bar construction for cryptocurrency trading.
 //!
-//! This crate provides algorithms for constructing range bars from trade data
+//! This crate provides algorithms for constructing range bars from aggTrade data
 //! with temporal integrity guarantees, ensuring no lookahead bias in financial backtesting.
 //!
 //! ## Features
@@ -20,7 +20,7 @@
 //! // Create processor with 250 basis points threshold
 //! let mut processor = RangeBarProcessor::new(250);
 //!
-//! // Create sample trade
+//! // Create sample aggTrade
 //! let trade = AggTrade {
 //!     agg_trade_id: 1,
 //!     price: FixedPoint::from_str("50000.0").unwrap(),
@@ -31,7 +31,7 @@
 //!     is_buyer_maker: false,
 //! };
 //!
-//! // Process trades into range bars
+//! // Process aggTrades into range bars
 //! let trades = vec![trade];
 //! let bars = processor.process_trades(&trades).unwrap();
 //! ```
@@ -80,7 +80,7 @@
 //! Range bars close when price moves ±threshold% from the bar's **opening price**:
 //!
 //! 1. **Non-lookahead bias**: Thresholds computed only from bar open price
-//! 2. **Breach inclusion**: Breaching trade included in closing bar
+//! 2. **Breach inclusion**: Breaching aggTrade included in closing bar
 //! 3. **Fixed thresholds**: Never recalculated during bar lifetime
 //!
 

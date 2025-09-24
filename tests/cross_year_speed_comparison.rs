@@ -23,12 +23,12 @@ struct CrossYearPerformanceMetrics {
     // Batch processing metrics
     batch_duration_ms: u64,
     batch_memory_peak_kb: u64,
-    batch_throughput_trades_per_sec: f64,
+    batch_throughput_aggtrades_per_sec: f64,
 
     // Production Streaming V2 metrics (bounded memory)
     streaming_v2_duration_ms: u64,
     streaming_v2_memory_peak_kb: u64,
-    streaming_v2_throughput_trades_per_sec: f64,
+    streaming_v2_throughput_aggtrades_per_sec: f64,
 
     // V2 comparison metrics
     v2_speed_ratio: f64,       // batch_throughput / streaming_v2_throughput
@@ -74,7 +74,7 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
         println!(
             "  📊 {}: V2 = {:.0} t/s, {:.1}MB, {}ms",
             month,
-            streaming_v2_metrics.throughput_trades_per_sec,
+            streaming_v2_metrics.throughput_aggtrades_per_sec,
             streaming_v2_metrics.memory_peak_kb as f64 / 1024.0,
             streaming_v2_metrics.duration_ms
         );
@@ -92,8 +92,8 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
         );
 
         // V2 comparison metrics
-        let v2_speed_ratio = batch_metrics.throughput_trades_per_sec
-            / streaming_v2_metrics.throughput_trades_per_sec;
+        let v2_speed_ratio = batch_metrics.throughput_aggtrades_per_sec
+            / streaming_v2_metrics.throughput_aggtrades_per_sec;
         let v2_memory_efficiency = if batch_metrics.memory_peak_kb > 0 {
             (streaming_v2_metrics.memory_peak_kb as f64 - batch_metrics.memory_peak_kb as f64)
                 / batch_metrics.memory_peak_kb as f64
@@ -110,10 +110,10 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
             bar_count: batch_metrics.bar_count,
             batch_duration_ms: batch_metrics.duration_ms,
             batch_memory_peak_kb: batch_metrics.memory_peak_kb,
-            batch_throughput_trades_per_sec: batch_metrics.throughput_trades_per_sec,
+            batch_throughput_aggtrades_per_sec: batch_metrics.throughput_aggtrades_per_sec,
             streaming_v2_duration_ms: streaming_v2_metrics.duration_ms,
             streaming_v2_memory_peak_kb: streaming_v2_metrics.memory_peak_kb,
-            streaming_v2_throughput_trades_per_sec: streaming_v2_metrics.throughput_trades_per_sec,
+            streaming_v2_throughput_aggtrades_per_sec: streaming_v2_metrics.throughput_aggtrades_per_sec,
             v2_speed_ratio,
             v2_memory_efficiency,
             v2_duration_ratio,
@@ -158,7 +158,7 @@ fn test_year_boundary_speed_edge_cases() {
         );
 
         let speed_ratio =
-            batch_metrics.throughput_trades_per_sec / v2_metrics.throughput_trades_per_sec;
+            batch_metrics.throughput_aggtrades_per_sec / v2_metrics.throughput_aggtrades_per_sec;
         let memory_efficiency = (v2_metrics.memory_peak_kb as f64
             - batch_metrics.memory_peak_kb as f64)
             / batch_metrics.memory_peak_kb as f64
@@ -166,9 +166,9 @@ fn test_year_boundary_speed_edge_cases() {
 
         println!(
             "    Batch: {:.0} t/s, {:.1}MB | V2: {:.0} t/s, {:.1}MB",
-            batch_metrics.throughput_trades_per_sec,
+            batch_metrics.throughput_aggtrades_per_sec,
             batch_metrics.memory_peak_kb as f64 / 1024.0,
-            v2_metrics.throughput_trades_per_sec,
+            v2_metrics.throughput_aggtrades_per_sec,
             v2_metrics.memory_peak_kb as f64 / 1024.0
         );
 
@@ -188,7 +188,7 @@ struct ProcessingMetrics {
     duration_ms: u64,
     memory_peak_kb: u64,
     bar_count: usize,
-    throughput_trades_per_sec: f64,
+    throughput_aggtrades_per_sec: f64,
 }
 
 fn benchmark_batch_processing(trades: &[AggTrade], threshold_bps: u32) -> ProcessingMetrics {
@@ -213,7 +213,7 @@ fn benchmark_batch_processing(trades: &[AggTrade], threshold_bps: u32) -> Proces
         duration_ms: duration.as_millis() as u64,
         memory_peak_kb: memory_used,
         bar_count: bars.len(),
-        throughput_trades_per_sec: throughput,
+        throughput_aggtrades_per_sec: throughput,
     }
 }
 
@@ -277,7 +277,7 @@ fn benchmark_streaming_v2_processing(trades: &[AggTrade], threshold_bps: u32) ->
         duration_ms: duration.as_millis() as u64,
         memory_peak_kb: memory_used,
         bar_count,
-        throughput_trades_per_sec: throughput,
+        throughput_aggtrades_per_sec: throughput,
     }
 }
 
@@ -411,19 +411,19 @@ fn print_monthly_results(metrics: &CrossYearPerformanceMetrics) {
     println!("    Bar Count: {}", metrics.bar_count);
     println!(
         "    🏃 Batch: {:.0} t/s, {}ms, {:.1}MB peak",
-        metrics.batch_throughput_trades_per_sec,
+        metrics.batch_throughput_aggtrades_per_sec,
         metrics.batch_duration_ms,
         metrics.batch_memory_peak_kb as f64 / 1024.0
     );
     println!(
         "    ⚡ Streaming: {:.0} t/s, {}ms, {:.1}MB peak",
-        metrics.streaming_v2_throughput_trades_per_sec,
+        metrics.streaming_v2_throughput_aggtrades_per_sec,
         metrics.streaming_v2_duration_ms,
         metrics.streaming_v2_memory_peak_kb as f64 / 1024.0
     );
     println!(
         "    🔒 Streaming V2 (Bounded): {:.0} t/s, {}ms, {:.1}MB peak",
-        metrics.streaming_v2_throughput_trades_per_sec,
+        metrics.streaming_v2_throughput_aggtrades_per_sec,
         metrics.streaming_v2_duration_ms,
         metrics.streaming_v2_memory_peak_kb as f64 / 1024.0
     );
@@ -501,8 +501,8 @@ fn print_cross_year_summary(
             metrics.month,
             metrics.trade_count,
             metrics.bar_count,
-            metrics.batch_throughput_trades_per_sec,
-            metrics.streaming_v2_throughput_trades_per_sec,
+            metrics.batch_throughput_aggtrades_per_sec,
+            metrics.streaming_v2_throughput_aggtrades_per_sec,
             metrics.v2_speed_ratio,
             metrics.v2_memory_efficiency
         );
@@ -522,17 +522,17 @@ fn validate_performance_criteria(all_metrics: &[CrossYearPerformanceMetrics]) {
         }
 
         // Validate reasonable throughput (>10k trades/sec)
-        if metrics.batch_throughput_trades_per_sec < 10_000.0 {
+        if metrics.batch_throughput_aggtrades_per_sec < 10_000.0 {
             println!(
                 "  ⚠️  {} batch throughput low: {:.0} t/s",
-                metrics.month, metrics.batch_throughput_trades_per_sec
+                metrics.month, metrics.batch_throughput_aggtrades_per_sec
             );
         }
 
-        if metrics.streaming_v2_throughput_trades_per_sec < 10_000.0 {
+        if metrics.streaming_v2_throughput_aggtrades_per_sec < 10_000.0 {
             println!(
                 "  ⚠️  {} streaming throughput low: {:.0} t/s",
-                metrics.month, metrics.streaming_v2_throughput_trades_per_sec
+                metrics.month, metrics.streaming_v2_throughput_aggtrades_per_sec
             );
         }
 

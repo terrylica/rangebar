@@ -23,7 +23,7 @@ use rangebar::{RangeBarProcessor, AggTrade, FixedPoint};
 // Create processor with 25 basis points threshold
 let mut processor = RangeBarProcessor::new(25);
 
-// Create sample trade
+// Create sample aggTrade
 let trade = AggTrade {
     agg_trade_id: 1,
     price: FixedPoint::from_str("50000.0").unwrap(),
@@ -34,7 +34,7 @@ let trade = AggTrade {
     is_buyer_maker: false,
 };
 
-// Process trades into range bars
+// Process aggTrades into range bars
 let trades = vec![trade];
 let bars = processor.process_trades(&trades).unwrap();
 
@@ -49,7 +49,7 @@ for bar in bars {
 Range bars close when price moves ±threshold basis points from the bar's **opening price**:
 
 1. **Non-lookahead bias**: Thresholds computed only from bar open price
-2. **Breach inclusion**: Breaching trade included in closing bar
+2. **Breach inclusion**: Breaching aggTrade included in closing bar
 3. **Fixed thresholds**: Never recalculated during bar lifetime
 
 ## Features
