@@ -1,0 +1,334 @@
+openapi: 3.1.1
+info:
+  title: Code Consolidation Implementation Plan
+  version: "1.1.0"
+  description: |
+    Systematic elimination of code duplication and consolidation of data loading
+    functionality from examples to proper library modules. Implements DRY principles
+    while maintaining existing streaming infrastructure and core algorithm reuse.
+
+components:
+  schemas:
+    SLO:
+      type: object
+      properties:
+        availability:
+          type: number
+          minimum: 99.5
+          maximum: 100.0
+          description: "Module import reliability during consolidation"
+        correctness:
+          type: number
+          minimum: 100.0
+          maximum: 100.0
+          description: "Zero functional regressions in existing functionality"
+        observability:
+          type: number
+          minimum: 95.0
+          maximum: 100.0
+          description: "Import path clarity and module discoverability"
+        maintainability:
+          type: number
+          minimum: 98.0
+          maximum: 100.0
+          description: "Code reuse ratio and duplication elimination"
+      required: [availability, correctness, observability, maintainability]
+
+    DuplicationAnalysis:
+      type: object
+      properties:
+        duplicated_structs:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              locations:
+                type: array
+                items:
+                  type: string
+              consolidation_target:
+                type: string
+        duplicated_functions:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              locations:
+                type: array
+                items:
+                  type: string
+              consolidation_target:
+                type: string
+        streaming_analysis:
+          type: object
+          properties:
+            existing_infrastructure:
+              type: array
+              items:
+                type: string
+            new_infrastructure:
+              type: array
+              items:
+                type: string
+            duplication_risk:
+              type: string
+              enum: ["HIGH", "MEDIUM", "LOW"]
+
+    ConsolidationPlan:
+      type: object
+      properties:
+        phase_1_library_module:
+          type: object
+          properties:
+            source_file:
+              type: string
+              const: "examples/common/data.rs"
+            target_location:
+              type: string
+              const: "src/data/historical.rs"
+            extracted_components:
+              type: array
+              items:
+                type: string
+              example:
+                - "HistoricalDataLoader"
+                - "CsvAggTrade"
+                - "python_bool deserializer"
+                - "detect_csv_headers function"
+        phase_2_deduplication:
+          type: object
+          properties:
+            remove_from:
+              type: string
+              const: "src/bin/rangebar_export.rs"
+            import_from:
+              type: string
+              const: "rangebar::data::historical"
+            affected_binaries:
+              type: array
+              items:
+                type: string
+              example:
+                - "rangebar_export"
+                - "historical_replay"
+                - "test_historical_replay"
+        phase_3_streaming_evaluation:
+          type: object
+          properties:
+            action:
+              type: string
+              enum: ["RETAIN_EXISTING", "CONSOLIDATE", "REMOVE_DUPLICATE"]
+            rationale:
+              type: string
+            affected_files:
+              type: array
+              items:
+                type: string
+
+    ErrorHandling:
+      type: object
+      properties:
+        import_failures:
+          type: string
+          enum: ["PROPAGATE_IMMEDIATELY"]
+          description: "No fallback imports or silent handling"
+        compilation_errors:
+          type: string
+          enum: ["FAIL_FAST"]
+          description: "Stop on first compilation error"
+        test_failures:
+          type: string
+          enum: ["ABORT_CONSOLIDATION"]
+          description: "Rollback on test failure"
+
+paths:
+  /consolidation/analysis:
+    get:
+      summary: Code duplication analysis results
+      responses:
+        '200':
+          description: Duplication analysis findings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DuplicationAnalysis"
+              example:
+                duplicated_structs:
+                  - name: "CsvAggTrade"
+                    locations:
+                      - "examples/common/data.rs:19-27"
+                      - "src/bin/rangebar_export.rs:45-52"
+                    consolidation_target: "src/data/historical.rs"
+                duplicated_functions:
+                  - name: "load_single_day_trades"
+                    locations:
+                      - "examples/common/data.rs:87-130"
+                      - "src/bin/rangebar_export.rs:412-455"
+                    consolidation_target: "src/data/historical.rs"
+                  - name: "python_bool"
+                    locations:
+                      - "examples/common/data.rs:30-43"
+                      - "src/bin/rangebar_export.rs:58-71"
+                    consolidation_target: "src/data/historical.rs"
+                  - name: "detect_csv_headers"
+                    locations:
+                      - "examples/common/data.rs:46-56"
+                      - "src/bin/rangebar_export.rs:74-84"
+                    consolidation_target: "src/data/historical.rs"
+                streaming_analysis:
+                  existing_infrastructure:
+                    - "src/streaming/engine.rs"
+                    - "src/streaming_processor.rs"
+                    - "src/streaming/indicators.rs"
+                    - "src/streaming/stats.rs"
+                  new_infrastructure:
+                    - "src/streaming/replay_buffer.rs"
+                    - "src/streaming/universal.rs"
+                    - "src/streaming/websocket.rs"
+                  duplication_risk: "MEDIUM"
+
+  /consolidation/implementation:
+    post:
+      summary: Execute consolidation plan
+      responses:
+        '200':
+          description: Consolidation implementation status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConsolidationPlan"
+              example:
+                phase_1_library_module:
+                  source_file: "examples/common/data.rs"
+                  target_location: "src/data/historical.rs"
+                  extracted_components:
+                    - "HistoricalDataLoader with async methods"
+                    - "CsvAggTrade struct with serde deserializers"
+                    - "python_bool custom deserializer"
+                    - "detect_csv_headers utility function"
+                phase_2_deduplication:
+                  remove_from: "src/bin/rangebar_export.rs"
+                  import_from: "rangebar::data::historical"
+                  affected_binaries:
+                    - "rangebar_export binary compilation"
+                    - "examples requiring data loading"
+                phase_3_streaming_evaluation:
+                  action: "RETAIN_NEW_COMPLEMENT_EXISTING"
+                  rationale: "New streaming files provide historical replay functionality complementing existing production streaming"
+                  analysis:
+                    existing_production_streaming:
+                      - "src/streaming_processor.rs"
+                      - "src/streaming/engine.rs"
+                    new_replay_streaming:
+                      - "src/streaming/replay_buffer.rs"
+                      - "src/streaming/universal.rs"
+                      - "src/streaming/websocket.rs"
+                    conclusion: "New files serve historical visualization; existing files serve production trading"
+                  affected_files:
+                    - "src/streaming/replay_buffer.rs"
+                    - "src/streaming/universal.rs"
+                    - "src/streaming/websocket.rs"
+
+  /consolidation/validation:
+    get:
+      summary: Post-consolidation validation results
+      responses:
+        '200':
+          description: Validation test results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  compilation_status:
+                    type: string
+                    enum: ["SUCCESS", "FAILED"]
+                  test_results:
+                    type: object
+                    properties:
+                      unit_tests:
+                        type: integer
+                        description: "Number of passing unit tests"
+                      integration_tests:
+                        type: integer
+                        description: "Number of passing integration tests"
+                      example_execution:
+                        type: object
+                        properties:
+                          historical_replay:
+                            type: string
+                            enum: ["SUCCESS", "FAILED"]
+                          test_historical_replay:
+                            type: string
+                            enum: ["SUCCESS", "FAILED"]
+                          validate_25bps_threshold:
+                            type: string
+                            enum: ["SUCCESS", "FAILED"]
+                  import_verification:
+                    type: object
+                    properties:
+                      library_imports:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            module:
+                              type: string
+                            status:
+                              type: string
+                              enum: ["ACCESSIBLE", "FAILED"]
+                  slo_compliance:
+                    $ref: "#/components/schemas/SLO"
+                example:
+                  compilation_status: "SUCCESS"
+                  test_results:
+                    unit_tests: 74
+                    integration_tests: 43
+                    example_execution:
+                      historical_replay: "SUCCESS"
+                      test_historical_replay: "SUCCESS"
+                      validate_25bps_threshold: "SUCCESS"
+                  import_verification:
+                    library_imports:
+                      - module: "rangebar::data::historical::HistoricalDataLoader"
+                        status: "ACCESSIBLE"
+                      - module: "rangebar::data::historical::CsvAggTrade"
+                        status: "ACCESSIBLE"
+                  slo_compliance:
+                    availability: 100.0
+                    correctness: 100.0
+                    observability: 98.0
+                    maintainability: 95.0
+
+  /consolidation/rollback:
+    post:
+      summary: Emergency rollback mechanism
+      responses:
+        '200':
+          description: Rollback execution status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rollback_trigger:
+                    type: string
+                    enum: ["COMPILATION_FAILURE", "TEST_FAILURE", "IMPORT_FAILURE"]
+                  actions_taken:
+                    type: array
+                    items:
+                      type: string
+                  restoration_status:
+                    type: string
+                    enum: ["COMPLETE", "PARTIAL", "FAILED"]
+                example:
+                  rollback_trigger: "COMPILATION_FAILURE"
+                  actions_taken:
+                    - "Restored examples/common/data.rs"
+                    - "Reverted src/bin/rangebar_export.rs imports"
+                    - "Removed src/data/historical.rs"
+                  restoration_status: "COMPLETE"

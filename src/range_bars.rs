@@ -647,8 +647,8 @@ impl ExportRangeBarProcessor {
         let price_val = trade.price.0;
         let bar_open_val = bar.open.0;
         let threshold_bps = self.threshold_bps as i64;
-        let upper_threshold = bar_open_val + (bar_open_val * threshold_bps) / 1_000_000;
-        let lower_threshold = bar_open_val - (bar_open_val * threshold_bps) / 1_000_000;
+        let upper_threshold = bar_open_val + (bar_open_val * threshold_bps) / 10_000;
+        let lower_threshold = bar_open_val - (bar_open_val * threshold_bps) / 10_000;
 
         // Update bar with new trade
         bar.close_time = trade.timestamp;

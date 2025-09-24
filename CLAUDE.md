@@ -27,6 +27,17 @@ cargo clippy
 cargo fmt
 ```
 
+### Universal Navigation
+```bash
+# Discovery: What exists?
+doppler projects; doppler secrets; shuttle project status
+
+# Deploy: Current config
+doppler run -- shuttle deploy
+
+# Console: https://console.shuttle.dev/project/[PROJECT_ID]
+```
+
 ### Data Operations
 ```bash
 # Discover Tier-1 symbols across all Binance futures markets

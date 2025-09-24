@@ -6,6 +6,9 @@
 pub mod engine;
 pub mod indicators;
 pub mod stats;
+pub mod websocket;
+pub mod replay_buffer;
+pub mod universal;
 
 // Re-export commonly used types
 pub use engine::{
@@ -21,3 +24,6 @@ pub use stats::{
     StatisticsSnapshot, StreamingConfig, StreamingStatsEngine,
     TradeStats, VolumeStatistics
 };
+pub use websocket::{BinanceWebSocketStream, WebSocketError};
+pub use replay_buffer::ReplayBuffer;
+pub use universal::{UniversalStream, StreamMode, TradeStream};

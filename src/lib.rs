@@ -89,6 +89,7 @@ pub mod core;
 pub mod streaming;
 pub mod market;
 pub mod config;
+pub mod data;
 
 // Optional modules based on feature flags
 #[cfg(feature = "polars-io")]
