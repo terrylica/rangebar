@@ -173,7 +173,7 @@ rangebar/
 ├── tests/                      # Test suites
 ├── output/                     # Generated analysis results
 │   └── symbol_analysis/        # Multi-market symbol databases
-└── scripts/                    # Legacy Python scripts (deprecated)
+└── scripts/                    # Shell scripts for automation
 ```
 
 ## Common Issues
