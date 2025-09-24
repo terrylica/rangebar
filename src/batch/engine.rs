@@ -5,6 +5,7 @@
 
 use crate::core::types::RangeBar;
 use crate::io::formats::{ConversionError, DataFrameConverter};
+use polars::frame::row::Row;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -283,8 +284,8 @@ impl BatchAnalysisEngine {
     /// Compute quantiles and percentiles
     fn compute_quantiles(&self, df: &DataFrame) -> Result<QuantileAnalysis, BatchError> {
         let quantile_levels = &self.config.statistics_config.quantile_levels;
-        let mut price_quantiles = HashMap::new();
-        let mut volume_quantiles = HashMap::new();
+        let mut price_quantiles = Vec::new();
+        let mut volume_quantiles = Vec::new();
 
         for &level in quantile_levels {
             // Price quantiles
@@ -306,7 +307,7 @@ impl BatchAnalysisEngine {
                     source: e.into(),
                 })?;
 
-            price_quantiles.insert(level, price_value);
+            price_quantiles.push((level, price_value));
 
             // Volume quantiles
             let volume_q = df
@@ -327,7 +328,7 @@ impl BatchAnalysisEngine {
                     source: e.into(),
                 })?;
 
-            volume_quantiles.insert(level, volume_value);
+            volume_quantiles.push((level, volume_value));
         }
 
         Ok(QuantileAnalysis {
@@ -556,8 +557,8 @@ pub struct RollingStatistics {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct QuantileAnalysis {
     pub levels: Vec<f64>,
-    pub price_quantiles: HashMap<f64, f64>,
-    pub volume_quantiles: HashMap<f64, f64>,
+    pub price_quantiles: Vec<(f64, f64)>,
+    pub volume_quantiles: Vec<(f64, f64)>,
 }
 
 /// Price movement analysis
@@ -628,10 +629,10 @@ pub enum BatchError {
 /// Helper function to extract f64 values from Polars rows
 fn extract_f64_value(row: &Row, index: usize) -> Result<f64, BatchError> {
     match row.0.get(index) {
-        Some(AnyValue::Float64(val)) => Ok(*val),
-        Some(AnyValue::Float32(val)) => Ok(*val as f64),
-        Some(AnyValue::Int64(val)) => Ok(*val as f64),
-        Some(AnyValue::Int32(val)) => Ok(*val as f64),
+        Some(AnyValue::Float64(val)) => Ok(val),
+        Some(AnyValue::Float32(val)) => Ok(val as f64),
+        Some(AnyValue::Int64(val)) => Ok(val as f64),
+        Some(AnyValue::Int32(val)) => Ok(val as f64),
         Some(other) => Err(BatchError::ValueExtractionFailed {
             operation: format!("extract_f64_at_index_{}", index),
             source: format!("Unexpected type: {:?}", other).into(),
@@ -646,10 +647,10 @@ fn extract_f64_value(row: &Row, index: usize) -> Result<f64, BatchError> {
 /// Helper function to extract i64 values from Polars rows
 fn extract_i64_value(row: &Row, index: usize) -> Result<i64, BatchError> {
     match row.0.get(index) {
-        Some(AnyValue::Int64(val)) => Ok(*val),
-        Some(AnyValue::Int32(val)) => Ok(*val as i64),
-        Some(AnyValue::UInt64(val)) => Ok(*val as i64),
-        Some(AnyValue::UInt32(val)) => Ok(*val as i64),
+        Some(AnyValue::Int64(val)) => Ok(val),
+        Some(AnyValue::Int32(val)) => Ok(val as i64),
+        Some(AnyValue::UInt64(val)) => Ok(val as i64),
+        Some(AnyValue::UInt32(val)) => Ok(val as i64),
         Some(other) => Err(BatchError::ValueExtractionFailed {
             operation: format!("extract_i64_at_index_{}", index),
             source: format!("Unexpected type: {:?}", other).into(),

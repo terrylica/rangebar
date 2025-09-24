@@ -41,10 +41,10 @@ pub fn normalize_timestamp(raw_timestamp: u64) -> i64 {
 /// (2020-2030 range in microseconds)
 pub fn validate_timestamp(timestamp: i64) -> bool {
     // Reasonable bounds: 2020-01-01 to 2030-01-01 in microseconds
-    const MIN_TIMESTAMP: i64 = 1577836800_000_000; // 2020-01-01
-    const MAX_TIMESTAMP: i64 = 1893456000_000_000; // 2030-01-01
+    const MIN_TIMESTAMP: i64 = 1_577_836_800_000_000; // 2020-01-01
+    const MAX_TIMESTAMP: i64 = 1_893_456_000_000_000; // 2030-01-01
 
-    timestamp >= MIN_TIMESTAMP && timestamp <= MAX_TIMESTAMP
+    (MIN_TIMESTAMP..=MAX_TIMESTAMP).contains(&timestamp)
 }
 
 /// Create a normalized AggTrade with automatic timestamp conversion
@@ -100,7 +100,10 @@ mod tests {
         let threshold = MICROSECOND_THRESHOLD;
 
         // Below threshold: convert
-        assert_eq!(normalize_timestamp(threshold_minus_one), (threshold_minus_one * 1000) as i64);
+        assert_eq!(
+            normalize_timestamp(threshold_minus_one),
+            (threshold_minus_one * 1000) as i64
+        );
 
         // At threshold: no conversion
         assert_eq!(normalize_timestamp(threshold), threshold as i64);

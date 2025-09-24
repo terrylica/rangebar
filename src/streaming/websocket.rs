@@ -249,7 +249,7 @@ mod tests {
         assert_eq!(agg_trade.agg_trade_id, 3679713739);
         assert_eq!(agg_trade.price.to_f64(), 112070.01);
         assert_eq!(agg_trade.volume.to_f64(), 0.01328);
-        assert_eq!(agg_trade.timestamp, 1758666334424);
+        assert_eq!(agg_trade.timestamp, 1758666334424000);
         assert!(!agg_trade.is_buyer_maker);
     }
 
