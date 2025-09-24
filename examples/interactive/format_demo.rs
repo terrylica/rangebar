@@ -12,21 +12,30 @@ fn main() {
         (1, 0.2675, 0.2678, 0.2668, 0.2668, 45104469.00, 3559, false), // Down bar - like screenshot
         (10, 0.2668, 0.2675, 0.2667, 0.2675, 99218858.00, 586, true),  // Up bar
         (100, 0.2675, 0.2681, 0.2675, 0.2678, 97747463.00, 378, true), // Up bar
-        (999, 0.2681, 0.2685, 0.2678, 0.2680, 50659969.00, 2184, false), // Down bar
+        (
+            999,
+            0.2681,
+            0.2685,
+            0.2678,
+            0.2680,
+            50659969.00,
+            2184,
+            false,
+        ), // Down bar
     ];
 
     for (bar_num, open, high, low, close, volume, trades, is_up) in bars {
         let direction = if is_up {
-            "\x1b[32m↑\x1b[0m"  // Green up arrow
+            "\x1b[32m↑\x1b[0m" // Green up arrow
         } else {
-            "\x1b[31m↓\x1b[0m"  // Red down arrow
+            "\x1b[31m↓\x1b[0m" // Red down arrow
         };
 
         let duration = match bar_num {
             1 => "34m 47s",
             10 => "5m 44s",
             100 => "4m 5s",
-            _ => "9m 26s"
+            _ => "9m 26s",
         };
 
         println!(

@@ -5,9 +5,9 @@
 //! This compares which market generates more range bars for the same time period,
 //! using the existing ExportRangeBarProcessor to get accurate counts.
 
-use std::time::Instant;
 use rangebar::data::HistoricalDataLoader;
 use rangebar::range_bars::ExportRangeBarProcessor;
+use std::time::Instant;
 
 #[derive(Debug)]
 struct MarketStats {
@@ -38,10 +38,17 @@ impl MarketStats {
     }
 }
 
-async fn analyze_symbol_market(symbol: &str, market_type: &str) -> Result<MarketStats, Box<dyn std::error::Error>> {
+async fn analyze_symbol_market(
+    symbol: &str,
+    market_type: &str,
+) -> Result<MarketStats, Box<dyn std::error::Error>> {
     let mut stats = MarketStats::new(symbol, market_type);
 
-    println!("🔄 Processing {} {} market...", symbol, market_type.to_uppercase());
+    println!(
+        "🔄 Processing {} {} market...",
+        symbol,
+        market_type.to_uppercase()
+    );
 
     let start_time = Instant::now();
 
@@ -61,8 +68,10 @@ async fn analyze_symbol_market(symbol: &str, market_type: &str) -> Result<Market
     stats.processing_time_ms = start_time.elapsed().as_millis();
     stats.calculate_efficiency();
 
-    println!("   ✅ {} aggTrades → {} range bars ({:.1} bars/1000 trades)",
-            stats.agg_trades, stats.range_bars, stats.bars_per_1000_trades);
+    println!(
+        "   ✅ {} aggTrades → {} range bars ({:.1} bars/1000 trades)",
+        stats.agg_trades, stats.range_bars, stats.bars_per_1000_trades
+    );
 
     Ok(stats)
 }
@@ -105,19 +114,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Group by symbol for easy comparison
     for symbol in &symbols {
-        let spot_stats = all_stats.iter().find(|s| s.symbol == *symbol && s.market_type == "spot");
-        let futures_stats = all_stats.iter().find(|s| s.symbol == *symbol && s.market_type == "um");
+        let spot_stats = all_stats
+            .iter()
+            .find(|s| s.symbol == *symbol && s.market_type == "spot");
+        let futures_stats = all_stats
+            .iter()
+            .find(|s| s.symbol == *symbol && s.market_type == "um");
 
         if let Some(spot) = spot_stats {
-            println!("  {:8} SPOT │ {:>9} │ {:>10} │ {:>12.1} │ {:>11}ms",
-                    spot.symbol, spot.agg_trades, spot.range_bars,
-                    spot.bars_per_1000_trades, spot.processing_time_ms);
+            println!(
+                "  {:8} SPOT │ {:>9} │ {:>10} │ {:>12.1} │ {:>11}ms",
+                spot.symbol,
+                spot.agg_trades,
+                spot.range_bars,
+                spot.bars_per_1000_trades,
+                spot.processing_time_ms
+            );
         }
 
         if let Some(futures) = futures_stats {
-            println!("  {:8} UM   │ {:>9} │ {:>10} │ {:>12.1} │ {:>11}ms",
-                    futures.symbol, futures.agg_trades, futures.range_bars,
-                    futures.bars_per_1000_trades, futures.processing_time_ms);
+            println!(
+                "  {:8} UM   │ {:>9} │ {:>10} │ {:>12.1} │ {:>11}ms",
+                futures.symbol,
+                futures.agg_trades,
+                futures.range_bars,
+                futures.bars_per_1000_trades,
+                futures.processing_time_ms
+            );
         }
 
         // Calculate ratio if both exist
@@ -127,10 +150,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let efficiency_ratio = futures.bars_per_1000_trades / spot.bars_per_1000_trades;
 
             println!("                   │           │            │                  │");
-            println!("  Futures/Spot     │    {:.2}x │     {:.2}x │           {:.2}x │",
-                    agg_ratio, bar_ratio, efficiency_ratio);
+            println!(
+                "  Futures/Spot     │    {:.2}x │     {:.2}x │           {:.2}x │",
+                agg_ratio, bar_ratio, efficiency_ratio
+            );
         }
-        println!("  ─────────────────┼───────────┼────────────┼──────────────────┼────────────────");
+        println!(
+            "  ─────────────────┼───────────┼────────────┼──────────────────┼────────────────"
+        );
     }
 
     println!();

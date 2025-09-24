@@ -103,8 +103,10 @@ impl PlaybackEngine {
 
             // Apply acceleration and sleep (keep in microseconds)
             let accelerated_delay_microseconds = delta_microseconds / self.acceleration_factor;
-            if accelerated_delay_microseconds > 100.0 { // 0.1ms minimum
-                tokio::time::sleep(Duration::from_micros(accelerated_delay_microseconds as u64)).await;
+            if accelerated_delay_microseconds > 100.0 {
+                // 0.1ms minimum
+                tokio::time::sleep(Duration::from_micros(accelerated_delay_microseconds as u64))
+                    .await;
             }
         }
 
@@ -206,7 +208,7 @@ impl TerminalDisplay {
 
         // Determine direction and track statistics
         let (direction, is_up) = if close > open {
-            ("\x1b[32m↑\x1b[0m", true)  // Green up arrow
+            ("\x1b[32m↑\x1b[0m", true) // Green up arrow
         } else {
             ("\x1b[31m↓\x1b[0m", false) // Red down arrow
         };
@@ -226,7 +228,10 @@ impl TerminalDisplay {
             "\r\x1b[K{} BAR {:>4} • O:{:.4} H:{:.4} L:{:.4} C:{:.4} • Vol:{:>12.2} • aggTrades:{:>6} • {:>10}",
             direction,
             self.bar_count,
-            open, high, low, close,
+            open,
+            high,
+            low,
+            close,
             volume,
             self.current_bar_agg_trades,
             duration_str
@@ -258,9 +263,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Validate market type
     match market_type {
-        "spot" | "um" | "cm" => {},
+        "spot" | "um" | "cm" => {}
         _ => {
-            eprintln!("Error: market_type must be 'spot', 'um', or 'cm', got '{}'", market_type);
+            eprintln!(
+                "Error: market_type must be 'spot', 'um', or 'cm', got '{}'",
+                market_type
+            );
             eprintln!("Usage: {} [symbol] [market_type]", args[0]);
             eprintln!("  symbol: Trading symbol (default: DOGEUSDT)");
             eprintln!("  market_type: spot (default), um (UM Futures), cm (CM Futures)");
@@ -268,7 +276,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    println!("🚀 Historical Range Bar Visualizer - {} ({} market, 25 BPS)", symbol.to_uppercase(), market_type.to_uppercase());
+    println!(
+        "🚀 Historical Range Bar Visualizer - {} ({} market, 25 BPS)",
+        symbol.to_uppercase(),
+        market_type.to_uppercase()
+    );
     println!("=========================================================================");
     println!("Controls: q=quit, +=faster, -=slower, p=pause");
     println!("Note: Duration shows real market time (spot: hours/days, UM: minutes/hours)");

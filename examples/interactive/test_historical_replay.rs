@@ -20,9 +20,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Validate market type
     match market_type {
-        "spot" | "um" | "cm" => {},
+        "spot" | "um" | "cm" => {}
         _ => {
-            eprintln!("Error: market_type must be 'spot', 'um', or 'cm', got '{}'", market_type);
+            eprintln!(
+                "Error: market_type must be 'spot', 'um', or 'cm', got '{}'",
+                market_type
+            );
             eprintln!("Usage: {} [symbol] [market_type]", args[0]);
             eprintln!("  symbol: Trading symbol (default: BTCUSDT)");
             eprintln!("  market_type: spot (default), um (UM Futures), cm (CM Futures)");
@@ -30,7 +33,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    println!("🧪 Testing Historical Range Bar Visualizer - 1 Day {} ({} market)", symbol.to_uppercase(), market_type.to_uppercase());
+    println!(
+        "🧪 Testing Historical Range Bar Visualizer - 1 Day {} ({} market)",
+        symbol.to_uppercase(),
+        market_type.to_uppercase()
+    );
     println!("==============================================================================");
     println!("Controls: q=quit, +=faster, -=slower, p=pause");
     println!("");

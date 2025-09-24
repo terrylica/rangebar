@@ -50,8 +50,10 @@ fn main() {
 
     for (symbol, spot, futures) in &comparisons {
         let ratio = *futures as f64 / *spot as f64;
-        println!("  {:8}  │      {:>9}  │        {:>9}  │ {:.2}x",
-                symbol, spot, futures, ratio);
+        println!(
+            "  {:8}  │      {:>9}  │        {:>9}  │ {:.2}x",
+            symbol, spot, futures, ratio
+        );
     }
 
     println!();

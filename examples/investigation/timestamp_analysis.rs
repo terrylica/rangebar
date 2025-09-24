@@ -30,19 +30,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     // Examine the first few trades in detail
                     println!("\n🔍 First 5 trades timestamp analysis:");
                     for (i, trade) in trades.iter().take(5).enumerate() {
-                        println!("  Trade {}: raw_ts={}, agg_id={}",
-                                i + 1, trade.timestamp, trade.agg_trade_id);
+                        println!(
+                            "  Trade {}: raw_ts={}, agg_id={}",
+                            i + 1,
+                            trade.timestamp,
+                            trade.agg_trade_id
+                        );
 
                         // Try to interpret as milliseconds
-                        if let Some(dt_ms) = chrono::DateTime::from_timestamp_millis(trade.timestamp) {
-                            println!("    As milliseconds: {}", dt_ms.format("%Y-%m-%d %H:%M:%S%.3f"));
+                        if let Some(dt_ms) =
+                            chrono::DateTime::from_timestamp_millis(trade.timestamp)
+                        {
+                            println!(
+                                "    As milliseconds: {}",
+                                dt_ms.format("%Y-%m-%d %H:%M:%S%.3f")
+                            );
                         } else {
                             println!("    As milliseconds: INVALID");
                         }
 
                         // Try to interpret as microseconds
-                        if let Some(dt_us) = chrono::DateTime::from_timestamp_micros(trade.timestamp) {
-                            println!("    As microseconds: {}", dt_us.format("%Y-%m-%d %H:%M:%S%.6f"));
+                        if let Some(dt_us) =
+                            chrono::DateTime::from_timestamp_micros(trade.timestamp)
+                        {
+                            println!(
+                                "    As microseconds: {}",
+                                dt_us.format("%Y-%m-%d %H:%M:%S%.6f")
+                            );
                         } else {
                             println!("    As microseconds: INVALID");
                         }
@@ -59,11 +73,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     println!("\n🔍 Last 5 trades timestamp analysis:");
                     let len = trades.len();
                     for (i, trade) in trades.iter().skip(len.saturating_sub(5)).enumerate() {
-                        println!("  Trade {}: raw_ts={}, agg_id={}",
-                                len - 5 + i + 1, trade.timestamp, trade.agg_trade_id);
+                        println!(
+                            "  Trade {}: raw_ts={}, agg_id={}",
+                            len - 5 + i + 1,
+                            trade.timestamp,
+                            trade.agg_trade_id
+                        );
 
-                        if let Some(dt_ms) = chrono::DateTime::from_timestamp_millis(trade.timestamp) {
-                            println!("    As milliseconds: {}", dt_ms.format("%Y-%m-%d %H:%M:%S%.3f"));
+                        if let Some(dt_ms) =
+                            chrono::DateTime::from_timestamp_millis(trade.timestamp)
+                        {
+                            println!(
+                                "    As milliseconds: {}",
+                                dt_ms.format("%Y-%m-%d %H:%M:%S%.3f")
+                            );
                         } else {
                             println!("    As milliseconds: INVALID");
                         }
@@ -76,14 +99,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     println!("\n📊 Time span analysis:");
                     println!("  Raw timestamp difference: {}", span_raw);
-                    println!("  If milliseconds: {:.1} hours", span_raw as f64 / (1000.0 * 3600.0));
-                    println!("  If microseconds: {:.1} hours", span_raw as f64 / (1_000_000.0 * 3600.0));
+                    println!(
+                        "  If milliseconds: {:.1} hours",
+                        span_raw as f64 / (1000.0 * 3600.0)
+                    );
+                    println!(
+                        "  If microseconds: {:.1} hours",
+                        span_raw as f64 / (1_000_000.0 * 3600.0)
+                    );
                     println!("  If seconds: {:.1} hours", span_raw as f64 / 3600.0);
 
                     // Check for sorted order
                     let mut is_sorted = true;
                     for i in 1..trades.len() {
-                        if trades[i].timestamp < trades[i-1].timestamp {
+                        if trades[i].timestamp < trades[i - 1].timestamp {
                             is_sorted = false;
                             break;
                         }

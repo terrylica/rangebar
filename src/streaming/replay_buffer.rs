@@ -44,8 +44,8 @@ impl ReplayBuffer {
             inner.start_time = Some(Instant::now());
         }
 
-        // Remove old trades beyond capacity
-        let cutoff_timestamp = trade.timestamp - (inner.capacity.as_millis() as i64);
+        // Remove old trades beyond capacity (using microseconds)
+        let cutoff_timestamp = trade.timestamp - (inner.capacity.as_micros() as i64);
 
         while let Some(front_trade) = inner.trades.front() {
             if front_trade.timestamp < cutoff_timestamp {
@@ -273,11 +273,11 @@ mod tests {
     fn test_replay_buffer_capacity() {
         let buffer = ReplayBuffer::new(Duration::from_secs(60)); // 1 minute capacity
 
-        let base_time = 1000000000i64; // Some base timestamp
+        let base_time = 1704067200_000_000i64; // 2024-01-01 00:00:00 in microseconds
 
-        // Add trades spanning 2 minutes
+        // Add trades spanning 2 minutes (1 trade per second in microseconds)
         for i in 0..120 {
-            let trade = create_test_trade(i, base_time + (i * 1000), 50000.0);
+            let trade = create_test_trade(i, base_time + (i * 1_000_000), 50000.0); // 1 second intervals in microseconds
             buffer.push(trade);
         }
 
@@ -297,12 +297,13 @@ mod tests {
     fn test_replay_buffer_time_span() {
         let buffer = ReplayBuffer::new(Duration::from_secs(300)); // 5 minutes
 
-        let base_time = 1000000000i64;
+        // Use a more realistic timestamp (approximately 2024-01-01 in microseconds)
+        let base_time = 1704067200_000_000i64; // 2024-01-01 00:00:00 in microseconds
 
-        // Add a few trades over 1 minute
+        // Add a few trades over 1 minute (using microseconds)
         buffer.push(create_test_trade(1, base_time, 50000.0));
-        buffer.push(create_test_trade(2, base_time + 30000, 50100.0)); // 30s later
-        buffer.push(create_test_trade(3, base_time + 60000, 50200.0)); // 60s later
+        buffer.push(create_test_trade(2, base_time + 30_000_000, 50100.0)); // 30s later in microseconds
+        buffer.push(create_test_trade(3, base_time + 60_000_000, 50200.0)); // 60s later in microseconds
 
         let span = buffer.time_span().unwrap();
         assert_eq!(span.as_secs(), 60);
@@ -310,11 +311,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_replay_stream() {
-        let base_time = 1000000000i64;
+        // Use a more realistic timestamp (approximately 2024-01-01 in microseconds)
+        let base_time = 1704067200_000_000i64; // 2024-01-01 00:00:00 in microseconds
         let trades = vec![
             create_test_trade(1, base_time, 50000.0),
-            create_test_trade(2, base_time + 1000, 50100.0), // 1s later
-            create_test_trade(3, base_time + 2000, 50200.0), // 2s later
+            create_test_trade(2, base_time + 1_000_000, 50100.0), // 1s later in microseconds
+            create_test_trade(3, base_time + 2_000_000, 50200.0), // 2s later in microseconds
         ];
 
         let mut stream = ReplayStream::new(trades, 10.0); // 10x speed

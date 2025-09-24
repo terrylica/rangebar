@@ -34,17 +34,17 @@ fn main() {
             "🤝 Balanced"
         };
 
-        println!("  {:8}  │     {:>9} │        {:>9} │ {:.2}x   │ {}",
-                symbol,
-                spot,
-                futures,
-                ratio,
-                preference);
+        println!(
+            "  {:8}  │     {:>9} │        {:>9} │ {:.2}x   │ {}",
+            symbol, spot, futures, ratio, preference
+        );
     }
 
     println!();
     println!("🔍 **Key Insights:**");
-    println!("   • **UM Futures show higher aggTrade counts** - confirming your suspicion was RIGHT!");
+    println!(
+        "   • **UM Futures show higher aggTrade counts** - confirming your suspicion was RIGHT!"
+    );
     println!("   • **ETHUSDT**: Highest futures preference (1.78x aggTrades)");
     println!("   • **ADAUSDT**: Most futures-heavy (1.95x aggTrades)");
     println!("   • **BTCUSDT**: Moderate futures preference (1.44x aggTrades)");
@@ -52,7 +52,9 @@ fn main() {
     println!();
 
     println!("💡 **What This Means:**");
-    println!("   • **aggTrades**: Aggregated trade records (multiple individual trades → 1 record)");
+    println!(
+        "   • **aggTrades**: Aggregated trade records (multiple individual trades → 1 record)"
+    );
     println!("   • **Higher count**: More trading activity aggregation events");
     println!("   • **Futures markets**: Enable smaller, more frequent trades due to leverage");
     println!("   • **24/7 activity**: Continuous aggregation vs potential spot market hours");

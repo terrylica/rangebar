@@ -17,12 +17,19 @@ fn main() {
         ("DOGEUSDT", 292_004, 359_241, 248, 260, 1.23, 1.05, 0.85),
     ];
 
-    println!("  Symbol   │ Spot aggTrades │ UM aggTrades │ Spot Bars │ UM Bars │ aggTrade Ratio │ Bar Ratio │ Efficiency Ratio");
-    println!("  ─────────┼────────────────┼──────────────┼───────────┼─────────┼────────────────┼───────────┼─────────────────");
+    println!(
+        "  Symbol   │ Spot aggTrades │ UM aggTrades │ Spot Bars │ UM Bars │ aggTrade Ratio │ Bar Ratio │ Efficiency Ratio"
+    );
+    println!(
+        "  ─────────┼────────────────┼──────────────┼───────────┼─────────┼────────────────┼───────────┼─────────────────"
+    );
 
-    for (symbol, spot_agg, um_agg, spot_bars, um_bars, agg_ratio, bar_ratio, eff_ratio) in &results {
-        println!("  {:8} │      {:>9} │    {:>9} │    {:>6} │  {:>6} │          {:.2}x │     {:.2}x │           {:.2}x",
-                symbol, spot_agg, um_agg, spot_bars, um_bars, agg_ratio, bar_ratio, eff_ratio);
+    for (symbol, spot_agg, um_agg, spot_bars, um_bars, agg_ratio, bar_ratio, eff_ratio) in &results
+    {
+        println!(
+            "  {:8} │      {:>9} │    {:>9} │    {:>6} │  {:>6} │          {:.2}x │     {:.2}x │           {:.2}x",
+            symbol, spot_agg, um_agg, spot_bars, um_bars, agg_ratio, bar_ratio, eff_ratio
+        );
     }
 
     println!();
@@ -59,8 +66,10 @@ fn main() {
     println!("   Symbol      Bars Per Day (25 BPS threshold)");
     println!("   ──────────  ──────────────────────────────");
     for (symbol, _, _, spot_bars, um_bars, _, _, _) in &results {
-        println!("   {:8}    Spot: {:>3} bars  |  UM: {:>3} bars",
-                symbol, spot_bars, um_bars);
+        println!(
+            "   {:8}    Spot: {:>3} bars  |  UM: {:>3} bars",
+            symbol, spot_bars, um_bars
+        );
     }
     println!();
     println!("   📊 **Pattern**: DOGEUSDT is most volatile (248-260 bars/day)");
