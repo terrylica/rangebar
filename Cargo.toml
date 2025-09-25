@@ -18,6 +18,11 @@ exclude = [
     "docs/",                         # Documentation reports (not for crate users)
     "src/bin/rangebar_export.rs",   # Temporarily excluded - uses data module
     "src/data/",                     # Data module temporarily excluded
+    "examples/analysis/",            # Examples using data module
+    "examples/investigation/",       # Examples using data module
+    "examples/interactive/",         # Examples using data module
+    "examples/validation/",          # Examples using data module
+    "test_date_investigation.rs",    # Uses data module
     "*.py",
     "*.ipynb",
     "test_data/",
@@ -77,39 +82,40 @@ path = "src/bin/polars_benchmark.rs"
 name = "temporal-integrity-validator"
 path = "src/bin/temporal_integrity_test_only.rs"
 
+# Examples temporarily disabled - require data module
 # Analysis Examples
-[[example]]
-name = "analysis-market-efficiency"
-path = "examples/analysis/market_efficiency_analysis.rs"
+# [[example]]
+# name = "analysis-market-efficiency"
+# path = "examples/analysis/market_efficiency_analysis.rs"
 
-[[example]]
-name = "analysis-rangebar-generation"
-path = "examples/analysis/rangebar_generation_comparison.rs"
+# [[example]]
+# name = "analysis-rangebar-generation"
+# path = "examples/analysis/rangebar_generation_comparison.rs"
 
-[[example]]
-name = "analysis-tier1-volume"
-path = "examples/analysis/tier1_volume_comparison.rs"
+# [[example]]
+# name = "analysis-tier1-volume"
+# path = "examples/analysis/tier1_volume_comparison.rs"
 
-[[example]]
-name = "analysis-tier1-symbols"
-path = "examples/analysis/tier1_symbols.rs"
+# [[example]]
+# name = "analysis-tier1-symbols"
+# path = "examples/analysis/tier1_symbols.rs"
 
 # Interactive Examples
-[[example]]
-name = "historical-replay"
-path = "examples/interactive/historical_replay.rs"
+# [[example]]
+# name = "historical-replay"
+# path = "examples/interactive/historical_replay.rs"
 
-[[example]]
-name = "test-historical-replay"
-path = "examples/interactive/test_historical_replay.rs"
+# [[example]]
+# name = "test-historical-replay"
+# path = "examples/interactive/test_historical_replay.rs"
 
-[[example]]
-name = "format-demo"
-path = "examples/interactive/format_demo.rs"
+# [[example]]
+# name = "format-demo"
+# path = "examples/interactive/format_demo.rs"
 
-[[example]]
-name = "market-comparison-demo"
-path = "examples/interactive/market_comparison_demo.rs"
+# [[example]]
+# name = "market-comparison-demo"
+# path = "examples/interactive/market_comparison_demo.rs"
 
 # Educational Examples
 [[example]]
@@ -120,23 +126,23 @@ path = "examples/educational/terminology_clarification.rs"
 name = "basic-usage"
 path = "examples/educational/basic_usage.rs"
 
-# Validation Examples
-[[example]]
-name = "validate-25bps-threshold"
-path = "examples/validation/validate_25bps_threshold.rs"
+# Validation Examples (temporarily disabled)
+# [[example]]
+# name = "validate-25bps-threshold"
+# path = "examples/validation/validate_25bps_threshold.rs"
 
-[[example]]
-name = "validate-custom-threshold"
-path = "examples/validation/validate_custom_threshold.rs"
+# [[example]]
+# name = "validate-custom-threshold"
+# path = "examples/validation/validate_custom_threshold.rs"
 
-# Investigation Examples
-[[example]]
-name = "investigation-date-availability"
-path = "examples/investigation/date_availability_investigation.rs"
+# Investigation Examples (temporarily disabled)
+# [[example]]
+# name = "investigation-date-availability"
+# path = "examples/investigation/date_availability_investigation.rs"
 
-[[example]]
-name = "investigation-timestamp-analysis"
-path = "examples/investigation/timestamp_analysis.rs"
+# [[example]]
+# name = "investigation-timestamp-analysis"
+# path = "examples/investigation/timestamp_analysis.rs"
 
 [[bench]]
 name = "rangebar_bench"
