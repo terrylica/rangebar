@@ -16,6 +16,8 @@ description = "Non-lookahead range bar construction for cryptocurrency trading w
 exclude = [
     "CLAUDE.md",                     # Project memory - never publish
     "docs/",                         # Documentation reports (not for crate users)
+    "src/bin/rangebar_export.rs",   # Temporarily excluded - uses data module
+    "src/data/",                     # Data module temporarily excluded
     "*.py",
     "*.ipynb",
     "test_data/",
@@ -46,9 +48,10 @@ maintenance = { status = "actively-developed" }
 name = "rangebar"
 crate-type = ["rlib"]  # Pure Rust library
 
-[[bin]]
-name = "rangebar-export"
-path = "src/bin/rangebar_export.rs"
+# Temporarily disabled - requires data module
+# [[bin]]
+# name = "rangebar-export"
+# path = "src/bin/rangebar_export.rs"
 
 [[bin]]
 name = "rangebar-analyze"
