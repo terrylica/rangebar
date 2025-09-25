@@ -12,109 +12,22 @@ Non-lookahead bias range bar construction from Binance UM Futures aggTrades data
 
 ## Key Commands
 
-### Development
-```bash
-# Build all Rust binaries
-cargo build --release
+**Dev**: `cargo build --release`, `cargo test`, `cargo clippy`, `./scripts/update-deps.sh`
 
-# Run all tests
-cargo test
+**Deploy**: `doppler run -- shuttle deploy`
 
-# Lint Rust code
-cargo clippy
-
-# Format Rust code
-cargo fmt
-```
-
-### Universal Navigation
-```bash
-# Discovery: What exists?
-doppler projects; doppler secrets; shuttle project status
-
-# Deploy: Current config
-doppler run -- shuttle deploy
-
-# Console: https://console.shuttle.dev/project/[PROJECT_ID]
-```
-
-### Data Operations
-```bash
-# Discover Tier-1 symbols across all Binance futures markets
-cargo run --bin tier1-symbol-discovery -- --format comprehensive
-
-# Run parallel Tier-1 analysis (requires configuration)
-cargo run --bin rangebar-analyze
-
-# Export range bars for specific symbol (defaults to spot market)
-cargo run --bin rangebar-export
-
-# Export from UM futures market
-cargo run --bin rangebar-export -- BTCUSDT 2024-01-01 2024-01-02 25 ./output um
-
-# Generate range bars from aggTrades (spot by default)
-./target/release/rangebar BTCUSDT 2024-01-01 2024-01-02 0.008 ./output
-
-# Run historical replay (defaults to spot market)
-cargo run --example historical_replay
-
-# Run historical replay with UM futures
-cargo run --example historical_replay -- DOGEUSDT um
-
-# Validate data structure across markets and symbols
-cargo run --bin data-structure-validator --features data-integrity -- --symbols BTCUSDT,ETHUSDT --start-date 2024-01-01 --end-date 2024-07-01
-```
+**Data Ops**: `tier1-symbol-discovery --format comprehensive`, `rangebar-analyze`, `rangebar-export [SYMBOL] [dates] [threshold] [output] [um]`, `data-structure-validator --features data-integrity`
 
 ## Data Structure Validation
 
-### Validation Tool Overview
-**Purpose**: Systematic validation of Binance aggTrades data structures across Tier-1 cryptocurrency symbols for both spot and UM futures markets.
+**Tool**: `data-structure-validator` validates Binance aggTrades across spot/futures markets
 
-**Implementation**: `src/bin/data_structure_validator.rs`
-**Configuration**: `docs/planning/data-structure-validation-plan.yml`
+**Key Differences**:
+- **Spot**: No headers, short columns (`a,p,q,f,l,T,m`), 16-digit μs timestamps
+- **UM Futures**: Headers, descriptive columns, 13-digit ms timestamps
+- **Parser**: Auto-detects format, normalizes timestamps to microseconds
+- **Critical**: Use `aggTrades` nomenclature (not `trades`) - affects all naming
 
-### Key Findings (2024 Data)
-
-#### Market-Specific Structure Differences
-**Spot Market (data.binance.vision/data/spot/)**:
-- **Headers**: None
-- **Columns**: Short (`a,p,q,f,l,T,m`)
-- **Boolean**: `False/True` (capitalized)
-- **Timestamp**: **16-digit microseconds** (requires /1000 normalization)
-
-**UM Futures Market (data.binance.vision/data/futures/um/)**:
-- **Headers**: Present
-- **Columns**: Descriptive (`agg_trade_id,price,quantity,first_trade_id,last_trade_id,transact_time,is_buyer_maker`)
-- **Boolean**: `false/true` (lowercase)
-- **Timestamp**: **13-digit milliseconds** (standard format)
-
-**Parser**: Uses `serde` aliases and `flexible_bool()` deserializer to handle both formats automatically.
-
-#### CSV Parsing Implications
-- **Auto-Detection**: `detect_csv_headers()` function handles both formats automatically
-- **Column Mapping**: Different naming conventions require market-aware parsing
-- **Data Integrity**: SHA256 checksum validation available with `--features data-integrity`
-
-#### CRITICAL: Timestamp Format Differences
-- **Spot**: 16-digit microseconds (native precision)
-- **UM**: 13-digit milliseconds (normalized UP to microseconds `*1000`)
-- **Standard**: All timestamps stored as microseconds (preserves maximum precision)
-- **Fix**: `normalize_timestamp()` in `src/data/historical.rs:101`
-
-#### CRITICAL: Data Source Nomenclature Alignment
-- **Source**: Binance **aggTrades** (aggregated trades), NOT individual trades
-- **Naming**: Variables, functions, comments must reflect actual data source
-- **Example**: `agg_record_count`, `process_agg_trade_records()` with aggTrade parameters
-- **Principle**: Inherit naming from data nature, never hardcode assumptions
-
-### Validation Output Structure
-```
-output/data_structure_validation/{timestamp}_validation_run/
-├── index.json                 # Validation manifest with key findings
-├── validation_results.json    # Detailed per-sample results
-└── structure_analysis/
-    └── {SYMBOL}_structure_profile.json  # Per-symbol structure profiles
-```
 
 ## Architecture
 
@@ -127,38 +40,11 @@ output/data_structure_validation/{timestamp}_validation_run/
 6. **Analysis**: `rangebar-analyze` → Parallel Tier-1 analysis
 7. **Output**: Structured bar data (OHLCV format)
 
-### Performance Architecture
-- **Pure Rust Implementation**: Production speed (100-1000x faster than reference)
-- **Multi-threaded Processing**: Rayon for parallel analysis across symbols
-- **Memory Efficiency**: Fixed-point arithmetic, optimized data structures
+**Performance**: Pure Rust, Rayon parallelism, fixed-point arithmetic
 
 ## Critical Algorithm Invariants
 
-### Non-Lookahead Guarantee
-```python
-# CORRECT: Thresholds computed from bar's OPEN only
-upper_breach = bar_open * 1.008
-lower_breach = bar_open * 0.992
-
-# Thresholds remain FIXED for entire bar lifetime
-# Current tick price compared against these fixed thresholds
-```
-
-### Bar Construction Sequence
-1. Bar opens at tick price
-2. Compute fixed thresholds from open: `±threshold_bps basis points`
-3. For each subsequent tick:
-   - Update `high` = max(high, tick_price)
-   - Update `low` = min(low, tick_price) 
-   - Update `volume` += tick_volume
-   - Check: `tick_price >= upper_breach OR tick_price <= lower_breach`
-4. If breach: Include breach tick in bar, close bar, next tick opens new bar
-
-### Critical Validation Logic
-**Breach Consistency Rule**: If `high >= upper_threshold` OR `low <= lower_threshold`, then `close` must also breach the same threshold.
-
-**Rationale**: The breaching trade that triggers bar closure becomes the close price. If high/low breach but close doesn't, it indicates the breaching trade was not properly included in the closing bar.
-
+**Algorithm**: Fixed thresholds from bar OPEN (`±threshold_bps`), breach tick closes bar
 **Validation**: `(high_breach → close_breach) AND (low_breach → close_breach)`
 
 ### Data Source Requirements
@@ -178,147 +64,20 @@ lower_breach = bar_open * 0.992
 **Key Characteristic**: Multi-market availability indicates Binance's highest confidence
 **Use Cases**: Cross-market extrapolative reliability analysis, settlement currency arbitrage
 
-## Project Structure
-
-```
-rangebar/
-├── CLAUDE.md                    # This file
-├── Cargo.toml                   # Rust configuration
-├── src/
-│   ├── lib.rs                  # Rust library entry point
-│   ├── range_bars.rs           # Core algorithm (Rust)
-│   └── bin/                    # Rust binaries
-│       ├── tier1_symbol_discovery.rs    # Symbol discovery
-│       ├── parallel_tier1_analysis.rs   # Parallel analysis
-│       └── rangebar_export.rs           # Range bar export
-├── tests/                      # Test suites
-├── output/                     # Generated analysis results
-│   └── symbol_analysis/        # Multi-market symbol databases
-└── scripts/                    # Shell scripts for automation
-```
+**Structure**: `src/bin/` (tools), `tests/` (validation), `scripts/` (automation), `output/` (results)
 
 ## Common Issues
 
-### Build Issues
-- Ensure Rust toolchain installed: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
-- Update Rust to latest: `rustup update`
-- Clean build if needed: `cargo clean && cargo build --release`
-
-### Data Issues
-- **Default**: Spot market data (`asset_class="spot"`) - requires symbol like `BTCUSDT`
-- **Optional**: UM futures data (`asset_class="um"`) - use command line argument `um`
-- Sort aggTrades by `(timestamp, aggTradeId)` for deterministic processing
-- Validate schema: Spot `[a, p, q, f, l, T, m]` vs UM futures `[headers with descriptive names]`
-
-### Algorithm Issues
-- Ensure thresholds computed from bar OPEN, not evolving high/low
-- Verify breach tick included in closing bar (not excluded)
-- Check defer_open mechanism: next tick after breach opens new bar
+**Fixes**: `rustup update`, `cargo clean`, sort by `(timestamp, aggTradeId)`, thresholds from OPEN only
 
 ## Rust Binaries
 
-### Symbol Discovery (`tier1-symbol-discovery`)
-Discovers cryptocurrency symbols available across all three Binance futures markets:
-- **UM Futures USDT-margined**: BTCUSDT, ETHUSDT, etc.
-- **UM Futures USDC-margined**: BTCUSDC, ETHUSDC, etc.
-- **CM Futures coin-margined**: BTCUSD_PERP, ETHUSD_PERP, etc.
+**Tools**: `tier1-symbol-discovery --format [comprehensive|minimal]`, `rangebar-analyze`, `rangebar-export`
 
-```bash
-# Generate comprehensive JSON database
-cargo run --bin tier1-symbol-discovery -- --format comprehensive
+**Testing**: `cargo test`, `cargo bench` - validates non-lookahead, performance <100ms/1M ticks
 
-# Generate minimal output for pipeline integration
-cargo run --bin tier1-symbol-discovery -- --format minimal
+**Publishing**: GitHub Actions OIDC on git tags, manual: `cargo publish --all-features`
 
-# Include single-market symbols for analysis
-cargo run --bin tier1-symbol-discovery -- --include-single-market
-```
+## Dependency Management
 
-### Parallel Analysis (`rangebar-analyze`)
-Executes parallel range bar analysis across all Tier-1 symbols using Rayon.
-
-```bash
-# Requires configuration: /tmp/range_bar_analysis_config.json
-# Consumes symbols from: /tmp/tier1_usdt_pairs.txt (generated by tier1-symbol-discovery)
-cargo run --bin rangebar-analyze
-```
-
-### Range Bar Export (`rangebar-export`)
-Exports range bar data for visualization and analysis.
-
-```bash
-cargo run --bin rangebar-export -- --help
-```
-
-## Testing
-
-### Critical Test Categories
-1. **Non-lookahead validation**: Thresholds from prior state only
-2. **Edge cases**: Exact threshold hits, large gaps, first tick
-3. **Performance**: 1M ticks < 100ms, 1B ticks < 30 seconds
-4. **Data integrity**: UM futures schema compliance
-
-### Running Tests
-```bash
-# Full Rust test suite
-cargo test
-
-# Run tests with output
-cargo test -- --nocapture
-
-# Performance benchmarks
-cargo bench
-
-# Integration tests
-cargo test --test integration
-```
-
-## Publishing
-
-### Automated Publishing (2025 Best Practices)
-The rangebar crate uses **GitHub Actions** with **Trusted Publishing (OIDC)** for secure, automated releases:
-
-```bash
-# Create and push release tag (triggers automation)
-git tag -a v0.4.2 -m "Release v0.4.2: Your changes here"
-git push origin v0.4.2
-```
-
-**Automated Pipeline:**
-1. ✅ Cross-platform testing (Ubuntu + macOS)
-2. ✅ Version verification (tag matches Cargo.toml)
-3. ✅ Crates.io publishing via OIDC (30-min tokens)
-4. ✅ GitHub release with auto-generated changelog
-5. ✅ Artifact uploads (binaries)
-
-### Crates.io Configuration
-- **Version**: 0.5.0 (current release)
-- **License**: MIT
-- **Features**: statistics, data-integrity, arrow-support, python bindings
-- **Performance**: 137M+ trades/sec range bar construction
-
-### Security & Authentication
-
-**Primary: Trusted Publishing (OIDC)**
-- No stored secrets required
-- 30-minute auto-expiring tokens
-- GitHub repository verification
-- Setup: crates.io → Settings → Trusted Publishers
-
-**Fallback: API Token (Keychain)**
-- **Service**: `crates.io-token`
-- **Account**: `terryli`
-- **Retrieval**: `security find-generic-password -a "terryli" -s "crates.io-token" -w`
-
-### Manual Publishing (Development)
-```bash
-# Local publishing with keychain token
-CARGO_REGISTRY_TOKEN=$(security find-generic-password -a "terryli" -s "crates.io-token" -w) cargo publish --all-features
-
-# Dry run validation
-cargo publish --dry-run --all-features
-```
-
-### GitHub Actions Workflows
-- **`.github/workflows/publish.yml`**: Release automation
-- **`.github/workflows/ci.yml`**: Continuous integration
+**Auto-Updates**: Dependabot weekly PRs (`.github/dependabot.yml`), caret requirements (`^0.51.0`), manual validation (`scripts/update-deps.sh`)

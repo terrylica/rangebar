@@ -1,0 +1,39 @@
+version: 2
+updates:
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 15
+    # Auto-merge patch versions for all dependencies
+    allow:
+      - dependency-type: "direct"
+        update-type: "version-update:semver-patch"
+      - dependency-type: "indirect"
+        update-type: "version-update:semver-patch"
+    reviewers:
+      - "terryli"
+    assignees:
+      - "terryli"
+    # Group related updates to reduce PR noise
+    groups:
+      polars-ecosystem:
+        patterns:
+          - "polars*"
+          - "arrow*"
+      rust-toolchain:
+        patterns:
+          - "serde*"
+          - "tokio*"
+          - "rayon*"
+          - "clap*"
+      crypto-trading:
+        patterns:
+          - "ta*"
+          - "statrs*"
+          - "quantiles*"
+      testing-qa:
+        patterns:
+          - "criterion*"
+          - "proptest*"
+          - "*test*"
