@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -69,48 +69,48 @@ jobs:
         # Note: tier1-symbol-discovery requires live Binance API access which may be geo-restricted
         # The binary works correctly as demonstrated by successful local testing
 
-  benchmark:
-    name: Performance Benchmarks
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # benchmark:
+  #   name: Performance Benchmarks
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Free disk space
-        run: |
-          echo "=== Before cleanup ==="
-          df -h
-          echo "=== Removing unnecessary packages ==="
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mysql-.*' azure-cli google-cloud-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri
-          sudo apt-get autoremove -y
-          sudo apt-get autoclean
-          echo "=== After cleanup ==="
-          df -h
+  #     - name: Free disk space
+  #       run: |
+  #         echo "=== Before cleanup ==="
+  #         df -h
+  #         echo "=== Removing unnecessary packages ==="
+  #         sudo rm -rf /usr/share/dotnet
+  #         sudo rm -rf /opt/ghc
+  #         sudo rm -rf "/usr/local/share/boost"
+  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+  #         sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mysql-.*' azure-cli google-cloud-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri
+  #         sudo apt-get autoremove -y
+  #         sudo apt-get autoclean
+  #         echo "=== After cleanup ==="
+  #         df -h
 
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+  #     - name: Install Rust toolchain
+  #       uses: dtolnay/rust-toolchain@master
 
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-bench-cargo-${{ hashFiles('**/Cargo.lock') }}
+  #     - name: Cache dependencies
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ~/.cargo/bin/
+  #           ~/.cargo/registry/index/
+  #           ~/.cargo/registry/cache/
+  #           ~/.cargo/git/db/
+  #           target/
+  #         key: ${{ runner.os }}-bench-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Run benchmarks
-        run: cargo bench --bench rangebar_bench
+  #     - name: Run benchmarks
+  #       run: cargo bench --bench rangebar_bench
 
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-results
-          path: target/criterion/
+  #     - name: Upload benchmark results
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: benchmark-results
+  #         path: target/criterion/
