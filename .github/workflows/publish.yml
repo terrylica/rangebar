@@ -17,7 +17,9 @@ jobs:
       contents: write     # Required for GitHub releases
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Verify package can be built
+        run: cargo publish --dry-run
       - uses: rust-lang/crates-io-auth-action@v1
         id: auth
       - run: cargo publish
