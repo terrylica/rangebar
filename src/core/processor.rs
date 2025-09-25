@@ -40,7 +40,7 @@ impl RangeBarProcessor {
     ) -> Result<Option<RangeBar>, ProcessingError> {
         // Create single-element slice and process
         let trades = vec![trade];
-        let mut bars = self.process_trades(&trades)?;
+        let mut bars = self.process_agg_trade_records(&trades)?;
 
         // Return the last completed bar if any
         if bars.is_empty() {
@@ -56,11 +56,11 @@ impl RangeBarProcessor {
         None
     }
 
-    /// Process trades into range bars including incomplete bars for analysis
+    /// Process AggTrade records into range bars including incomplete bars for analysis
     ///
     /// # Arguments
     ///
-    /// * `trades` - Slice of aggregated trades sorted by (timestamp, agg_trade_id)
+    /// * `agg_trade_records` - Slice of AggTrade records sorted by (timestamp, agg_trade_id)
     ///
     /// # Returns
     ///
@@ -70,59 +70,65 @@ impl RangeBarProcessor {
     ///
     /// This method is for analysis purposes only. Incomplete bars violate the
     /// fundamental range bar algorithm and should not be used for production trading.
-    pub fn process_trades_with_incomplete(
+    pub fn process_agg_trade_records_with_incomplete(
         &mut self,
-        trades: &[AggTrade],
+        agg_trade_records: &[AggTrade],
     ) -> Result<Vec<RangeBar>, ProcessingError> {
-        self.process_trades_with_options(trades, true)
+        self.process_agg_trade_records_with_options(agg_trade_records, true)
     }
 
-    /// Process trades into range bars
+    /// Process Binance aggregated trade records into range bars
     ///
-    /// # Arguments
+    /// This is the primary method for converting AggTrade records (which aggregate
+    /// multiple individual trades) into range bars based on price movement thresholds.
     ///
-    /// * `trades` - Slice of aggregated trades sorted by (timestamp, agg_trade_id)
+    /// # Parameters
+    ///
+    /// * `agg_trade_records` - Slice of AggTrade records sorted by (timestamp, agg_trade_id)
+    ///   Each record represents multiple individual trades aggregated at same price
     ///
     /// # Returns
     ///
-    /// Vector of completed range bars (ONLY bars that breached thresholds)
-    pub fn process_trades(
+    /// Vector of completed range bars (ONLY bars that breached thresholds).
+    /// Each bar tracks both individual trade count and AggTrade record count.
+    pub fn process_agg_trade_records(
         &mut self,
-        trades: &[AggTrade],
+        agg_trade_records: &[AggTrade],
     ) -> Result<Vec<RangeBar>, ProcessingError> {
-        self.process_trades_with_options(trades, false)
+        self.process_agg_trade_records_with_options(agg_trade_records, false)
     }
 
-    /// Process trades into range bars with options for including incomplete bars
+
+    /// Process AggTrade records with options for including incomplete bars
     ///
-    /// # Arguments
+    /// # Parameters
     ///
-    /// * `trades` - Slice of aggregated trades sorted by (timestamp, agg_trade_id)
+    /// * `agg_trade_records` - Slice of AggTrade records sorted by (timestamp, agg_trade_id)
     /// * `include_incomplete` - Whether to include incomplete bars at end of processing
     ///
     /// # Returns
     ///
-    /// Vector of range bars
-    pub fn process_trades_with_options(
+    /// Vector of range bars (completed + incomplete if requested)
+    pub fn process_agg_trade_records_with_options(
         &mut self,
-        trades: &[AggTrade],
+        agg_trade_records: &[AggTrade],
         include_incomplete: bool,
     ) -> Result<Vec<RangeBar>, ProcessingError> {
-        if trades.is_empty() {
+        if agg_trade_records.is_empty() {
             return Ok(Vec::new());
         }
 
-        // Validate trades are sorted
-        self.validate_trade_ordering(trades)?;
+        // Validate records are sorted
+        self.validate_trade_ordering(agg_trade_records)?;
 
-        let mut bars = Vec::with_capacity(trades.len() / 100); // Heuristic capacity
+        let mut bars = Vec::with_capacity(agg_trade_records.len() / 100); // Heuristic capacity
         let mut current_bar: Option<RangeBarState> = None;
         let mut defer_open = false;
 
-        for trade in trades {
+        for agg_record in agg_trade_records {
             if defer_open {
-                // Previous bar closed, this trade opens new bar
-                current_bar = Some(RangeBarState::new(trade, self.threshold_bps));
+                // Previous bar closed, this agg_record opens new bar
+                current_bar = Some(RangeBarState::new(agg_record, self.threshold_bps));
                 defer_open = false;
                 continue;
             }
@@ -130,17 +136,17 @@ impl RangeBarProcessor {
             match current_bar {
                 None => {
                     // First bar initialization
-                    current_bar = Some(RangeBarState::new(trade, self.threshold_bps));
+                    current_bar = Some(RangeBarState::new(agg_record, self.threshold_bps));
                 }
                 Some(ref mut bar_state) => {
-                    // Check if this trade breaches the threshold
+                    // Check if this AggTrade record breaches the threshold
                     if bar_state.bar.is_breach(
-                        trade.price,
+                        agg_record.price,
                         bar_state.upper_threshold,
                         bar_state.lower_threshold,
                     ) {
-                        // Breach detected - update bar with breaching trade (includes microstructure)
-                        bar_state.bar.update_with_trade(trade);
+                        // Breach detected - update bar with breaching record (includes microstructure)
+                        bar_state.bar.update_with_trade(agg_record);
 
                         // Validation: Ensure high/low include open/close extremes
                         debug_assert!(
@@ -152,10 +158,10 @@ impl RangeBarProcessor {
 
                         bars.push(bar_state.bar.clone());
                         current_bar = None;
-                        defer_open = true; // Next trade will open new bar
+                        defer_open = true; // Next record will open new bar
                     } else {
                         // No breach: normal update with microstructure calculations
-                        bar_state.bar.update_with_trade(trade);
+                        bar_state.bar.update_with_trade(agg_record);
                     }
                 }
             }
@@ -273,32 +279,17 @@ impl From<ProcessingError> for PyErr {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::fixed_point::FixedPoint;
-
-    fn create_test_trade(id: i64, price: &str, volume: &str, timestamp: i64) -> AggTrade {
-        AggTrade {
-            agg_trade_id: id,
-            price: FixedPoint::from_str(price).unwrap(),
-            volume: FixedPoint::from_str(volume).unwrap(),
-            first_trade_id: id * 10,
-            last_trade_id: id * 10,
-            timestamp,
-            is_buyer_maker: id % 2 == 0, // Alternate buy/sell pressure for realistic testing
-        }
-    }
+    use crate::test_utils::{self, scenarios};
 
     #[test]
     fn test_single_bar_no_breach() {
         let mut processor = RangeBarProcessor::new(25); // 25 bps
 
-        let trades = vec![
-            create_test_trade(1, "50000.0", "1.0", 1000),
-            create_test_trade(2, "50100.0", "1.5", 2000), // +20 bps
-            create_test_trade(3, "49900.0", "2.0", 3000), // -20 bps
-        ];
+        // Create trades that stay within 25 bps threshold
+        let trades = scenarios::no_breach_sequence(25);
 
         // Test strict algorithm compliance: no bars should be created without breach
-        let bars = processor.process_trades(&trades).unwrap();
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
         assert_eq!(
             bars.len(),
             0,
@@ -306,7 +297,7 @@ mod tests {
         );
 
         // Test analysis mode: incomplete bar should be available for analysis
-        let bars_with_incomplete = processor.process_trades_with_incomplete(&trades).unwrap();
+        let bars_with_incomplete = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
         assert_eq!(
             bars_with_incomplete.len(),
             1,
@@ -324,15 +315,10 @@ mod tests {
     fn test_exact_breach_upward() {
         let mut processor = RangeBarProcessor::new(25); // 25 bps
 
-        let trades = vec![
-            create_test_trade(1, "50000.0", "1.0", 1000), // Open
-            create_test_trade(2, "50100.0", "1.0", 2000), // +0.2%
-            create_test_trade(3, "50125.0", "1.0", 3000), // +0.25% BREACH
-            create_test_trade(4, "50500.0", "1.0", 4000), // New bar (incomplete)
-        ];
+        let trades = scenarios::exact_breach_upward(25);
 
         // Test strict algorithm: only completed bars (with breach)
-        let bars = processor.process_trades(&trades).unwrap();
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
         assert_eq!(
             bars.len(),
             1,
@@ -342,12 +328,13 @@ mod tests {
         // First bar should close at breach
         let bar1 = &bars[0];
         assert_eq!(bar1.open.to_string(), "50000.00000000");
+        // Breach at 25 bps = 0.25% = 50000 * 1.0025 = 50125
         assert_eq!(bar1.close.to_string(), "50125.00000000"); // Breach tick included
         assert_eq!(bar1.high.to_string(), "50125.00000000");
         assert_eq!(bar1.low.to_string(), "50000.00000000");
 
         // Test analysis mode: includes incomplete second bar
-        let bars_with_incomplete = processor.process_trades_with_incomplete(&trades).unwrap();
+        let bars_with_incomplete = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
         assert_eq!(
             bars_with_incomplete.len(),
             2,
@@ -364,13 +351,9 @@ mod tests {
     fn test_exact_breach_downward() {
         let mut processor = RangeBarProcessor::new(25); // 0.25%
 
-        let trades = vec![
-            create_test_trade(1, "50000.0", "1.0", 1000), // Open
-            create_test_trade(2, "49900.0", "1.0", 2000), // -0.2%
-            create_test_trade(3, "49875.0", "1.0", 3000), // -0.25% EXACT BREACH
-        ];
+        let trades = scenarios::exact_breach_downward(25);
 
-        let bars = processor.process_trades(&trades).unwrap();
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
 
         assert_eq!(bars.len(), 1);
 
@@ -385,12 +368,9 @@ mod tests {
     fn test_large_gap_single_bar() {
         let mut processor = RangeBarProcessor::new(25); // 0.25%
 
-        let trades = vec![
-            create_test_trade(1, "50000.0", "1.0", 1000), // Open
-            create_test_trade(2, "51000.0", "1.0", 2000), // +2% gap (single bar)
-        ];
+        let trades = scenarios::large_gap_sequence();
 
-        let bars = processor.process_trades(&trades).unwrap();
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
 
         // Should create exactly ONE bar, not multiple bars to "fill the gap"
         assert_eq!(bars.len(), 1);
@@ -406,12 +386,9 @@ mod tests {
     fn test_unsorted_trades_error() {
         let mut processor = RangeBarProcessor::new(25);
 
-        let trades = vec![
-            create_test_trade(1, "50000.0", "1.0", 2000), // Later timestamp first
-            create_test_trade(2, "50100.0", "1.0", 1000), // Earlier timestamp second
-        ];
+        let trades = scenarios::unsorted_sequence();
 
-        let result = processor.process_trades(&trades);
+        let result = processor.process_agg_trade_records(&trades);
         assert!(result.is_err());
 
         match result {
@@ -426,7 +403,7 @@ mod tests {
     fn test_threshold_calculation() {
         let processor = RangeBarProcessor::new(25); // 0.25%
 
-        let trade = create_test_trade(1, "50000.0", "1.0", 1000);
+        let trade = test_utils::create_test_agg_trade(1, "50000.0", "1.0", 1000);
         let bar_state = RangeBarState::new(&trade, processor.threshold_bps);
 
         // 50000 * 0.0025 = 125
@@ -437,7 +414,8 @@ mod tests {
     #[test]
     fn test_empty_trades() {
         let mut processor = RangeBarProcessor::new(25);
-        let bars = processor.process_trades(&[]).unwrap();
+        let trades = scenarios::empty_sequence();
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
         assert_eq!(bars.len(), 0);
     }
 
@@ -447,15 +425,15 @@ mod tests {
 
         // Create trades similar to our test data
         let trades = vec![
-            create_test_trade(1, "50014.00859087", "0.12019569", 1756710002083),
-            create_test_trade(2, "50163.87750994", "1.01283708", 1756710005113), // ~0.3% increase
-            create_test_trade(3, "50032.44128269", "0.69397094", 1756710008770),
+            test_utils::create_test_agg_trade(1, "50014.00859087", "0.12019569", 1756710002083),
+            test_utils::create_test_agg_trade(2, "50163.87750994", "1.01283708", 1756710005113), // ~0.3% increase
+            test_utils::create_test_agg_trade(3, "50032.44128269", "0.69397094", 1756710008770),
         ];
 
         println!("Test data prices: 50014 -> 50163 -> 50032");
         println!("Expected price movements: +0.3% then -0.26%");
 
-        let bars = processor.process_trades(&trades).unwrap();
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
         println!("Generated {} range bars", bars.len());
 
         for (i, bar) in bars.iter().enumerate() {
@@ -478,20 +456,7 @@ mod tests {
 
     #[test]
     fn test_export_processor_with_manual_trades() {
-        use crate::fixed_point::FixedPoint;
-        use crate::types::AggTrade;
 
-        fn create_test_trade(id: i64, price: &str, volume: &str, timestamp: i64) -> AggTrade {
-            AggTrade {
-                agg_trade_id: id,
-                price: FixedPoint::from_str(price).unwrap(),
-                volume: FixedPoint::from_str(volume).unwrap(),
-                first_trade_id: id,
-                last_trade_id: id,
-                timestamp,
-                is_buyer_maker: false,
-            }
-        }
 
         println!("Testing ExportRangeBarProcessor with same trade data...");
 
@@ -499,9 +464,9 @@ mod tests {
 
         // Use same trades as the working basic test
         let trades = vec![
-            create_test_trade(1, "50014.00859087", "0.12019569", 1756710002083),
-            create_test_trade(2, "50163.87750994", "1.01283708", 1756710005113), // ~0.3% increase
-            create_test_trade(3, "50032.44128269", "0.69397094", 1756710008770),
+            test_utils::create_test_agg_trade(1, "50014.00859087", "0.12019569", 1756710002083),
+            test_utils::create_test_agg_trade(2, "50163.87750994", "1.01283708", 1756710005113), // ~0.3% increase
+            test_utils::create_test_agg_trade(3, "50032.44128269", "0.69397094", 1756710008770),
         ];
 
         println!(
@@ -546,9 +511,9 @@ struct InternalRangeBar {
     close: FixedPoint,
     volume: FixedPoint,
     turnover: i128,
-    trade_count: i64,
-    first_id: i64,
-    last_id: i64,
+    individual_trade_count: i64,
+    first_trade_id: i64,
+    last_trade_id: i64,
     /// Volume from buy-side trades (is_buyer_maker = false)
     buy_volume: FixedPoint,
     /// Volume from sell-side trades (is_buyer_maker = true)
@@ -608,9 +573,9 @@ impl ExportRangeBarProcessor {
                 close: trade.price,
                 volume: trade.volume,
                 turnover: trade_turnover,
-                trade_count: 1,
-                first_id: trade.agg_trade_id,
-                last_id: trade.agg_trade_id,
+                individual_trade_count: 1,
+                first_trade_id: trade.agg_trade_id,
+                last_trade_id: trade.agg_trade_id,
                 // Market microstructure fields
                 buy_volume: if trade.is_buyer_maker {
                     FixedPoint(0)
@@ -655,8 +620,8 @@ impl ExportRangeBarProcessor {
         bar.close = trade.price;
         bar.volume.0 += trade.volume.0;
         bar.turnover += trade_turnover;
-        bar.trade_count += 1;
-        bar.last_id = trade.agg_trade_id;
+        bar.individual_trade_count += 1;
+        bar.last_trade_id = trade.agg_trade_id;
 
         // Update high/low
         if price_val > bar.high.0 {
@@ -682,7 +647,7 @@ impl ExportRangeBarProcessor {
             // Close current bar and move to completed
             let completed_bar = self.current_bar.take().unwrap();
 
-            // Convert to export format
+            // Convert to export format (this is from an old internal structure)
             let export_bar = RangeBar {
                 open_time: completed_bar.open_time,
                 close_time: completed_bar.close_time,
@@ -692,14 +657,19 @@ impl ExportRangeBarProcessor {
                 close: completed_bar.close,
                 volume: completed_bar.volume,
                 turnover: completed_bar.turnover,
-                trade_count: completed_bar.trade_count,
-                first_id: completed_bar.first_id,
-                last_id: completed_bar.last_id,
+
+                // Enhanced fields
+                individual_trade_count: completed_bar.individual_trade_count as u32,
+                agg_record_count: 1, // TODO: Track this properly in internal structure
+                first_trade_id: completed_bar.first_trade_id,
+                last_trade_id: completed_bar.last_trade_id,
+                data_source: crate::core::types::DataSource::default(),
+
                 // Market microstructure fields
                 buy_volume: completed_bar.buy_volume,
                 sell_volume: completed_bar.sell_volume,
-                buy_trade_count: completed_bar.buy_trade_count,
-                sell_trade_count: completed_bar.sell_trade_count,
+                buy_trade_count: completed_bar.buy_trade_count as u32,
+                sell_trade_count: completed_bar.sell_trade_count as u32,
                 vwap: completed_bar.vwap,
                 buy_turnover: completed_bar.buy_turnover,
                 sell_turnover: completed_bar.sell_turnover,
@@ -728,9 +698,9 @@ impl ExportRangeBarProcessor {
                 close: trade.price,
                 volume: trade.volume,
                 turnover: trade_turnover,
-                trade_count: 1,
-                first_id: trade.agg_trade_id,
-                last_id: trade.agg_trade_id,
+                individual_trade_count: 1,
+                first_trade_id: trade.agg_trade_id,
+                last_trade_id: trade.agg_trade_id,
                 // Market microstructure fields
                 buy_volume: if trade.is_buyer_maker {
                     FixedPoint(0)
@@ -768,14 +738,19 @@ impl ExportRangeBarProcessor {
             close: incomplete.close,
             volume: incomplete.volume,
             turnover: incomplete.turnover,
-            trade_count: incomplete.trade_count,
-            first_id: incomplete.first_id,
-            last_id: incomplete.last_id,
+
+            // Enhanced fields
+            individual_trade_count: incomplete.individual_trade_count as u32,
+            agg_record_count: 1, // TODO: Track this properly in internal structure
+            first_trade_id: incomplete.first_trade_id,
+            last_trade_id: incomplete.last_trade_id,
+            data_source: crate::core::types::DataSource::default(),
+
             // Market microstructure fields
             buy_volume: incomplete.buy_volume,
             sell_volume: incomplete.sell_volume,
-            buy_trade_count: incomplete.buy_trade_count,
-            sell_trade_count: incomplete.sell_trade_count,
+            buy_trade_count: incomplete.buy_trade_count as u32,
+            sell_trade_count: incomplete.sell_trade_count as u32,
             vwap: incomplete.vwap,
             buy_turnover: incomplete.buy_turnover,
             sell_turnover: incomplete.sell_turnover,

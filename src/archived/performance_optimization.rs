@@ -249,6 +249,7 @@ impl From<CsvAggTrade> for AggTrade {
             last_trade_id: csv_trade.4 as i64,
             timestamp: csv_trade.5 as i64,
             is_buyer_maker: csv_trade.6,
+            is_best_match: None,
         }
     }
 }

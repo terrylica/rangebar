@@ -68,6 +68,10 @@ fn load_range_bars(file_path: &str) -> Result<Vec<RangeBar>, Box<dyn std::error:
         let record = result?;
 
         if record.len() >= 18 {
+            let parsed_trade_count: u32 = record[8].parse()?;
+            let parsed_first_id: i64 = record[9].parse()?;
+            let parsed_last_id: i64 = record[10].parse()?;
+
             let range_bar = RangeBar {
                 open_time: record[0].parse()?,
                 close_time: record[1].parse()?,
@@ -77,9 +81,14 @@ fn load_range_bars(file_path: &str) -> Result<Vec<RangeBar>, Box<dyn std::error:
                 close: FixedPoint::from_str(&record[5])?,
                 volume: FixedPoint::from_str(&record[6])?,
                 turnover: record[7].parse::<f64>()? as i128,
-                trade_count: record[8].parse()?,
-                first_id: record[9].parse()?,
-                last_id: record[10].parse()?,
+
+                // Enhanced fields
+                individual_trade_count: parsed_trade_count,
+                agg_record_count: 1, // Assume 1 for legacy data
+                first_trade_id: parsed_first_id,
+                last_trade_id: parsed_last_id,
+                data_source: rangebar::core::types::DataSource::default(),
+
                 buy_volume: FixedPoint::from_str(&record[11])?,
                 sell_volume: FixedPoint::from_str(&record[12])?,
                 buy_trade_count: record[13].parse()?,

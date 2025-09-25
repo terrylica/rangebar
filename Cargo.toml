@@ -1,6 +1,6 @@
 [package]
 name = "rangebar"
-version = "0.9.1"
+version = "1.0.0"
 authors = ["Terry Li <terry@eonlabs.com>"]
 categories = ["algorithms", "data-structures", "finance"]
 documentation = "https://docs.rs/rangebar"
@@ -199,7 +199,7 @@ tdigests = { version = "1.0", optional = true }      # Streaming percentiles <2%
 
 # Statistical analysis (optional)
 nalgebra = { version = "0.33", optional = true }
-polars = { version = "0.49", features = ["lazy", "temporal", "strings", "parquet", "csv", "ipc"], optional = true }
+polars = { version = "0.49", features = ["lazy", "temporal", "strings", "parquet", "csv", "ipc", "rolling_window"], optional = true }
 quantiles = { version = "0.7", optional = true }
 statrs = { version = "0.17", optional = true }
 

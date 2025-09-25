@@ -28,6 +28,7 @@ fn create_test_trades(count: usize, base_price: f64, volatility: f64) -> Vec<Agg
             last_trade_id: i as i64,
             timestamp: 1640995200000 + (i as i64 * 100), // 100ms intervals
             is_buyer_maker,                              // PHASE 0: Market microstructure field
+            is_best_match: None,
         });
     }
 
@@ -44,7 +45,7 @@ fn bench_range_bar_processing(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("process_trades", size), size, |b, _| {
             b.iter(|| {
                 let mut proc = RangeBarProcessor::new(8000);
-                let bars = proc.process_trades(black_box(&trades)).unwrap();
+                let bars = proc.process_agg_trade_records(black_box(&trades)).unwrap();
                 black_box(bars);
             });
         });
@@ -79,6 +80,7 @@ fn bench_breach_detection(c: &mut Criterion) {
         last_trade_id: 1,
         timestamp: 1640995200000,
         is_buyer_maker: false, // Buy pressure for testing
+        is_best_match: None,
     };
 
     let bar = RangeBar::new(&trade);
@@ -117,7 +119,7 @@ fn bench_memory_efficiency(c: &mut Criterion) {
                     let mut total_bars = 0;
 
                     for chunk in trades.chunks(batch_size) {
-                        let bars = processor.process_trades(black_box(chunk)).unwrap();
+                        let bars = processor.process_agg_trade_records(black_box(chunk)).unwrap();
                         total_bars += bars.len();
                     }
 
@@ -140,7 +142,7 @@ fn bench_extreme_cases(c: &mut Criterion) {
         b.iter(|| {
             let mut processor = RangeBarProcessor::new(8000);
             let bars = processor
-                .process_trades(black_box(&high_volatility_trades))
+                .process_agg_trade_records(black_box(&high_volatility_trades))
                 .unwrap();
             black_box(bars);
         });
@@ -153,7 +155,7 @@ fn bench_extreme_cases(c: &mut Criterion) {
         b.iter(|| {
             let mut processor = RangeBarProcessor::new(8000);
             let bars = processor
-                .process_trades(black_box(&low_volatility_trades))
+                .process_agg_trade_records(black_box(&low_volatility_trades))
                 .unwrap();
             black_box(bars);
         });

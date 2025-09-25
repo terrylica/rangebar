@@ -436,6 +436,7 @@ mod tests {
             last_trade_id: id as i64,
             timestamp: timestamp as i64,
             is_buyer_maker: false,
+            is_best_match: None,
         }
     }
 

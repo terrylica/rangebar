@@ -34,9 +34,9 @@ let trade = AggTrade {
     is_buyer_maker: false,
 };
 
-// Process aggTrades into range bars
-let trades = vec![trade];
-let bars = processor.process_trades(&trades).unwrap();
+// Process aggTrade records into range bars
+let agg_trade_records = vec![trade];
+let bars = processor.process_agg_trade_records(&agg_trade_records).unwrap();
 
 for bar in bars {
     println!("Bar: O={} H={} L={} C={} V={}",

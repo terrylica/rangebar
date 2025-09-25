@@ -58,9 +58,9 @@ def iter_range_bars_from_aggtrades(trades, threshold_bps=80):
         bar.low = min(bar.low, tick.price)
         bar.close = tick.price
         bar.volume += tick.quantity
-        bar.trade_count += (tick.last_trade_id - tick.first_trade_id + 1)
+        bar.individual_trade_count += (tick.last_trade_id - tick.first_trade_id + 1)
         bar.close_time = tick.timestamp
-        bar.last_id = tick.agg_trade_id
+        bar.last_trade_id = tick.agg_trade_id
         
         # Check breach using FIXED thresholds (computed from open)
         if tick.price >= bar.upper_breach or tick.price <= bar.lower_breach:
@@ -85,11 +85,12 @@ class RangeBar:
     close: Decimal        # Last tick price (breach tick)
     
     # Volume and trade data
-    volume: Decimal       # Sum of quantities
-    turnover: Decimal     # Sum of price × quantity
-    trade_count: int      # Number of individual trades
-    first_id: int         # First aggTradeId
-    last_id: int          # Last aggTradeId
+    volume: Decimal                # Sum of quantities
+    turnover: Decimal              # Sum of price × quantity
+    individual_trade_count: int    # Number of individual trades
+    agg_record_count: int          # Number of AggTrade records
+    first_trade_id: int            # First aggTradeId
+    last_trade_id: int             # Last aggTradeId
     
     # Algorithm metadata (not output)
     upper_breach: Decimal # Fixed threshold (open × 1.008)

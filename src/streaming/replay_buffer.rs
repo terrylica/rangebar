@@ -266,6 +266,7 @@ mod tests {
             last_trade_id: id,
             timestamp,
             is_buyer_maker: false,
+            is_best_match: None,
         }
     }
 

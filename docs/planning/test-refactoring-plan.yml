@@ -1,0 +1,297 @@
+openapi: 3.1.1
+info:
+  title: Test Data Hardcoding Elimination Plan
+  description: Systematic refactoring plan to eliminate scattered hardcoded test data across rangebar codebase
+  version: "1.0.0"
+  contact:
+    name: Rangebar Development
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+paths: {}
+
+components:
+  schemas:
+    RefactoringTask:
+      type: object
+      required:
+        - id
+        - status
+        - target
+        - hardcoded_patterns
+        - refactor_approach
+      properties:
+        id:
+          type: string
+          description: Unique task identifier
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed]
+          description: Current task status
+        target:
+          type: string
+          description: File or module being refactored
+        hardcoded_patterns:
+          type: array
+          items:
+            type: string
+          description: Identified hardcoded patterns to eliminate
+        refactor_approach:
+          type: string
+          description: Technical approach for elimination
+        dependencies:
+          type: array
+          items:
+            type: string
+          description: Task IDs this task depends on
+        validation_criteria:
+          type: array
+          items:
+            type: string
+          description: Success validation requirements
+        error_conditions:
+          type: array
+          items:
+            type: string
+          description: Known failure modes to propagate
+
+    TestUtilsModule:
+      type: object
+      required:
+        - module_path
+        - exported_functions
+        - builder_patterns
+        - scenario_coverage
+      properties:
+        module_path:
+          type: string
+          example: "src/test_utils.rs"
+          description: Module location
+        exported_functions:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              signature:
+                type: string
+              purpose:
+                type: string
+        builder_patterns:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              methods:
+                type: array
+                items:
+                  type: string
+        scenario_coverage:
+          type: array
+          items:
+            type: string
+          description: Test scenarios provided by module
+
+tags:
+  - name: core-modules
+    description: Core library module tests
+  - name: integration-tests
+    description: Integration test files
+  - name: examples
+    description: Example and documentation code
+  - name: validation
+    description: Test validation and verification
+
+x-implementation-plan:
+  version: "1.0.0"
+  last_updated: "2025-01-21T00:00:00Z"
+
+  phases:
+    phase_1_foundation:
+      status: completed
+      description: "Core test utilities infrastructure"
+      tasks:
+        - task_id: "TU001"
+          status: completed
+          target: "src/test_utils.rs"
+          deliverables:
+            - "AggTrade creation functions"
+            - "RangeBar creation functions"
+            - "AggTradeBuilder pattern"
+            - "Common scenario generators"
+          validation:
+            - "Module compiles without errors"
+            - "Functions accessible in test context"
+            - "Builder pattern functional"
+
+    phase_2_core_refactoring:
+      status: in_progress
+      description: "Core module test refactoring"
+      tasks:
+        - task_id: "CR001"
+          status: completed
+          target: "src/core/processor.rs"
+          hardcoded_patterns:
+            - "create_test_trade() helper function"
+            - "Hardcoded AggTrade constructors"
+            - "Inline price/volume/timestamp values"
+          refactor_approach: "Replace with test_utils::scenarios functions"
+          validation:
+            - "All processor tests pass"
+            - "No hardcoded AggTrade constructors remain"
+            - "Helper functions eliminated"
+
+        - task_id: "CR002"
+          status: pending
+          target: "src/core/types.rs"
+          hardcoded_patterns:
+            - "AggTrade constructors with hardcoded is_best_match: None"
+            - "RangeBar field reference mismatches"
+            - "Hardcoded price/volume strings"
+          refactor_approach: "Replace with test_utils functions"
+          dependencies: ["CR001"]
+          validation:
+            - "All types tests pass"
+            - "No hardcoded constructors remain"
+
+    phase_3_integration_refactoring:
+      status: pending
+      description: "Integration test file refactoring"
+      tasks:
+        - task_id: "IT001"
+          status: pending
+          target: "tests/integration_test.rs"
+          hardcoded_patterns:
+            - "create_trade() helper functions"
+            - "Hardcoded create_deterministic_breach_sequence()"
+          dependencies: ["CR002"]
+
+        - task_id: "IT002"
+          status: pending
+          target: "tests/bps_conversion_tests.rs"
+          hardcoded_patterns:
+            - "Direct AggTrade constructors"
+            - "Missing is_best_match fields"
+          dependencies: ["IT001"]
+
+        - task_id: "IT003"
+          status: pending
+          target: "tests/production_streaming_validation.rs"
+          hardcoded_patterns:
+            - "AggTrade constructors with missing fields"
+            - "RangeBar constructors with deprecated fields"
+          dependencies: ["IT002"]
+
+    phase_4_examples_refactoring:
+      status: pending
+      description: "Example file refactoring"
+      tasks:
+        - task_id: "EX001"
+          status: pending
+          target: "examples/educational/basic_usage.rs"
+          hardcoded_patterns:
+            - "AggTrade constructor missing is_best_match"
+          dependencies: ["IT003"]
+
+    phase_5_validation:
+      status: pending
+      description: "Complete test suite validation"
+      tasks:
+        - task_id: "VAL001"
+          status: pending
+          target: "full_test_suite"
+          validation_criteria:
+            - "cargo test --all passes"
+            - "No hardcoded AggTrade/RangeBar constructors remain"
+            - "All test helper functions eliminated"
+            - "Test performance maintained or improved"
+          dependencies: ["EX001"]
+
+  error_handling:
+    propagation_policy: "fail_fast_no_fallbacks"
+    validation_failures:
+      - condition: "Test compilation failure"
+        action: "halt_and_report"
+      - condition: "Test behavior change"
+        action: "halt_and_analyze"
+      - condition: "Performance degradation > 10%"
+        action: "halt_and_optimize"
+
+  metrics:
+    success_criteria:
+      - "Zero hardcoded AggTrade constructors in test files"
+      - "Zero hardcoded RangeBar constructors in test files"
+      - "All create_test_* helper functions eliminated"
+      - "Test suite passes with 100% success rate"
+      - "Test execution time within 110% of baseline"
+
+  current_state:
+    completed_tasks: ["TU001", "CR001", "CR002", "BATCH_FIX_COMPLETE"]
+    active_task: "COMPLETED"
+    next_task: "SYSTEMATIC_TEST_UTILS_REFACTORING"
+    blockers: []
+
+    batch_fixes_applied:
+      - scope: "ALL_TEST_FILES"
+        fix_type: "AggTrade_constructors_add_is_best_match"
+        files_affected: 8
+        status: "COMPLETED"
+      - scope: "ALL_TEST_FILES"
+        fix_type: "RangeBar_deprecated_fields_update"
+        fields_updated: ["trade_count->individual_trade_count", "first_id->first_trade_id", "last_id->last_trade_id"]
+        status: "COMPLETED"
+      - scope: "ALL_FILES"
+        fix_type: "method_names_update"
+        methods_updated: ["process_trades->process_agg_trade_records"]
+        status: "COMPLETED"
+      - scope: "DOCUMENTATION"
+        fix_type: "doctest_AggTrade_constructor"
+        status: "COMPLETED"
+
+    file_status:
+      "src/test_utils.rs": "completed"
+      "src/core/processor.rs": "completed"
+      "src/core/types.rs": "completed"
+      "tests/integration_test.rs": "batch_fixed"
+      "tests/bps_conversion_tests.rs": "batch_fixed"
+      "tests/production_streaming_validation.rs": "batch_fixed"
+      "tests/large_boundary_tests.rs": "batch_fixed"
+      "tests/cross_year_speed_comparison.rs": "batch_fixed"
+      "tests/multi_month_memory_tests.rs": "batch_fixed"
+      "tests/boundary_consistency_tests.rs": "batch_fixed"
+      "tests/statistics_v2_validation.rs": "batch_fixed"
+      "src/lib.rs": "doctest_fixed"
+      "examples/educational/basic_usage.rs": "ready_for_refactoring"
+
+    validation_results:
+      test_suite_status: "CRITICAL_NOMENCLATURE_FAILURES"
+      deep_dive_search_status: "FAILED"
+      critical_issues_found:
+        - location: "src/core/processor.rs"
+          issue: "InternalRangeBar struct uses deprecated field names"
+          deprecated_fields: ["trade_count", "first_id", "last_id"]
+          severity: "CRITICAL"
+        - location: "src/range_bars_debug.rs"
+          issue: "Multiple deprecated method calls"
+          deprecated_methods: ["process_trades_with_incomplete"]
+          occurrences: 3
+          severity: "HIGH"
+        - location: "Multiple files"
+          issue: "Missing is_best_match in AggTrade constructors"
+          affected_files: ["src/statistics.rs", "benches/rangebar_bench.rs", "src/archived/performance_optimization.rs"]
+          severity: "HIGH"
+        - location: "IO and batch modules"
+          issue: "Deprecated field names in data processing"
+          affected_modules: ["io/formats.rs", "io/polars_io.rs", "batch/engine.rs"]
+          severity: "MEDIUM"
+        - location: "Documentation"
+          issue: "Deprecated nomenclature in documentation"
+          affected_files: ["CLAUDE.md", "TERMINOLOGY.md", "docs/"]
+          severity: "MEDIUM"
+
+      nomenclature_compliance: "FAILED"
+      completion_status: "INCOMPLETE"

@@ -54,8 +54,8 @@ pub async fn generate_range_bars(
     // Create range bar processor
     let mut processor = RangeBarProcessor::new(threshold_bp);
 
-    // Process trades into range bars
-    let range_bars = match processor.process_trades(&request.trades) {
+    // Process AggTrade records into range bars
+    let range_bars = match processor.process_agg_trade_records(&request.trades) {
         Ok(bars) => bars,
         Err(e) => {
             return Err((

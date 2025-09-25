@@ -9,7 +9,6 @@ use polars::frame::row::Row;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::Path;
 use thiserror::Error;
 
 /// Configuration for batch analysis operations
@@ -226,32 +225,36 @@ impl BatchAnalysisEngine {
             .with_columns([
                 // Rolling price statistics
                 col("close")
-                    .rolling_mean(
-                        RollingOptions::default()
-                            .window_size(Duration::new().with_time_zones(window as i64)),
-                    )
+                    .rolling_mean(RollingOptionsFixedWindow {
+                        window_size: window,
+                        min_periods: 1,
+                        ..Default::default()
+                    })
                     .alias("close_sma"),
                 col("close")
-                    .rolling_std(
-                        RollingOptions::default()
-                            .window_size(Duration::new().with_time_zones(window as i64)),
-                    )
+                    .rolling_std(RollingOptionsFixedWindow {
+                        window_size: window,
+                        min_periods: 1,
+                        ..Default::default()
+                    })
                     .alias("close_rolling_std"),
                 // Rolling volume statistics
                 col("volume")
-                    .rolling_mean(
-                        RollingOptions::default()
-                            .window_size(Duration::new().with_time_zones(window as i64)),
-                    )
+                    .rolling_mean(RollingOptionsFixedWindow {
+                        window_size: window,
+                        min_periods: 1,
+                        ..Default::default()
+                    })
                     .alias("volume_sma"),
                 col("volume")
-                    .rolling_std(
-                        RollingOptions::default()
-                            .window_size(Duration::new().with_time_zones(window as i64)),
-                    )
+                    .rolling_std(RollingOptionsFixedWindow {
+                        window_size: window,
+                        min_periods: 1,
+                        ..Default::default()
+                    })
                     .alias("volume_rolling_std"),
                 // Price returns
-                (col("close") / col("close").shift(1) - lit(1.0)).alias("returns"),
+                (col("close") / col("close").shift(lit(1)) - lit(1.0)).alias("returns"),
             ])
             .select([
                 col("close_sma").mean().alias("avg_sma"),
@@ -292,7 +295,7 @@ impl BatchAnalysisEngine {
             let price_q = df
                 .clone()
                 .lazy()
-                .select([col("close").quantile(lit(level), QuantileInterpolOptions::Linear)])
+                .select([col("close").quantile(lit(level), QuantileMethod::Linear)])
                 .collect()
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("price_quantile_{}", level),
@@ -301,7 +304,8 @@ impl BatchAnalysisEngine {
 
             let price_value = price_q
                 .get_row(0)
-                .and_then(|row| extract_f64_value(&row, 0))
+                .and_then(|row| extract_f64_value(&row, 0)
+                    .map_err(|e| PolarsError::ComputeError(e.to_string().into())))
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("extract_price_quantile_{}", level),
                     source: e.into(),
@@ -313,7 +317,7 @@ impl BatchAnalysisEngine {
             let volume_q = df
                 .clone()
                 .lazy()
-                .select([col("volume").quantile(lit(level), QuantileInterpolOptions::Linear)])
+                .select([col("volume").quantile(lit(level), QuantileMethod::Linear)])
                 .collect()
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("volume_quantile_{}", level),
@@ -322,7 +326,8 @@ impl BatchAnalysisEngine {
 
             let volume_value = volume_q
                 .get_row(0)
-                .and_then(|row| extract_f64_value(&row, 0))
+                .and_then(|row| extract_f64_value(&row, 0)
+                    .map_err(|e| PolarsError::ComputeError(e.to_string().into())))
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("extract_volume_quantile_{}", level),
                     source: e.into(),
@@ -349,9 +354,9 @@ impl BatchAnalysisEngine {
                 (col("close") - col("open")).alias("price_change"),
                 ((col("close") - col("open")) / col("open") * lit(100.0)).alias("price_change_pct"),
                 // OHLC analysis
-                (col("close") > col("open")).alias("is_bullish"),
-                (col("high") == col("close")).alias("is_high_close"),
-                (col("low") == col("close")).alias("is_low_close"),
+                col("close").gt(col("open")).alias("is_bullish"),
+                col("high").eq(col("close")).alias("is_high_close"),
+                col("low").eq(col("close")).alias("is_low_close"),
             ])
             .select([
                 col("price_range").mean().alias("avg_range"),
@@ -629,10 +634,10 @@ pub enum BatchError {
 /// Helper function to extract f64 values from Polars rows
 fn extract_f64_value(row: &Row, index: usize) -> Result<f64, BatchError> {
     match row.0.get(index) {
-        Some(AnyValue::Float64(val)) => Ok(val),
-        Some(AnyValue::Float32(val)) => Ok(val as f64),
-        Some(AnyValue::Int64(val)) => Ok(val as f64),
-        Some(AnyValue::Int32(val)) => Ok(val as f64),
+        Some(AnyValue::Float64(val)) => Ok(*val),
+        Some(AnyValue::Float32(val)) => Ok(*val as f64),
+        Some(AnyValue::Int64(val)) => Ok(*val as f64),
+        Some(AnyValue::Int32(val)) => Ok(*val as f64),
         Some(other) => Err(BatchError::ValueExtractionFailed {
             operation: format!("extract_f64_at_index_{}", index),
             source: format!("Unexpected type: {:?}", other).into(),
@@ -647,10 +652,10 @@ fn extract_f64_value(row: &Row, index: usize) -> Result<f64, BatchError> {
 /// Helper function to extract i64 values from Polars rows
 fn extract_i64_value(row: &Row, index: usize) -> Result<i64, BatchError> {
     match row.0.get(index) {
-        Some(AnyValue::Int64(val)) => Ok(val),
-        Some(AnyValue::Int32(val)) => Ok(val as i64),
-        Some(AnyValue::UInt64(val)) => Ok(val as i64),
-        Some(AnyValue::UInt32(val)) => Ok(val as i64),
+        Some(AnyValue::Int64(val)) => Ok(*val),
+        Some(AnyValue::Int32(val)) => Ok(*val as i64),
+        Some(AnyValue::UInt64(val)) => Ok(*val as i64),
+        Some(AnyValue::UInt32(val)) => Ok(*val as i64),
         Some(other) => Err(BatchError::ValueExtractionFailed {
             operation: format!("extract_i64_at_index_{}", index),
             source: format!("Unexpected type: {:?}", other).into(),
@@ -678,9 +683,11 @@ mod tests {
                 close: FixedPoint(105000000),
                 volume: FixedPoint(1000000000),
                 turnover: 1050000000,
-                trade_count: 5,
-                first_id: 1,
-                last_id: 5,
+                individual_trade_count: 5,
+                agg_record_count: 1,
+                first_trade_id: 1,
+                last_trade_id: 5,
+                data_source: crate::core::types::DataSource::default(),
                 buy_volume: FixedPoint(600000000),
                 sell_volume: FixedPoint(400000000),
                 buy_trade_count: 3,
@@ -698,9 +705,11 @@ mod tests {
                 close: FixedPoint(110000000),
                 volume: FixedPoint(2000000000),
                 turnover: 2200000000,
-                trade_count: 8,
-                first_id: 6,
-                last_id: 13,
+                individual_trade_count: 8,
+                agg_record_count: 1,
+                first_trade_id: 6,
+                last_trade_id: 13,
+                data_source: crate::core::types::DataSource::default(),
                 buy_volume: FixedPoint(1200000000),
                 sell_volume: FixedPoint(800000000),
                 buy_trade_count: 5,

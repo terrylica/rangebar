@@ -510,6 +510,7 @@ mod tests {
             last_trade_id: 1,
             timestamp: 1609459200000,
             is_buyer_maker: false,
+            is_best_match: None,
         };
 
         engine.process_trade(&trade);
@@ -531,9 +532,11 @@ mod tests {
             close: FixedPoint::from_str("50050.0").unwrap(),
             volume: FixedPoint::from_str("10.5").unwrap(),
             turnover: 0,
-            trade_count: 42,
-            first_id: 1,
-            last_id: 42,
+            individual_trade_count: 42,
+            agg_record_count: 1,
+            first_trade_id: 1,
+            last_trade_id: 42,
+            data_source: crate::core::types::DataSource::BinanceFuturesUM,
             buy_volume: FixedPoint::from_str("5.0").unwrap(),
             buy_turnover: 0,
             sell_volume: FixedPoint::from_str("5.5").unwrap(),

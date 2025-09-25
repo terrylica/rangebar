@@ -161,8 +161,8 @@ if let Some(bar_state) = current_bar {
 ```
 
 **Solution Implemented**:
-1. **Strict Algorithm Compliance**: `process_trades()` only returns bars that breached thresholds
-2. **Analysis Mode Option**: `process_trades_with_incomplete()` available for research purposes
+1. **Strict Algorithm Compliance**: `process_agg_trade_records()` only returns bars that breached thresholds
+2. **Analysis Mode Option**: `process_agg_trade_records_with_incomplete()` available for research purposes
 3. **Clear Documentation**: Methods clearly specify when incomplete bars are included
 
 **Validation Results**:

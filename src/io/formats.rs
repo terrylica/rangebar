@@ -50,9 +50,11 @@ pub const RANGEBAR_COLUMNS: &[&str] = &[
     "close",
     "volume",
     "turnover",
-    "trade_count",
-    "first_id",
-    "last_id",
+    "individual_trade_count",
+    "agg_record_count",
+    "first_trade_id",
+    "last_trade_id",
+    "data_source",
     "buy_volume",
     "sell_volume",
     "buy_trade_count",
@@ -88,13 +90,13 @@ impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
         let closes: Vec<i64> = self.iter().map(|bar| bar.close.0).collect();
         let volumes: Vec<i64> = self.iter().map(|bar| bar.volume.0).collect();
         let turnovers: Vec<i64> = self.iter().map(|bar| bar.turnover as i64).collect();
-        let trade_counts: Vec<i64> = self.iter().map(|bar| bar.trade_count).collect();
-        let first_ids: Vec<i64> = self.iter().map(|bar| bar.first_id).collect();
-        let last_ids: Vec<i64> = self.iter().map(|bar| bar.last_id).collect();
+        let trade_counts: Vec<i64> = self.iter().map(|bar| bar.individual_trade_count as i64).collect();
+        let first_ids: Vec<i64> = self.iter().map(|bar| bar.first_trade_id).collect();
+        let last_ids: Vec<i64> = self.iter().map(|bar| bar.last_trade_id).collect();
         let buy_volumes: Vec<i64> = self.iter().map(|bar| bar.buy_volume.0).collect();
         let sell_volumes: Vec<i64> = self.iter().map(|bar| bar.sell_volume.0).collect();
-        let buy_trade_counts: Vec<i64> = self.iter().map(|bar| bar.buy_trade_count).collect();
-        let sell_trade_counts: Vec<i64> = self.iter().map(|bar| bar.sell_trade_count).collect();
+        let buy_trade_counts: Vec<i64> = self.iter().map(|bar| bar.buy_trade_count as i64).collect();
+        let sell_trade_counts: Vec<i64> = self.iter().map(|bar| bar.sell_trade_count as i64).collect();
         let vwaps: Vec<i64> = self.iter().map(|bar| bar.vwap.0).collect();
         let buy_turnovers: Vec<i64> = self.iter().map(|bar| bar.buy_turnover as i64).collect();
         let sell_turnovers: Vec<i64> = self.iter().map(|bar| bar.sell_turnover as i64).collect();
@@ -164,13 +166,15 @@ impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
                 close: FixedPoint(closes[i]),
                 volume: FixedPoint(volumes[i]),
                 turnover: turnovers[i] as i128,
-                trade_count: trade_counts[i],
-                first_id: first_ids[i],
-                last_id: last_ids[i],
+                individual_trade_count: trade_counts[i] as u32,
+                agg_record_count: 1,
+                first_trade_id: first_ids[i],
+                last_trade_id: last_ids[i],
+                data_source: crate::core::types::DataSource::default(),
                 buy_volume: FixedPoint(buy_volumes[i]),
                 sell_volume: FixedPoint(sell_volumes[i]),
-                buy_trade_count: buy_trade_counts[i],
-                sell_trade_count: sell_trade_counts[i],
+                buy_trade_count: buy_trade_counts[i] as u32,
+                sell_trade_count: sell_trade_counts[i] as u32,
                 vwap: FixedPoint(vwaps[i]),
                 buy_turnover: buy_turnovers[i] as i128,
                 sell_turnover: sell_turnovers[i] as i128,
@@ -237,6 +241,7 @@ impl DataFrameConverter<Vec<AggTrade>> for Vec<AggTrade> {
                 last_trade_id: last_trade_ids[i],
                 timestamp: timestamps[i],
                 is_buyer_maker: is_buyer_makers[i],
+                is_best_match: None,
             };
 
             validate_agg_trade(&agg_trade)?;
@@ -356,14 +361,14 @@ fn validate_range_bar(bar: &RangeBar) -> Result<(), ConversionError> {
     }
 
     // Trade count validation
-    if bar.trade_count <= 0 {
+    if bar.individual_trade_count <= 0 {
         return Err(ConversionError::ValidationFailed {
             message: "Trade count must be positive".to_string(),
         });
     }
 
     // ID validation
-    if bar.last_id < bar.first_id {
+    if bar.last_trade_id < bar.first_trade_id {
         return Err(ConversionError::ValidationFailed {
             message: "last_id must be >= first_id".to_string(),
         });

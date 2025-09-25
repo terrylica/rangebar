@@ -17,8 +17,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sample_trades = create_sample_trades()?;
     println!("✅ Generated {} sample trades", sample_trades.len());
 
-    // Process trades into range bars
-    let range_bars = processor.process_trades(&sample_trades)?;
+    // Process AggTrade records into range bars
+    let range_bars = processor.process_agg_trade_records(&sample_trades)?;
     println!(
         "✅ Processed {} trades into {} range bars",
         sample_trades.len(),
@@ -81,6 +81,7 @@ fn create_sample_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Error>> {
             last_trade_id: i as i64 * 10 + 5,
             timestamp: base_timestamp + (i as i64 * 1000), // 1 second apart
             is_buyer_maker: i % 2 == 0,                    // Alternate buy/sell
+            is_best_match: None,
         };
         trades.push(trade);
     }

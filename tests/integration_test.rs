@@ -15,10 +15,10 @@ fn test_range_bar_processing_integration() {
     // Create test trades that should produce deterministic range bars
     let trades = create_test_trades().expect("Failed to create test trades");
 
-    // Process trades
+    // Process AggTrade records
     let range_bars = processor
-        .process_trades(&trades)
-        .expect("Failed to process trades");
+        .process_agg_trade_records(&trades)
+        .expect("Failed to process AggTrade records");
 
     // Verify results
     assert!(
@@ -81,6 +81,7 @@ fn test_zero_duration_bars_are_valid() {
             last_trade_id: 1,
             timestamp: same_timestamp,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 2,
@@ -90,11 +91,12 @@ fn test_zero_duration_bars_are_valid() {
             last_trade_id: 2,
             timestamp: same_timestamp, // Same timestamp - zero duration
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
     let range_bars = processor
-        .process_trades(&trades)
+        .process_agg_trade_records(&trades)
         .expect("Failed to process trades");
 
     // Should produce a zero-duration bar (open_time == close_time)
@@ -135,7 +137,7 @@ fn test_cross_mode_algorithm_consistency() {
 
     // Process trades and capture results
     let range_bars = processor
-        .process_trades(&test_trades)
+        .process_agg_trade_records(&test_trades)
         .expect("Failed to process trades");
 
     // Validate core algorithm invariants that must hold across all modes
@@ -174,7 +176,7 @@ fn test_statistics_mode_consistency() {
 
     // Process with statistics support enabled
     let range_bars = processor
-        .process_trades(&test_trades)
+        .process_agg_trade_records(&test_trades)
         .expect("Failed to process trades in statistics mode");
 
     // Validate the same algorithm invariants
@@ -221,7 +223,7 @@ fn test_non_statistics_mode_consistency() {
 
     // Process without statistics support
     let range_bars = processor
-        .process_trades(&test_trades)
+        .process_agg_trade_records(&test_trades)
         .expect("Failed to process trades in non-statistics mode");
 
     // Validate the same algorithm invariants
@@ -360,7 +362,7 @@ fn test_non_lookahead_bias_compliance() {
     ];
 
     let range_bars = processor
-        .process_trades(&trades)
+        .process_agg_trade_records(&trades)
         .expect("Failed to process trades");
 
     assert_eq!(range_bars.len(), 1, "Should produce exactly one range bar");
@@ -404,5 +406,6 @@ fn create_trade(id: i64, price: f64, timestamp: i64) -> AggTrade {
         last_trade_id: id * 10 + 5,
         timestamp,
         is_buyer_maker: id % 2 == 0,
+        is_best_match: None,
     }
 }

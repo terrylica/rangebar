@@ -29,11 +29,12 @@
 //!     last_trade_id: 1,
 //!     timestamp: 1609459200000,
 //!     is_buyer_maker: false,
+//!     is_best_match: None,
 //! };
 //!
-//! // Process aggTrades into range bars
-//! let trades = vec![trade];
-//! let bars = processor.process_trades(&trades).unwrap();
+//! // Process aggTrade records into range bars
+//! let agg_trade_records = vec![trade];
+//! let bars = processor.process_agg_trade_records(&agg_trade_records).unwrap();
 //! ```
 //!
 //! ## Dual-Path Architecture
@@ -90,6 +91,10 @@ pub mod core;
 pub mod market;
 pub mod streaming;
 pub mod streaming_processor;
+
+// Test utilities (only available in test builds)
+#[cfg(any(test, feature = "test-utils"))]
+pub mod test_utils;
 
 // Optional modules based on feature flags
 #[cfg(feature = "polars-io")]

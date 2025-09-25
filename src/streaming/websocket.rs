@@ -96,6 +96,7 @@ impl BinanceAggTrade {
             last_trade_id: self.last_trade_id,
             timestamp: normalize_timestamp(self.trade_time as u64),
             is_buyer_maker: self.is_buyer_maker,
+            is_best_match: None, // Not provided in WebSocket stream
         })
     }
 }

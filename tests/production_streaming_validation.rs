@@ -264,6 +264,7 @@ fn create_test_trade(id: u64, price: f64, timestamp: u64) -> AggTrade {
         last_trade_id: id as i64,
         timestamp: timestamp as i64,
         is_buyer_maker: false,
+        is_best_match: None,
     }
 }
 
@@ -281,9 +282,11 @@ fn create_test_bar(id: u64) -> RangeBar {
         close: base_price,
         volume,
         turnover,
-        trade_count: 10,
-        first_id: id as i64 * 100,
-        last_id: id as i64 * 100 + 9,
+        individual_trade_count: 10,
+        agg_record_count: 1,
+        first_trade_id: id as i64 * 100,
+        last_trade_id: id as i64 * 100 + 9,
+        data_source: rangebar::core::types::DataSource::BinanceFuturesUM,
         buy_volume: FixedPoint::from_str("50.0").unwrap(),
         sell_volume: FixedPoint::from_str("50.0").unwrap(),
         buy_trade_count: 5,

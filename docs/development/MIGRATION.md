@@ -17,9 +17,9 @@ Output field names changed from **plural** to **singular** for consistency:
 | `closes` → | `close` |
 | `volumes` → | `volume` |
 | `turnovers` → | `turnover` |
-| `trade_counts` → | `trade_count` |
-| `first_ids` → | `first_id` |
-| `last_ids` → | `last_id` |
+| `trade_counts` → | `individual_trade_count` |
+| `first_ids` → | `first_trade_id` |
+| `last_ids` → | `last_trade_id` |
 
 **Timestamps remain unchanged**: `open_time`, `close_time`
 
@@ -119,12 +119,12 @@ prices = np.array([5000000000000, 5040000000000], dtype=np.int64)
 volumes = np.array([100000000, 100000000], dtype=np.int64)
 timestamps = np.array([1000, 2000], dtype=np.int64)
 trade_ids = np.array([1, 2], dtype=np.int64)
-first_ids = np.array([1, 2], dtype=np.int64) 
-last_ids = np.array([1, 2], dtype=np.int64)
+first_trade_ids = np.array([1, 2], dtype=np.int64)
+last_trade_ids = np.array([1, 2], dtype=np.int64)
 
 result = rust.compute_range_bars(
     prices=prices, volumes=volumes, timestamps=timestamps,
-    trade_ids=trade_ids, first_ids=first_ids, last_ids=last_ids,
+    trade_ids=trade_ids, first_trade_ids=first_trade_ids, last_trade_ids=last_trade_ids,
     threshold_bps=8000
 )
 

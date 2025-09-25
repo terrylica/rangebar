@@ -70,6 +70,7 @@ pub fn create_aggtrade_with_normalized_timestamp(
         last_trade_id,
         timestamp: normalize_timestamp(raw_timestamp),
         is_buyer_maker,
+        is_best_match: None, // Not provided in this context
     }
 }
 

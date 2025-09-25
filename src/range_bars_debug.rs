@@ -30,6 +30,7 @@ fn test_fixed_algorithm_behavior() {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 2,
@@ -39,6 +40,7 @@ fn test_fixed_algorithm_behavior() {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 3,
@@ -48,6 +50,7 @@ fn test_fixed_algorithm_behavior() {
             last_trade_id: 3,
             timestamp: 3000,
             is_buyer_maker: true,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 4,
@@ -57,11 +60,12 @@ fn test_fixed_algorithm_behavior() {
             last_trade_id: 4,
             timestamp: 4000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
     // Use the FIXED algorithm (strict compliance)
-    let bars = processor.process_trades(&trades).unwrap();
+    let bars = processor.process_agg_trade_records(&trades).unwrap();
 
     println!("   Fixed algorithm result: {} bars", bars.len());
 
@@ -86,7 +90,7 @@ fn test_fixed_algorithm_behavior() {
     }
 
     // Test with analysis mode (includes incomplete bars)
-    let bars_with_incomplete = processor.process_trades_with_incomplete(&trades).unwrap();
+    let bars_with_incomplete = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
     println!(
         "   Analysis mode result: {} bars",
         bars_with_incomplete.len()
@@ -117,6 +121,7 @@ fn test_analysis_mode_compatibility() {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // Small movement within threshold
         AggTrade {
@@ -127,11 +132,12 @@ fn test_analysis_mode_compatibility() {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
-    let strict_bars = processor.process_trades(&trades).unwrap();
-    let analysis_bars = processor.process_trades_with_incomplete(&trades).unwrap();
+    let strict_bars = processor.process_agg_trade_records(&trades).unwrap();
+    let analysis_bars = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
 
     println!(
         "   Strict mode: {} bars (algorithm compliant)",
@@ -190,6 +196,7 @@ fn test_with_audit_data(threshold_bps: u32) {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // Trade that creates the high
         AggTrade {
@@ -200,6 +207,7 @@ fn test_with_audit_data(threshold_bps: u32) {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // Trade that creates the low
         AggTrade {
@@ -210,6 +218,7 @@ fn test_with_audit_data(threshold_bps: u32) {
             last_trade_id: 3,
             timestamp: 3000,
             is_buyer_maker: true,
+            is_best_match: None,
         },
         // Final trade that becomes close
         AggTrade {
@@ -220,6 +229,7 @@ fn test_with_audit_data(threshold_bps: u32) {
             last_trade_id: 4,
             timestamp: 4000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
@@ -254,7 +264,7 @@ fn test_with_audit_data(threshold_bps: u32) {
     );
 
     // Process trades
-    let bars = processor.process_trades(&trades).unwrap();
+    let bars = processor.process_agg_trade_records(&trades).unwrap();
     println!("   Result: {} bars created", bars.len());
 
     if !bars.is_empty() {
@@ -301,6 +311,7 @@ fn test_end_of_data_scenario() {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // Small price movements that don't breach 0.5% threshold
         AggTrade {
@@ -311,6 +322,7 @@ fn test_end_of_data_scenario() {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 3,
@@ -320,6 +332,7 @@ fn test_end_of_data_scenario() {
             last_trade_id: 3,
             timestamp: 3000,
             is_buyer_maker: true,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 4,
@@ -329,6 +342,7 @@ fn test_end_of_data_scenario() {
             last_trade_id: 4,
             timestamp: 4000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
@@ -339,7 +353,7 @@ fn test_end_of_data_scenario() {
     println!("   Upper threshold: {} (breach needed)", upper_threshold);
     println!("   Lower threshold: {} (breach needed)", lower_threshold);
 
-    let bars = processor.process_trades(&trades).unwrap();
+    let bars = processor.process_agg_trade_records(&trades).unwrap();
 
     if bars.len() == 1 {
         let bar = &bars[0];
@@ -479,6 +493,7 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // Small movement within threshold
         AggTrade {
@@ -489,6 +504,7 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 3,
@@ -498,11 +514,12 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
             last_trade_id: 3,
             timestamp: 3000,
             is_buyer_maker: true,
+            is_best_match: None,
         },
     ];
 
     // Test strict algorithm compliance
-    let bars_strict = processor.process_trades(&trades_no_breach).unwrap();
+    let bars_strict = processor.process_agg_trade_records(&trades_no_breach).unwrap();
     println!(
         "   Strict mode ({}): {} bars created",
         threshold_desc,
@@ -530,7 +547,7 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
 
     // Test analysis mode
     let bars_analysis = processor
-        .process_trades_with_incomplete(&trades_no_breach)
+        .process_agg_trade_records_with_incomplete(&trades_no_breach)
         .unwrap();
     println!(
         "   Analysis mode ({}): {} bars created",
@@ -566,6 +583,7 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 2,
@@ -575,10 +593,11 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
-    let bars_with_breach = processor.process_trades(&trades_with_breach).unwrap();
+    let bars_with_breach = processor.process_agg_trade_records(&trades_with_breach).unwrap();
     println!("   With breach: {} bars created", bars_with_breach.len());
 
     if bars_with_breach.len() == 1 {
@@ -612,6 +631,7 @@ fn test_extreme_scenarios_small_thresholds() {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // 0.05% movement (half the threshold)
         AggTrade {
@@ -622,6 +642,7 @@ fn test_extreme_scenarios_small_thresholds() {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // Another 0.05% movement (still within threshold)
         AggTrade {
@@ -632,10 +653,11 @@ fn test_extreme_scenarios_small_thresholds() {
             last_trade_id: 3,
             timestamp: 3000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
-    let bars_tiny = processor.process_trades(&tiny_movements).unwrap();
+    let bars_tiny = processor.process_agg_trade_records(&tiny_movements).unwrap();
     println!(
         "   0.1% threshold with tiny movements: {} bars",
         bars_tiny.len()
@@ -759,6 +781,7 @@ pub fn debug_threshold_calculation_issue() {
         last_trade_id: 1,
         timestamp: 1000,
         is_buyer_maker: false,
+        is_best_match: None,
     };
 
     let bar = RangeBar::new(&dummy_trade);

@@ -47,6 +47,7 @@ fn test_range_bar_processor_uses_correct_bps() {
             last_trade_id: 1,
             timestamp: 1000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
         // This trade should trigger bar closure (0.25% above)
         rangebar::types::AggTrade {
@@ -57,10 +58,11 @@ fn test_range_bar_processor_uses_correct_bps() {
             last_trade_id: 2,
             timestamp: 2000,
             is_buyer_maker: false,
+            is_best_match: None,
         },
     ];
 
-    let bars = processor.process_trades(&trades).unwrap();
+    let bars = processor.process_agg_trade_records(&trades).unwrap();
 
     // Should produce exactly 1 bar
     assert_eq!(bars.len(), 1);
