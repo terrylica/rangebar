@@ -236,6 +236,7 @@ overflow-checks = true  # Keep overflow checks in debug builds
 default = ["streaming-v2", "data-integrity"]  # Core features for most users
 simd = []  # Optional SIMD optimizations
 debug = []  # Debug utilities and diagnostics
+test-utils = []  # Test utilities for external testing
 
 # Execution modes (dual-path architecture)
 streaming-mode = ["streaming-stats", "real-time-indicators"]
