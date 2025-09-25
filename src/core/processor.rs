@@ -98,7 +98,6 @@ impl RangeBarProcessor {
         self.process_agg_trade_records_with_options(agg_trade_records, false)
     }
 
-
     /// Process AggTrade records with options for including incomplete bars
     ///
     /// # Parameters
@@ -297,7 +296,9 @@ mod tests {
         );
 
         // Test analysis mode: incomplete bar should be available for analysis
-        let bars_with_incomplete = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
+        let bars_with_incomplete = processor
+            .process_agg_trade_records_with_incomplete(&trades)
+            .unwrap();
         assert_eq!(
             bars_with_incomplete.len(),
             1,
@@ -334,7 +335,9 @@ mod tests {
         assert_eq!(bar1.low.to_string(), "50000.00000000");
 
         // Test analysis mode: includes incomplete second bar
-        let bars_with_incomplete = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
+        let bars_with_incomplete = processor
+            .process_agg_trade_records_with_incomplete(&trades)
+            .unwrap();
         assert_eq!(
             bars_with_incomplete.len(),
             2,
@@ -456,8 +459,6 @@ mod tests {
 
     #[test]
     fn test_export_processor_with_manual_trades() {
-
-
         println!("Testing ExportRangeBarProcessor with same trade data...");
 
         let mut export_processor = ExportRangeBarProcessor::new(10); // 0.1% = 10 bps

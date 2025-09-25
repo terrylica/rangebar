@@ -304,8 +304,10 @@ impl BatchAnalysisEngine {
 
             let price_value = price_q
                 .get_row(0)
-                .and_then(|row| extract_f64_value(&row, 0)
-                    .map_err(|e| PolarsError::ComputeError(e.to_string().into())))
+                .and_then(|row| {
+                    extract_f64_value(&row, 0)
+                        .map_err(|e| PolarsError::ComputeError(e.to_string().into()))
+                })
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("extract_price_quantile_{}", level),
                     source: e.into(),
@@ -326,8 +328,10 @@ impl BatchAnalysisEngine {
 
             let volume_value = volume_q
                 .get_row(0)
-                .and_then(|row| extract_f64_value(&row, 0)
-                    .map_err(|e| PolarsError::ComputeError(e.to_string().into())))
+                .and_then(|row| {
+                    extract_f64_value(&row, 0)
+                        .map_err(|e| PolarsError::ComputeError(e.to_string().into()))
+                })
                 .map_err(|e| BatchError::ComputationFailed {
                     operation: format!("extract_volume_quantile_{}", level),
                     source: e.into(),

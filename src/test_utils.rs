@@ -3,8 +3,8 @@
 //! This module provides centralized functions for creating test data structures,
 //! eliminating hardcoded values scattered throughout test files.
 
-use crate::core::types::{AggTrade, DataSource, RangeBar};
 use crate::core::FixedPoint;
+use crate::core::types::{AggTrade, DataSource, RangeBar};
 
 /// Creates a standard test AggTrade with sensible defaults
 pub fn create_test_agg_trade(id: i64, price: &str, volume: &str, timestamp: i64) -> AggTrade {
@@ -16,7 +16,7 @@ pub fn create_test_agg_trade(id: i64, price: &str, volume: &str, timestamp: i64)
         last_trade_id: id * 10,
         timestamp,
         is_buyer_maker: id % 2 == 0, // Alternate buy/sell for realistic testing
-        is_best_match: None, // Default for futures data
+        is_best_match: None,         // Default for futures data
     }
 }
 
@@ -215,10 +215,10 @@ pub mod scenarios {
     pub fn exact_breach_upward(threshold_bps: u32) -> Vec<AggTrade> {
         let breach_change = threshold_bps as f64 / 10000.0; // Exact threshold
         AggTradeBuilder::new()
-            .add_trade(1, 1.0, 0)                                    // Open
-            .add_trade(2, 1.0 + breach_change * 0.8, 1000)         // Approach threshold
-            .add_trade(3, 1.0 + breach_change, 2000)                // Exact breach
-            .add_trade(4, 1.01, 3000)                               // New bar start
+            .add_trade(1, 1.0, 0) // Open
+            .add_trade(2, 1.0 + breach_change * 0.8, 1000) // Approach threshold
+            .add_trade(3, 1.0 + breach_change, 2000) // Exact breach
+            .add_trade(4, 1.01, 3000) // New bar start
             .build()
     }
 
@@ -226,18 +226,18 @@ pub mod scenarios {
     pub fn exact_breach_downward(threshold_bps: u32) -> Vec<AggTrade> {
         let breach_change = threshold_bps as f64 / 10000.0; // Exact threshold
         AggTradeBuilder::new()
-            .add_trade(1, 1.0, 0)                                    // Open
-            .add_trade(2, 1.0 - breach_change * 0.8, 1000)         // Approach threshold
-            .add_trade(3, 1.0 - breach_change, 2000)                // Exact breach
-            .add_trade(4, 0.99, 3000)                               // New bar start
+            .add_trade(1, 1.0, 0) // Open
+            .add_trade(2, 1.0 - breach_change * 0.8, 1000) // Approach threshold
+            .add_trade(3, 1.0 - breach_change, 2000) // Exact breach
+            .add_trade(4, 0.99, 3000) // New bar start
             .build()
     }
 
     /// Creates trades with large price gaps for gap testing
     pub fn large_gap_sequence() -> Vec<AggTrade> {
         AggTradeBuilder::new()
-            .add_trade(1, 1.0, 0)        // Open at 50000
-            .add_trade(2, 1.02, 1000)    // +2% gap to 51000
+            .add_trade(1, 1.0, 0) // Open at 50000
+            .add_trade(2, 1.02, 1000) // +2% gap to 51000
             .build()
     }
 
@@ -245,8 +245,24 @@ pub mod scenarios {
     pub fn unsorted_sequence() -> Vec<AggTrade> {
         use super::constants;
         vec![
-            create_test_agg_trade_with_range(1, "50000.0", "1.0", constants::BASE_TIMESTAMP + 2000, 10, 10, false), // Later timestamp
-            create_test_agg_trade_with_range(2, "50100.0", "1.0", constants::BASE_TIMESTAMP + 1000, 20, 20, false), // Earlier timestamp
+            create_test_agg_trade_with_range(
+                1,
+                "50000.0",
+                "1.0",
+                constants::BASE_TIMESTAMP + 2000,
+                10,
+                10,
+                false,
+            ), // Later timestamp
+            create_test_agg_trade_with_range(
+                2,
+                "50100.0",
+                "1.0",
+                constants::BASE_TIMESTAMP + 1000,
+                20,
+                20,
+                false,
+            ), // Earlier timestamp
         ]
     }
 

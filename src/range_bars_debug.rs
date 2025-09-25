@@ -90,7 +90,9 @@ fn test_fixed_algorithm_behavior() {
     }
 
     // Test with analysis mode (includes incomplete bars)
-    let bars_with_incomplete = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
+    let bars_with_incomplete = processor
+        .process_agg_trade_records_with_incomplete(&trades)
+        .unwrap();
     println!(
         "   Analysis mode result: {} bars",
         bars_with_incomplete.len()
@@ -137,7 +139,9 @@ fn test_analysis_mode_compatibility() {
     ];
 
     let strict_bars = processor.process_agg_trade_records(&trades).unwrap();
-    let analysis_bars = processor.process_agg_trade_records_with_incomplete(&trades).unwrap();
+    let analysis_bars = processor
+        .process_agg_trade_records_with_incomplete(&trades)
+        .unwrap();
 
     println!(
         "   Strict mode: {} bars (algorithm compliant)",
@@ -519,7 +523,9 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
     ];
 
     // Test strict algorithm compliance
-    let bars_strict = processor.process_agg_trade_records(&trades_no_breach).unwrap();
+    let bars_strict = processor
+        .process_agg_trade_records(&trades_no_breach)
+        .unwrap();
     println!(
         "   Strict mode ({}): {} bars created",
         threshold_desc,
@@ -597,7 +603,9 @@ fn test_specific_small_threshold(threshold_bps: u32, threshold_desc: &str) {
         },
     ];
 
-    let bars_with_breach = processor.process_agg_trade_records(&trades_with_breach).unwrap();
+    let bars_with_breach = processor
+        .process_agg_trade_records(&trades_with_breach)
+        .unwrap();
     println!("   With breach: {} bars created", bars_with_breach.len());
 
     if bars_with_breach.len() == 1 {
@@ -657,7 +665,9 @@ fn test_extreme_scenarios_small_thresholds() {
         },
     ];
 
-    let bars_tiny = processor.process_agg_trade_records(&tiny_movements).unwrap();
+    let bars_tiny = processor
+        .process_agg_trade_records(&tiny_movements)
+        .unwrap();
     println!(
         "   0.1% threshold with tiny movements: {} bars",
         bars_tiny.len()

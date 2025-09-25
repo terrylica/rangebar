@@ -90,13 +90,18 @@ impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
         let closes: Vec<i64> = self.iter().map(|bar| bar.close.0).collect();
         let volumes: Vec<i64> = self.iter().map(|bar| bar.volume.0).collect();
         let turnovers: Vec<i64> = self.iter().map(|bar| bar.turnover as i64).collect();
-        let trade_counts: Vec<i64> = self.iter().map(|bar| bar.individual_trade_count as i64).collect();
+        let trade_counts: Vec<i64> = self
+            .iter()
+            .map(|bar| bar.individual_trade_count as i64)
+            .collect();
         let first_ids: Vec<i64> = self.iter().map(|bar| bar.first_trade_id).collect();
         let last_ids: Vec<i64> = self.iter().map(|bar| bar.last_trade_id).collect();
         let buy_volumes: Vec<i64> = self.iter().map(|bar| bar.buy_volume.0).collect();
         let sell_volumes: Vec<i64> = self.iter().map(|bar| bar.sell_volume.0).collect();
-        let buy_trade_counts: Vec<i64> = self.iter().map(|bar| bar.buy_trade_count as i64).collect();
-        let sell_trade_counts: Vec<i64> = self.iter().map(|bar| bar.sell_trade_count as i64).collect();
+        let buy_trade_counts: Vec<i64> =
+            self.iter().map(|bar| bar.buy_trade_count as i64).collect();
+        let sell_trade_counts: Vec<i64> =
+            self.iter().map(|bar| bar.sell_trade_count as i64).collect();
         let vwaps: Vec<i64> = self.iter().map(|bar| bar.vwap.0).collect();
         let buy_turnovers: Vec<i64> = self.iter().map(|bar| bar.buy_turnover as i64).collect();
         let sell_turnovers: Vec<i64> = self.iter().map(|bar| bar.sell_turnover as i64).collect();

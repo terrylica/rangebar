@@ -119,7 +119,9 @@ fn bench_memory_efficiency(c: &mut Criterion) {
                     let mut total_bars = 0;
 
                     for chunk in trades.chunks(batch_size) {
-                        let bars = processor.process_agg_trade_records(black_box(chunk)).unwrap();
+                        let bars = processor
+                            .process_agg_trade_records(black_box(chunk))
+                            .unwrap();
                         total_bars += bars.len();
                     }
 

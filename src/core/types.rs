@@ -3,7 +3,6 @@
 use crate::fixed_point::FixedPoint;
 use serde::{Deserialize, Serialize};
 
-
 /// Data source for market data (future-proofing for multi-exchange support)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[cfg_attr(feature = "api", derive(utoipa::ToSchema))]
@@ -60,7 +59,6 @@ impl AggTrade {
     pub fn individual_trade_count(&self) -> i64 {
         self.last_trade_id - self.first_trade_id + 1
     }
-
 
     /// Turnover (price * volume) as i128 to prevent overflow
     pub fn turnover(&self) -> i128 {
@@ -181,7 +179,6 @@ impl RangeBar {
             last_trade_id: trade.last_trade_id,
             data_source: DataSource::default(),
 
-
             // Market microstructure fields
             buy_volume,
             sell_volume,
@@ -201,7 +198,6 @@ impl RangeBar {
             self.individual_trade_count as f64 / self.agg_record_count as f64
         }
     }
-
 
     /// Update bar with new AggTrade record (always call before checking breach)
     /// Maintains market microstructure metrics incrementally
@@ -374,7 +370,7 @@ mod tests {
             "2.5",
             1640995201000,
             2,
-            3, // Multiple trades aggregated
+            3,    // Multiple trades aggregated
             true, // Sell pressure (taker selling to maker)
         );
 
