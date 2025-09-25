@@ -12,45 +12,15 @@ env:
 jobs:
   test:
     name: Test Suite
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Free disk space (Ubuntu only)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          echo "=== Before cleanup ==="
-          df -h
-          echo "=== Removing unnecessary packages ==="
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo apt-get remove -y '^aspnetcore-.*' '^dotnet-.*' '^llvm-.*' 'php.*' '^mysql-.*' azure-cli google-cloud-cli google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri
-          sudo apt-get autoremove -y
-          sudo apt-get autoclean
-          echo "=== After cleanup ==="
-          df -h
-
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
         run: cargo test
@@ -61,13 +31,8 @@ jobs:
       - name: Check formatting
         run: cargo fmt -- --check
 
-      - name: Build all binaries
+      - name: Build binaries
         run: cargo build --release
-
-      - name: Test tier1-symbol-discovery
-        run: echo "Skipping live API test in CI due to geographic restrictions (Binance API 451 errors from GitHub runners)"
-        # Note: tier1-symbol-discovery requires live Binance API access which may be geo-restricted
-        # The binary works correctly as demonstrated by successful local testing
 
   # benchmark:
   #   name: Performance Benchmarks
