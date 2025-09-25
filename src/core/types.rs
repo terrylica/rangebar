@@ -5,21 +5,16 @@ use serde::{Deserialize, Serialize};
 
 
 /// Data source for market data (future-proofing for multi-exchange support)
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 #[cfg_attr(feature = "api", derive(utoipa::ToSchema))]
 pub enum DataSource {
     /// Binance Spot Market (8 fields including is_best_match)
     BinanceSpot,
     /// Binance USD-Margined Futures (7 fields without is_best_match)
+    #[default]
     BinanceFuturesUM,
     /// Binance Coin-Margined Futures
     BinanceFuturesCM,
-}
-
-impl Default for DataSource {
-    fn default() -> Self {
-        DataSource::BinanceFuturesUM
-    }
 }
 
 /// Aggregate trade data from Binance markets
