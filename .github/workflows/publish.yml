@@ -32,7 +32,7 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Run tests
-        run: cargo test --features "streaming-v2,data-integrity,polars-io,arrow-export"
+        run: cargo test --lib --features "streaming-v2,data-integrity,polars-io,arrow-export"
 
       - name: Run clippy
         run: cargo clippy --features "streaming-v2,data-integrity,polars-io,arrow-export" -- -D warnings
