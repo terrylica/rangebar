@@ -213,14 +213,14 @@ fn benchmark_polars_exports(
 
     for (format_name, path) in &formats {
         let start = Instant::now();
-        match format_name {
-            &"parquet" => {
+        match *format_name {
+            "parquet" => {
                 polars_exporter.export_parquet(range_bars, path)?;
             }
-            &"arrow" => {
+            "arrow" => {
                 polars_exporter.export_arrow_ipc(range_bars, path)?;
             }
-            &"csv" => {
+            "csv" => {
                 polars_exporter.export_streaming_csv(range_bars, path)?;
             }
             _ => unreachable!(),
