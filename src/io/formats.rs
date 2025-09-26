@@ -150,6 +150,7 @@ impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
         let volumes = extract_i64_column(&df, "volume")?;
         let turnovers = extract_i64_column(&df, "turnover")?;
         let trade_counts = extract_i64_column(&df, "trade_count")?;
+        let agg_record_counts = extract_i64_column(&df, "agg_record_count")?;
         let first_ids = extract_i64_column(&df, "first_id")?;
         let last_ids = extract_i64_column(&df, "last_id")?;
         let buy_volumes = extract_i64_column(&df, "buy_volume")?;
@@ -172,7 +173,7 @@ impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
                 volume: FixedPoint(volumes[i]),
                 turnover: turnovers[i] as i128,
                 individual_trade_count: trade_counts[i] as u32,
-                agg_record_count: 1,
+                agg_record_count: agg_record_counts[i] as u32,
                 first_trade_id: first_ids[i],
                 last_trade_id: last_ids[i],
                 data_source: crate::core::types::DataSource::default(),

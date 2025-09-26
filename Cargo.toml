@@ -174,21 +174,14 @@ tokio-stream = "0.1"
 tokio-tungstenite = { version = "0.23", features = ["native-tls"] }
 async-trait = "0.1"
 
-# Memory-efficient streaming optimizations (2024-2025 community-proven)
-mempool = { version = "0.3", optional = true }  # 1ns/iter allocation reuse, thread-safe memory pool by BurntSushi
-bufferpool = { version = "0.1", optional = true }  # 4.3x faster pre-allocated buffer regions
-tikv-jemallocator = { version = "0.6", optional = true }  # 25% memory performance boost
-
 # Web framework and API dependencies (optional)
 axum = { version = "0.7", features = ["json", "multipart", "ws"], optional = true }
 tower = { version = "0.4", features = ["limit", "timeout"], optional = true }
 tower-http = { version = "0.5", features = ["cors", "trace", "compression-br"], optional = true }
 utoipa = { version = "4.2", features = ["axum_extras", "chrono", "uuid"], optional = true }
-utoipa-swagger-ui = { version = "4.0", features = ["axum"], optional = true }
-anyhow = { version = "1.0", optional = true }
 tracing = { version = "0.1", optional = true }
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"], optional = true }
-validator = { version = "0.18", features = ["derive"], optional = true }
+validator = { version = "0.19", features = ["derive"], optional = true }
 uuid = { version = "1.6", features = ["v4", "serde"], optional = true }
 
 # State-of-the-art streaming statistics (2024-2025)
@@ -197,8 +190,6 @@ rolling-stats = { version = "0.1", optional = true }  # Numerically stable varia
 tdigests = { version = "1.0", optional = true }      # Streaming percentiles <2% error
 # streaming_algorithms = { version = "0.1", optional = true }  # SIMD-accelerated algorithms (disabled due to packed_simd compatibility)
 
-# Statistical analysis (optional)
-nalgebra = { version = "0.33", optional = true }
 polars = { version = "^0.51.0", features = ["lazy", "temporal", "strings", "parquet", "csv", "ipc", "rolling_window"], optional = true }
 quantiles = { version = "0.7", optional = true }
 statrs = { version = "0.17", optional = true }
@@ -208,9 +199,6 @@ crc32fast = { version = "1.4", optional = true }
 md5 = { version = "0.7", optional = true }
 sha2 = { version = "0.10", optional = true }
 
-# Arrow ecosystem support (optional)
-arrow = { version = "53.0", optional = true }
-parquet = { version = "53.0", optional = true }
 
 # Python bindings (optional)
 pyo3 = { version = "0.26", features = ["extension-module", "abi3-py38"], optional = true }
@@ -245,7 +233,7 @@ hybrid-mode = ["streaming-mode", "batch-mode"]
 
 # Output capabilities
 polars-io = ["dep:polars"]
-arrow-export = ["polars-io", "dep:arrow"]
+arrow-export = ["polars-io"]
 parquet-export = ["polars-io"]
 export-formats = ["polars-io", "arrow-export", "parquet-export"]
 
@@ -260,15 +248,13 @@ polars-analytics = ["polars-io", "dep:statrs", "dep:quantiles"]
 real-time-indicators = []  # Technical indicators for live trading
 cross-symbol-analysis = ["polars-analytics"]
 market-microstructure = ["advanced-analytics"]
-statistics = ["dep:statrs", "dep:quantiles", "dep:nalgebra"]  # Legacy compatibility
+statistics = ["dep:statrs", "dep:quantiles"]  # Legacy compatibility
 streaming-v2 = []  # Production-ready streaming architecture
 data-integrity = ["dep:sha2", "dep:crc32fast", "dep:md5"]
-arrow-support = ["dep:arrow", "dep:parquet"]
-memory-optimized = ["dep:mempool", "dep:bufferpool", "dep:tikv-jemallocator"]
 
 # Web API and service capabilities
-api = ["dep:axum", "dep:tower", "dep:tower-http", "dep:utoipa", "dep:utoipa-swagger-ui",
-       "dep:anyhow", "dep:tracing", "dep:tracing-subscriber", "dep:validator", "dep:uuid"]
+api = ["dep:axum", "dep:tower", "dep:tower-http", "dep:utoipa",
+       "dep:tracing", "dep:tracing-subscriber", "dep:validator", "dep:uuid"]
 
 # Python integration
 python = ["dep:pyo3", "polars-analytics"]
@@ -277,4 +263,4 @@ python = ["dep:pyo3", "polars-analytics"]
 researcher = ["polars-analytics", "arrow-export", "research-analytics"]
 trader = ["streaming-mode", "real-time-indicators", "api"]
 full-suite = ["researcher", "trader", "hybrid-mode"]
-production = ["hybrid-mode", "arrow-support", "data-integrity"]
+production = ["hybrid-mode", "data-integrity"]

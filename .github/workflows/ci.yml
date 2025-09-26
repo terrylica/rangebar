@@ -22,8 +22,32 @@ jobs:
         with:
           components: clippy, rustfmt
 
+      - name: Cache cargo tools
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-tools-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-tools-
+
+      - name: Install cargo tools
+        run: |
+          command -v cargo-audit || cargo install cargo-audit --locked
+          command -v cargo-deny || cargo install cargo-deny --locked
+          command -v cargo-machete || cargo install cargo-machete --locked
+          command -v cargo-nextest || cargo install cargo-nextest --locked
+
+      - name: Security audit
+        run: cargo audit --deny warnings
+
+      - name: License and policy check
+        run: cargo deny check
+
+      - name: Check unused dependencies
+        run: cargo machete --with-metadata || true
+
       - name: Run tests
-        run: cargo test
+        run: cargo nextest run
 
       - name: Run clippy
         run: cargo clippy -- -D warnings
