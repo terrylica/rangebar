@@ -107,10 +107,6 @@ pub mod batch;
 pub mod api;
 
 // Legacy modules for backward compatibility
-#[cfg(feature = "statistics")]
-pub mod statistics {
-    pub use crate::streaming::stats::*;
-}
 
 // Production-ready streaming architecture available via crate::streaming module
 
@@ -123,8 +119,6 @@ pub mod range_bars {
     pub use crate::core::processor::*;
 }
 
-#[cfg(feature = "debug")]
-pub mod range_bars_debug;
 
 pub mod tier1 {
     pub use crate::market::symbols::*;

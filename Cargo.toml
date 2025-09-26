@@ -155,10 +155,8 @@ serde_json = { version = "1.0", features = ["arbitrary_precision"] }
 thiserror = "2.0"
 csv = "1.3"
 # Core async dependencies
-bytes = "1.0"
 chrono = { version = "^0.4", features = ["serde"] }
 clap = { version = "^4.0", features = ["derive", "env"] }
-comfy-table = "7.2"
 num_cpus = "1.16"
 futures = "0.3"
 futures-util = "0.3"
@@ -185,17 +183,13 @@ validator = { version = "0.19", features = ["derive"], optional = true }
 uuid = { version = "1.6", features = ["v4", "serde"], optional = true }
 
 # State-of-the-art streaming statistics (2024-2025)
-ta-statistics = { version = "0.2", optional = true }  # Financial-specific with Welford's algorithm
 rolling-stats = { version = "0.1", optional = true }  # Numerically stable variance
 tdigests = { version = "1.0", optional = true }      # Streaming percentiles <2% error
 # streaming_algorithms = { version = "0.1", optional = true }  # SIMD-accelerated algorithms (disabled due to packed_simd compatibility)
 
 polars = { version = "^0.51.0", features = ["lazy", "temporal", "strings", "parquet", "csv", "ipc", "rolling_window"], optional = true }
-quantiles = { version = "0.7", optional = true }
-statrs = { version = "0.17", optional = true }
 
 # Data integrity validation (optional)
-crc32fast = { version = "1.4", optional = true }
 md5 = { version = "0.7", optional = true }
 sha2 = { version = "0.10", optional = true }
 
@@ -208,8 +202,6 @@ pyo3 = { version = "0.26", features = ["extension-module", "abi3-py38"], optiona
 criterion = { version = "0.5", features = ["html_reports"] }
 toml = "0.8"
 tempfile = "3.8"
-ratatui = "0.29"
-crossterm = "0.28"
 
 [profile.release]
 lto = true              # Link-time optimization for better performance
@@ -228,29 +220,22 @@ test-utils = []  # Test utilities for external testing
 
 # Execution modes (dual-path architecture)
 streaming-mode = ["streaming-stats", "real-time-indicators"]
-batch-mode = ["polars-analytics", "advanced-analytics"]
+batch-mode = ["polars-analytics"]
 hybrid-mode = ["streaming-mode", "batch-mode"]
 
 # Output capabilities
 polars-io = ["dep:polars"]
-arrow-export = ["polars-io"]
-parquet-export = ["polars-io"]
-export-formats = ["polars-io", "arrow-export", "parquet-export"]
+export-formats = ["polars-io"]
 
 # Analytics levels
-basic-analytics = ["streaming-stats"]
-advanced-analytics = ["polars-analytics", "cross-symbol-analysis"]
-research-analytics = ["advanced-analytics", "market-microstructure"]
+analytics = ["polars-analytics", "streaming-stats"]
 
 # Core feature groups
-streaming-stats = ["dep:ta-statistics", "dep:rolling-stats", "dep:tdigests"]
-polars-analytics = ["polars-io", "dep:statrs", "dep:quantiles"]
+streaming-stats = ["dep:rolling-stats", "dep:tdigests"]
+polars-analytics = ["polars-io"]
 real-time-indicators = []  # Technical indicators for live trading
-cross-symbol-analysis = ["polars-analytics"]
-market-microstructure = ["advanced-analytics"]
-statistics = ["dep:statrs", "dep:quantiles"]  # Legacy compatibility
 streaming-v2 = []  # Production-ready streaming architecture
-data-integrity = ["dep:sha2", "dep:crc32fast", "dep:md5"]
+data-integrity = ["dep:sha2", "dep:md5"]
 
 # Web API and service capabilities
 api = ["dep:axum", "dep:tower", "dep:tower-http", "dep:utoipa",
@@ -260,7 +245,7 @@ api = ["dep:axum", "dep:tower", "dep:tower-http", "dep:utoipa",
 python = ["dep:pyo3", "polars-analytics"]
 
 # Combined feature sets (user-friendly)
-researcher = ["polars-analytics", "arrow-export", "research-analytics"]
-trader = ["streaming-mode", "real-time-indicators", "api"]
-full-suite = ["researcher", "trader", "hybrid-mode"]
-production = ["hybrid-mode", "data-integrity"]
+researcher = ["analytics", "export-formats"]
+trader = ["streaming-mode", "api"]
+full = ["researcher", "trader", "python"]
+production = ["streaming-v2", "data-integrity"]

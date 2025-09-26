@@ -1,0 +1,323 @@
+openapi: 3.1.1
+info:
+  title: Rangebar Codebase Sanitization Plan
+  description: Machine-readable specification for dependency graph optimization and module archival
+  version: 1.0.0
+  contact:
+    name: terrylica
+  license:
+    name: MIT
+
+paths: {}
+
+components:
+  schemas:
+    SanitizationPlan:
+      type: object
+      required: [metadata, analysis, phases, validation]
+      properties:
+        metadata:
+          $ref: '#/components/schemas/PlanMetadata'
+        analysis:
+          $ref: '#/components/schemas/CodebaseAnalysis'
+        phases:
+          type: array
+          items:
+            $ref: '#/components/schemas/ExecutionPhase'
+        validation:
+          $ref: '#/components/schemas/ValidationCriteria'
+
+    PlanMetadata:
+      type: object
+      required: [version, created, status, dependencies]
+      properties:
+        version:
+          type: string
+          example: "1.0.0"
+        created:
+          type: string
+          format: date-time
+          example: "2025-09-26T08:55:00Z"
+        status:
+          type: string
+          enum: [planned, in_progress, completed, failed]
+          example: "planned"
+        dependencies:
+          type: array
+          items:
+            type: string
+          example: ["cargo-udeps", "cargo-machete", "cargo-deny"]
+
+    CodebaseAnalysis:
+      type: object
+      required: [core_modules, non_core_modules, unused_dependencies, metrics]
+      properties:
+        core_modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleInfo'
+        non_core_modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleInfo'
+        unused_dependencies:
+          type: array
+          items:
+            type: string
+        metrics:
+          $ref: '#/components/schemas/CodebaseMetrics'
+
+    ModuleInfo:
+      type: object
+      required: [path, lines_of_code, fan_in, last_modified, classification]
+      properties:
+        path:
+          type: string
+          example: "src/core/processor.rs"
+        lines_of_code:
+          type: integer
+          example: 764
+        fan_in:
+          type: integer
+          description: "Number of modules depending on this module"
+          example: 12
+        last_modified:
+          type: string
+          format: date-time
+        classification:
+          type: string
+          enum: [core, utility, legacy, experimental, archived]
+
+    CodebaseMetrics:
+      type: object
+      required: [total_loc, dependency_count, feature_flags]
+      properties:
+        total_loc:
+          type: integer
+          example: 17590
+        dependency_count:
+          type: integer
+          example: 28
+        feature_flags:
+          type: integer
+          example: 23
+        binary_size_bytes:
+          type: integer
+
+    ExecutionPhase:
+      type: object
+      required: [id, name, commands, prerequisites, outputs]
+      properties:
+        id:
+          type: string
+          example: "phase_1_archive"
+        name:
+          type: string
+          example: "Archive Non-Core Components"
+        commands:
+          type: array
+          items:
+            $ref: '#/components/schemas/Command'
+        prerequisites:
+          type: array
+          items:
+            type: string
+        outputs:
+          type: array
+          items:
+            type: string
+        rollback_commands:
+          type: array
+          items:
+            $ref: '#/components/schemas/Command'
+
+    Command:
+      type: object
+      required: [type, command, description]
+      properties:
+        type:
+          type: string
+          enum: [dry_run, execute, validate]
+        command:
+          type: string
+          example: "git mv --dry-run src/archived/* archived_modules/legacy/"
+        description:
+          type: string
+          example: "Move legacy statistics module to archive"
+        expected_output:
+          type: string
+        error_handling:
+          type: string
+          enum: [fail_fast, continue, rollback]
+          default: fail_fast
+
+    ValidationCriteria:
+      type: object
+      required: [success_metrics, failure_conditions]
+      properties:
+        success_metrics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Metric'
+        failure_conditions:
+          type: array
+          items:
+            type: string
+        rollback_triggers:
+          type: array
+          items:
+            type: string
+
+    Metric:
+      type: object
+      required: [name, target, measurement_method]
+      properties:
+        name:
+          type: string
+          example: "binary_size_reduction"
+        target:
+          type: string
+          example: ">10%"
+        measurement_method:
+          type: string
+          example: "ls -lh target/release/rangebar"
+        baseline:
+          type: string
+
+# Implementation Data
+sanitization_plan:
+  metadata:
+    version: "1.0.0"
+    created: "2025-09-26T08:55:00Z"
+    status: "planned"
+    dependencies: ["cargo-udeps", "cargo-machete", "cargo-deny"]
+
+  analysis:
+    core_modules:
+      - path: "src/core/processor.rs"
+        lines_of_code: 764
+        fan_in: 8
+        last_modified: "2025-09-26T01:27:22Z"
+        classification: "core"
+      - path: "src/streaming/stats.rs"
+        lines_of_code: 554
+        fan_in: 6
+        classification: "core"
+      - path: "src/io/formats.rs"
+        lines_of_code: 508
+        fan_in: 4
+        classification: "core"
+      - path: "src/batch/engine.rs"
+        lines_of_code: 787
+        fan_in: 3
+        classification: "core"
+
+    non_core_modules:
+      - path: "src/archived/statistics_legacy.rs"
+        lines_of_code: 3377
+        fan_in: 0
+        classification: "legacy"
+      - path: "src/range_bars_debug.rs"
+        lines_of_code: 862
+        fan_in: 1
+        classification: "experimental"
+      - path: "src/bin/disabled/rangebar_export.rs"
+        lines_of_code: 804
+        fan_in: 0
+        classification: "archived"
+
+    unused_dependencies:
+      - "bytes"
+      - "comfy-table"
+      - "crossterm"
+      - "ratatui"
+
+    metrics:
+      total_loc: 17590
+      dependency_count: 28
+      feature_flags: 23
+
+  phases:
+    - id: "phase_1_archive"
+      name: "Archive Non-Core Components"
+      commands:
+        - type: "execute"
+          command: "mkdir -p archived_modules/{legacy,debug,experiments}"
+          description: "Create archive directory structure"
+          error_handling: "fail_fast"
+        - type: "dry_run"
+          command: "git mv --dry-run src/archived/* archived_modules/legacy/"
+          description: "Validate legacy module move"
+        - type: "execute"
+          command: "git mv src/archived/* archived_modules/legacy/"
+          description: "Move legacy modules to archive"
+      prerequisites: []
+      outputs: ["archived_modules/"]
+
+    - id: "phase_2_dependencies"
+      name: "Clean Unused Dependencies"
+      commands:
+        - type: "execute"
+          command: "cargo install cargo-udeps"
+          description: "Install dependency analysis tool"
+        - type: "validate"
+          command: "cargo udeps --all-targets --all-features"
+          description: "Comprehensive unused dependency scan"
+        - type: "execute"
+          command: "cargo machete"
+          description: "Remove unused dependencies from Cargo.toml"
+      prerequisites: ["phase_1_archive"]
+      outputs: ["updated Cargo.toml"]
+
+    - id: "phase_3_features"
+      name: "Consolidate Feature Flags"
+      commands:
+        - type: "validate"
+          command: "cargo check --all-features"
+          description: "Validate all feature combinations"
+        - type: "validate"
+          command: "cargo check --no-default-features"
+          description: "Validate minimal build"
+      prerequisites: ["phase_2_dependencies"]
+      outputs: ["optimized feature matrix"]
+
+    - id: "phase_4_validation"
+      name: "Validate Core Closure"
+      commands:
+        - type: "validate"
+          command: "cargo test"
+          description: "Ensure all tests pass"
+        - type: "validate"
+          command: "cargo build --release"
+          description: "Validate release build"
+        - type: "validate"
+          command: "cargo nextest run"
+          description: "Execute test suite with nextest"
+      prerequisites: ["phase_3_features"]
+      outputs: ["validated core closure"]
+
+  validation:
+    success_metrics:
+      - name: "test_pass_rate"
+        target: "100%"
+        measurement_method: "cargo test"
+      - name: "binary_size_reduction"
+        target: ">10%"
+        measurement_method: "ls -lh target/release/rangebar"
+      - name: "compilation_time_improvement"
+        target: ">15%"
+        measurement_method: "time cargo build --release"
+      - name: "unused_dependencies"
+        target: "0"
+        measurement_method: "cargo udeps --all-targets"
+
+    failure_conditions:
+      - "Any test failure"
+      - "Compilation errors"
+      - "Dependency resolution conflicts"
+      - "Feature flag validation errors"
+
+    rollback_triggers:
+      - "Test suite failure"
+      - "Binary size increase >5%"
+      - "Breaking API changes"

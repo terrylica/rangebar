@@ -31,6 +31,7 @@ fn main() {
             last_trade_id: 2,
             timestamp: 1609459201000,
             is_buyer_maker: true,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 3,
@@ -50,6 +51,7 @@ fn main() {
             last_trade_id: 4,
             timestamp: 1609459203000,
             is_buyer_maker: true,
+            is_best_match: None,
         },
         AggTrade {
             agg_trade_id: 5,

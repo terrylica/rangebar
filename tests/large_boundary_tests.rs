@@ -55,15 +55,17 @@ async fn test_massive_dataset_boundary_consistency() {
     let matches = batch_bars.len() == streaming_bars.len();
     let ratio = streaming_bars.len() as f64 / batch_bars.len() as f64;
 
+    let status_msg = if matches {
+        "✅ MATCH".to_string()
+    } else {
+        format!("❌ MISMATCH ({:.2}x)", ratio)
+    };
+
     println!(
         "  📊 Comparison: {} vs {} bars - {}",
         batch_bars.len(),
         streaming_bars.len(),
-        if matches {
-            "✅ MATCH"
-        } else {
-            &format!("❌ MISMATCH ({:.2}x)", ratio)
-        }
+        status_msg
     );
 
     // Performance analysis

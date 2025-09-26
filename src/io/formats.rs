@@ -4,7 +4,7 @@
 //! with exception-only failure handling.
 
 use crate::core::FixedPoint;
-use crate::core::types::{AggTrade, RangeBar};
+use crate::core::types::{AggTrade, RangeBar, DataSource};
 use polars::prelude::*;
 use thiserror::Error;
 
@@ -431,9 +431,11 @@ mod tests {
             close: FixedPoint(105000000),   // 1.05
             volume: FixedPoint(1000000000), // 10.0
             turnover: 1050000000,
-            trade_count: 5,
-            first_id: 1,
-            last_id: 5,
+            individual_trade_count: 5,
+            agg_record_count: 1,
+            first_trade_id: 1,
+            last_trade_id: 5,
+            data_source: DataSource::BinanceFuturesUM,
             buy_volume: FixedPoint(600000000),
             sell_volume: FixedPoint(400000000),
             buy_trade_count: 3,

@@ -3,7 +3,7 @@
 //! High-performance export capabilities using Polars for efficient
 //! file format conversion and streaming operations.
 
-use crate::core::types::RangeBar;
+use crate::core::types::{RangeBar, DataSource};
 use crate::io::formats::{ConversionError, DataFrameConverter};
 use polars::prelude::*;
 use std::path::Path;
@@ -331,9 +331,11 @@ mod tests {
                 close: FixedPoint(105000000),
                 volume: FixedPoint(1000000000),
                 turnover: 1050000000,
-                trade_count: 5,
-                first_id: 1,
-                last_id: 5,
+                individual_trade_count: 5,
+                agg_record_count: 1,
+                first_trade_id: 1,
+                last_trade_id: 5,
+                data_source: DataSource::BinanceFuturesUM,
                 buy_volume: FixedPoint(600000000),
                 sell_volume: FixedPoint(400000000),
                 buy_trade_count: 3,
@@ -351,9 +353,11 @@ mod tests {
                 close: FixedPoint(110000000),
                 volume: FixedPoint(2000000000),
                 turnover: 2200000000,
-                trade_count: 8,
-                first_id: 6,
-                last_id: 13,
+                individual_trade_count: 8,
+                agg_record_count: 1,
+                first_trade_id: 6,
+                last_trade_id: 13,
+                data_source: DataSource::BinanceFuturesUM,
                 buy_volume: FixedPoint(1200000000),
                 sell_volume: FixedPoint(800000000),
                 buy_trade_count: 5,
