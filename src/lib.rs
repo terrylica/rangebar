@@ -119,7 +119,6 @@ pub mod range_bars {
     pub use crate::core::processor::*;
 }
 
-
 pub mod tier1 {
     pub use crate::market::symbols::*;
 }

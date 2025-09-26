@@ -3,7 +3,7 @@
 //! High-performance export capabilities using Polars for efficient
 //! file format conversion and streaming operations.
 
-use crate::core::types::{RangeBar, DataSource};
+use crate::core::types::{DataSource, RangeBar};
 use crate::io::formats::{ConversionError, DataFrameConverter};
 use polars::prelude::*;
 use std::path::Path;

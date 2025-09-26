@@ -4,7 +4,7 @@
 //! with exception-only failure handling.
 
 use crate::core::FixedPoint;
-use crate::core::types::{AggTrade, RangeBar, DataSource};
+use crate::core::types::{AggTrade, DataSource, RangeBar};
 use polars::prelude::*;
 use thiserror::Error;
 
