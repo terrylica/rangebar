@@ -242,3 +242,104 @@ All performance claims verified through independent testing:
 [0.2.0]: https://github.com/Eon-Labs/rangebar/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/Eon-Labs/rangebar/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Eon-Labs/rangebar/releases/tag/v0.1.0
+
+## v2.0.0 (2025-09-26)
+
+### BREAKING CHANGE
+
+- Modernizes dependency management from basic scripting to enterprise-grade automation
+
+### Feat
+
+- **sanitization**: complete codebase sanitization according to OpenAPI spec
+- implement state-of-the-art dependency management pipeline
+- **deps,docs**: dependency automation + memory-optimized documentation
+
+### Fix
+
+- **ci**: ignore unmaintained crates in security audit
+- **fmt**: resolve all rustfmt formatting issues for CI compliance
+- **clippy**: replace manual Default impl with derive attribute
+- **ci**: add missing test-utils feature flag
+- **ci**: minimal CI workflow for essential checks only
+- **ci**: simplify CI workflow for reliability
+- **ci**: resolve CI failures by excluding data module dependencies
+
+## v0.9.1 (2025-09-24)
+
+### Fix
+
+- **ci**: update publish workflow with stable toolchain and dry-run verification
+
+## v0.9.0 (2025-09-24)
+
+### BREAKING CHANGE
+
+- Major architectural consolidation
+- Remove src/range_bars.rs (consolidated into lib.rs)
+- Remove src/streaming/engine.rs (consolidated into streaming_processor.rs)
+- Consolidate ExportRangeBarProcessor implementation
+- Enhance historical replay with real-time terminal interface
+- Standardize data loading patterns across all components
+
+### Refactor
+
+- consolidate architecture, eliminate duplicated range bar logic
+- standardize basis points terminology across codebase
+
+## v0.7.0 (2025-09-19)
+
+### BREAKING CHANGE
+
+- Major API consolidation affects imports and module structure
+
+### Feat
+
+- implement data structure validation framework for aggTrades analysis
+- align rustfmt configuration between local and CI environments
+- rust-1.90.0 compatibility upgrade
+- statistics-v2 streaming validation framework
+- consolidate streaming architecture and rebuild statistics from scratch
+
+### Fix
+
+- correct assert statement formatting for CI consistency
+- resolve CI test failures and clippy warnings
+- resolve CI compilation failures in test suite
+- rust-1.90.0 clippy lint resolution
+- resolve clippy warnings for GPU module
+- skip live Binance API test in CI due to geographic restrictions
+- add comprehensive error handling for Binance API failures in tier1-symbol-discovery
+- remove unused variables in benchmarks and add mandatory pre-commit hooks
+
+### Refactor
+
+- consolidate streaming architecture and documentation standards
+- Remove GPU experimental features while preserving CPU improvements
+
+## v0.4.3 (2025-09-15)
+
+### Fix
+
+- apply cargo fmt formatting for GitHub Actions CI
+
+## v0.4.2 (2025-09-15)
+
+## v0.4.1 (2025-09-14)
+
+### Feat
+
+- Complete Python → Rust migration with pure Rust tier1-symbol-discovery
+- Apply comprehensive 2025 Rust best practices and crates.io readiness
+- Comprehensive terminology standardization - Tier-1 instruments definition
+- Statistical validation tools for performance optimization verification
+- Performance optimization - 100x memory reduction and infinite speedup
+- Complete Statistical Visualization Pipeline - HTML/PNG Validation Confirmed
+- Range Bar Visualization Achievement - UV Dependencies & Working Charts
+- Phase 0 Range Bar Enhancement - Market Microstructure Analysis
+- Implement SHA256 data integrity verification for Binance downloads
+
+### Fix
+
+- Correct range bar algorithm to use actual trade prices for close values
+- Update all GitHub URLs to correct Eon-Labs organization
