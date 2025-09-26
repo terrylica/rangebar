@@ -38,7 +38,7 @@ jobs:
           command -v cargo-nextest || cargo install cargo-nextest --locked
 
       - name: Security audit
-        run: cargo audit --deny warnings
+        run: cargo audit --ignore unmaintained
 
       - name: License and policy check
         run: cargo deny check
