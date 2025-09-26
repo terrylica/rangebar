@@ -8,7 +8,7 @@ This document captures usability enhancement opportunities identified during v0.
 - **Format Alignment**: Perfect JSON/Arrow alignment with zero conversion overhead
 - **Performance**: 137M+ trades/second with Rust backend  
 - **Field Names**: Intuitive singular field names (open, close vs opens, closes)
-- **PyPI Integration**: Smooth installation and distribution
+- **Package Distribution**: Clean source-based distribution
 - **Documentation**: Comprehensive README and migration guides
 - **CLI Tool**: Functional command-line interface
 - **Pandas Integration**: Direct DataFrame creation from Rust output
@@ -204,7 +204,7 @@ results = compare_implementations(
 - **Startup Time**: Keep import time under 100ms
 
 ### Adoption Metrics
-- **PyPI Downloads**: Track monthly download trends
+- **GitHub Downloads**: Track release download trends
 - **Issue Resolution**: Usability-related issues should decrease
 - **Community Examples**: User-contributed examples and tutorials
 
@@ -212,7 +212,7 @@ results = compare_implementations(
 
 ### Current Feedback Channels
 - GitHub Issues for bug reports and feature requests
-- PyPI download metrics for adoption tracking
+- GitHub release download metrics for adoption tracking
 - Documentation engagement analytics
 
 ### Proposed Feedback Collection

@@ -210,7 +210,7 @@ All performance claims verified through independent testing:
 ## [0.1.1] - 2025-09-09
 
 ### 🐛 Bug Fixes
-- Fixed Python source code inclusion in PyPI wheel
+- Fixed Python source code inclusion in distribution wheel
 - Added proper maturin configuration for mixed Python/Rust projects
 
 ### 📦 Packaging

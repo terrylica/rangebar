@@ -131,7 +131,7 @@ production_deployment_impact:
     minimum_rust_requirement: "Downstream users must have Rust 1.90.0 or later"
     migration_path: "Automatic through cargo update for users with compatible Rust version"
 
-  crates_io_publishing:
+  package_distribution:
     version_strategy: "0.5.3 indicates compatibility requirement update"
     user_communication: "Changelog clearly documents Rust version requirement increase"
     rollback_strategy: "Previous version 0.5.2 remains available for users requiring Rust <1.90"

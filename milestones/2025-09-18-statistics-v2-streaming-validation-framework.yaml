@@ -17,7 +17,7 @@ lessons_learned:
     - description: Test binary artifact management in repository structure
       impact: Compiled test binaries polluted git tracking, requiring .gitignore patterns to maintain clean repository state
 
-    - description: Version bump coordination for crates.io publishing compatibility
+    - description: Version bump coordination for package compatibility
       impact: Statistics module changes require semantic versioning coordination to maintain backward compatibility guarantees
 
   failed_approaches:

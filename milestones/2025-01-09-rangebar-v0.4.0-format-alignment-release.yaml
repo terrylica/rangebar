@@ -1,7 +1,7 @@
 milestone_id: 2025-01-09-rangebar-v0.4.0-format-alignment-release
 commit_sha: 297b29d62aa61d65e22bf92ddd0727a9c7524502
 timestamp: 2025-01-09T17:05:00-08:00
-summary: RangeBar v0.4.0 release with perfect JSON/Arrow format alignment and PyPI publication
+summary: RangeBar v0.4.0 release with perfect JSON/Arrow format alignment and package distribution
 
 lessons_learned:
   challenges:
@@ -14,8 +14,8 @@ lessons_learned:
     - description: Coordinating field name consistency between Rust PyO3 bindings and Python JSON schemas
       impact: Field name mismatches cause silent data corruption and integration failures in production systems
     
-    - description: Managing PyPI publication process with complex Rust/Python hybrid packaging via maturin
-      impact: Publication failures would prevent users from easily installing and using the production-ready package
+    - description: Managing package distribution process with complex Rust/Python hybrid packaging via maturin
+      impact: Distribution failures would prevent users from easily installing and using the production-ready package
 
   failed_approaches:
     - approach: Using generic data conversion libraries for format alignment
@@ -99,8 +99,8 @@ migration_notes:
     - See MIGRATION.md for detailed step-by-step upgrade instructions
 
 deployment_verification:
-  pypi_publication:
-    - Package successfully published to PyPI as production-ready distribution
+  package_distribution:
+    - Package successfully distributed as production-ready release
     - Installation verified in clean environments with both uv and pip
     - All dependencies resolve correctly with modern Python 3.13+ environments
     
@@ -112,7 +112,7 @@ deployment_verification:
 
 usability_insights:
   developer_experience_wins:
-    - Zero-config installation via PyPI with automatic dependency resolution
+    - Zero-config installation from source with automatic dependency resolution
     - Direct pandas DataFrame compatibility without intermediate conversion steps
     - Comprehensive CLI tooling eliminates need for custom data fetching scripts
     - Built-in validation provides immediate feedback for integration issues

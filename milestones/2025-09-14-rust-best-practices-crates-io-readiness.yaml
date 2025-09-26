@@ -188,7 +188,7 @@ architecture_foundation:
 
 key_discoveries:
   rust_ecosystem_evolution: 2025 Rust development requires comprehensive tooling integration beyond basic compilation
-  publication_security_primacy: Security audit must precede functional validation in crates.io publishing workflow
+  publication_security_primacy: Security audit must precede functional validation in package distribution workflow
   feature_complexity_scaling: Feature combination validation complexity grows exponentially requiring automated tooling
   credential_security_importance: Professional publishing requires enterprise-grade credential management practices
   documentation_adoption_correlation: Code quality and documentation quality directly impact community adoption rates
