@@ -14,6 +14,8 @@ Non-lookahead bias range bar construction from Binance UM Futures aggTrades data
 
 **Dev**: `cargo build --release`, `cargo test`, `cargo clippy`, `./scripts/update-deps.sh`
 
+**Release**: `./scripts/release.sh` - Automated versioning, changelog, and GitHub release
+
 **Deploy**: `doppler run -- shuttle deploy`
 
 **Data Ops**: `tier1-symbol-discovery --format comprehensive`, `rangebar-analyze`, `rangebar-export [SYMBOL] [dates] [threshold] [output] [um]`, `data-structure-validator --features data-integrity`
@@ -81,3 +83,24 @@ Non-lookahead bias range bar construction from Binance UM Futures aggTrades data
 ## Dependency Management
 
 **Auto-Updates**: Dependabot weekly PRs (`.github/dependabot.yml`), caret requirements (`^0.51.0`), manual validation (`scripts/update-deps.sh`)
+
+## Release Workflow
+
+**Automation**: git-cliff + Commitizen for automated release management
+
+**Process**: `./scripts/release.sh` executes:
+1. Version bump (Commitizen with SemVer)
+2. CHANGELOG.md generation (git-cliff with detailed commit history)
+3. RELEASE_NOTES.md generation (git-cliff with user-friendly format)
+4. Git push with tags
+5. GitHub release creation
+
+**Configuration**:
+- `.cz.toml` - Commitizen config (version tracking, conventional commits)
+- `cliff.toml` - Detailed changelog template (developer-focused)
+- `cliff-release-notes.toml` - Release notes template (user-focused)
+
+**Manual Commands**:
+- `uvx --from commitizen cz bump --yes` - Version bump only
+- `git-cliff --config cliff.toml --output CHANGELOG.md` - Generate changelog
+- `git-cliff --config cliff-release-notes.toml --latest --output RELEASE_NOTES.md` - Generate release notes
