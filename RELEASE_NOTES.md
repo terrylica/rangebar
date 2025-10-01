@@ -1,47 +1,24 @@
-# RangeBar v2.0.0 Release Notes
 
-## Major Codebase Sanitization & Dependency Modernization
+## 2.1.0 - 2025-10-01
 
-This is a **BREAKING CHANGE** release that modernizes dependency management from basic scripting to enterprise-grade automation.
 
-### 🧹 **Codebase Sanitization**
-- **Archive 4 non-core modules** to `archived_modules/{legacy,debug,experiments}`
-- **Remove 8 unused dependencies**: bytes, comfy-table, ta-statistics, quantiles, statrs, crc32fast, ratatui, crossterm
-- **Consolidate 23 feature flags** down to 14 core features (39% reduction)
-- **Maintain 100% test pass rate** (108/108 tests pass)
-- **Preserve all core functionality** and API compatibility
+### ✨ New Features
 
-### 🔧 **Enterprise Dependency Management**
-- **State-of-the-art toolchain**: cargo-{audit,deny,machete,nextest}
-- **Automated security pipeline**: RustSec vulnerability scanning with audit
-- **Policy enforcement**: License compliance and dependency governance
-- **Dependency optimization**: Automated unused dependency detection
-- **Performance testing**: 3x faster test execution with nextest
+- Implement git-cliff for automated changelog and release notes Integrate git-cliff as off-the-shelf solution for dual-output changelog generation: - Install git-cliff v2.10.1 via cargo (Rust-native performance) - Create cliff.toml for detailed CHANGELOG.md (developer-focused) - Create cliff-release-notes.toml for RELEASE_NOTES.md (user-focused) - Add scripts/release.sh for unified release workflow - Update CLAUDE.md with release process documentation Benefits: - Single source of truth: git history → dual outputs - Zero manual changelog maintenance - Consistent formatting with emoji sections - GitHub username attribution - Automated version bumping with Commitizen integration Workflow: ./scripts/release.sh executes: 1. Commitizen version bump 2. git-cliff CHANGELOG.md generation 3. git-cliff RELEASE_NOTES.md generation 4. Git push with tags 5. GitHub release creation Configuration files use TOML array of tables syntax for commit parsers and preprocessors.
 
-### 📋 **Implementation Details**
-- Implemented according to OpenAPI 3.1.1 specification
-- CI pipeline with security audit → policy check → dependency cleanup → performance testing
-- Renovate automation with ecosystem grouping and security-first automerge
-- Feature matrix consolidation: `analytics`, `export-formats`, `researcher`, `trader`, `production`
 
-### 🚀 **Key Benefits**
-- **Reduced attack surface**: 8 fewer dependencies in dependency tree
-- **Improved maintainability**: Consolidated feature matrix
-- **Enhanced security**: Automated vulnerability scanning
-- **Better performance**: Streamlined build and test pipeline
-- **Clean architecture**: Clear separation of core vs non-core components
 
-### ⚠️ **Breaking Changes**
-- Some feature flags have been consolidated (see migration guide)
-- Legacy modules moved to `archived_modules/` directory
-- Dependency references in custom builds may need updating
+### 🐛 Bug Fixes & Improvements
 
-### 📊 **Success Metrics**
-- ✅ 100% test pass rate maintained
-- ✅ 39% reduction in feature flags complexity
-- ✅ 8 unused dependencies removed
-- ✅ Enterprise-grade CI/CD pipeline implemented
-- ✅ Full backward compatibility preserved
+- Resolve formatting issues for CI compliance
 
-**Full Changelog**: https://github.com/Eon-Labs/rangebar/compare/v1.1.0...v2.0.0
-**CI Run**: https://github.com/Eon-Labs/rangebar/actions/runs/18045016874
+
+
+### 📝 Other Changes
+
+- Version 2.0.0 → 2.1.0
+
+
+
+---
+**Full Changelog**: https://github.com/Eon-Labs/rangebar/compare/v2.0.0...v2.1.0
