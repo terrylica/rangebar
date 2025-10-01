@@ -50,11 +50,23 @@ Non-lookahead bias range bar construction from Binance UM Futures aggTrades data
 **Validation**: `(high_breach → close_breach) AND (low_breach → close_breach)`
 
 ### Data Source Requirements
+
+#### Binance (Primary - Crypto)
 - **Source**: https://github.com/stas-prokopiev/binance_historical_data
 - **Primary Asset Class**: `"spot"` (Default) for standard spot trading pairs
 - **Optional Markets**: `"um"` (USD-M Futures) for USDT/USDC perpetuals, `"cm"` (Coin-M Futures)
 - **Data Type**: `"aggTrades"` **ONLY**
 - **Usage**: Specify market type via command line arguments or use spot by default
+
+#### Dukascopy (Secondary - Forex/Multi-Asset)
+- **Status**: ✅ Validated 2025-09-30 (see `docs/planning/research/dukascopy-endpoint-validation.md`)
+- **Coverage**: 1,607 instruments (Forex, Crypto, Equities, Commodities)
+- **Data Type**: Tick-level quotes (bid/ask with volumes)
+- **Access**: Public HTTP endpoints (no authentication)
+- **Format**: LZMA compressed binary (.bi5), 20 bytes per tick
+- **Historical Depth**: Forex from 2003+, Crypto from 2017+
+- **Implementation**: Direct Rust (xz2 + byteorder crates)
+- **Config Reference**: `docs/planning/research/dukascopy-instrument-config.toml`
 
 ### Tier-1 Instruments Definition
 **Tier-1 instruments** are crypto assets that Binance respects highly enough to list across **ALL THREE** futures markets:
