@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **data-sources**: Add Dukascopy validation and instrument configuration Add comprehensive empirical validation of Dukascopy HTTP endpoints and instrument configurations as secondary data source option. - Validate public HTTP endpoints, LZMA compression, 20-byte binary format - Document decimal factors for 1,607 instruments (Forex, Crypto, Equities) - Test rate limiting behavior and error handling strategies - Provide Rust implementation checklist and working examples - Update CLAUDE.md with Dukascopy as validated secondary source Validated: 2025-09-30, Status: Production-ready reference
 
+- **dukascopy**: Complete range bar construction design with 18 Q&A decisions - Add comprehensive design document (707 lines) covering: - Executive summary and quick reference - Mid-price conversion with validation (3 strictness levels) - Per-bar SMA for spread statistics (not EMA) - Zero core changes via adapter pattern - Module-level error handling with Result types - Embedded instrument config (1,607 instruments) - Resolve all 9 critical integration gaps: - Volume semantics: total liquidity, no buy/sell segregation - Direction: is_buyer_maker = false (direction unknown for quotes) - SpreadStats: per-bar SMA, reset on bar close - Validation: type-specific price ranges (Forex 0.01-10k) - Config: embedded TOML via include_str! - Timestamp: expanded validation range (2000-2035) - Update planning docs with design references - Enhance endpoint validation with integration notes Implementation-ready: 6-12 hours estimated effort
+
 
 ### 📝 Other Changes
 

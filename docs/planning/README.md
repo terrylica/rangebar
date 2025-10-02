@@ -22,6 +22,9 @@ This directory contains all planning, architectural, and research documentation 
 - `critical-finding-flat-bars-impossible.yml` - Mathematical constraints research
 - `extended-entropy-analysis.yml` - Market entropy analysis
 - `pattern-continuation-entropy-research-synthesis.yml` - Pattern research synthesis
+- `dukascopy-endpoint-validation.md` - Empirical Dukascopy API validation (HTTP, LZMA, binary format)
+- `dukascopy-instrument-config.toml` - Dukascopy instrument configuration reference (1,607 instruments)
+- `dukascopy-rangebar-construction.md` - Design: Range bar construction from Dukascopy tick data
 
 ### `/legacy/`
 **Historical planning documents** - Completed phases and superseded plans

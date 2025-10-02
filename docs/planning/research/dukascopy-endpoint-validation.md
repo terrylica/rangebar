@@ -500,6 +500,23 @@ Typical spread: $50-$150 (wider due to crypto volatility)
 - ⚠️  Some crypto ticks have 0.0000 volume (quote updates only)
 - ✅ Forex typically has non-zero volumes
 
+### Tick Frequency by Instrument Class (Empirical)
+
+**Liquidity Tiers (ticks/second):**
+```
+High Liquidity:   1.86-1.96 tps (USDJPY: 6,684/hr, GBPUSD: 7,064/hr)
+Medium Liquidity: 1.00 tps      (EURUSD: 3,614/hr)
+Lower Liquidity:  0.88 tps      (BTCUSD: 3,157/hr)
+```
+
+**Semantic Distinction:**
+- **Forex (non-zero volume):** Trade executions with actual volume
+- **Crypto (zero volume):** Quote updates (bid/ask price changes only)
+
+**Implications for Tick → AggTrade conversion:**
+- Filter zero-volume ticks when constructing trade-based bars
+- Use all ticks (including quotes) for price-action analysis
+
 ---
 
 ## 8. Complete Working Example - End-to-End Test
@@ -647,7 +664,98 @@ src/data/
 
 ---
 
-## 10. Validation Summary
+## 10. Performance & Memory Estimation
+
+### Compression Impact on Download Strategy
+
+**Empirical Compression Ratios:**
+```
+EURUSD: 4.2x (17KB → 71KB)
+USDJPY: 4.7x (28KB → 131KB)
+BTCUSD: 4.8x (13KB → 62KB)
+GBPUSD: 5.0x (28KB → 141KB)
+Average: 4.7x
+```
+
+**Download vs Processing Trade-off:**
+- Network: ~20KB/hour compressed (480KB/day)
+- Memory: ~100KB/hour decompressed (2.4MB/day)
+- Strategy: Stream decompression (decompress on-the-fly, don't store)
+
+### Memory Footprint Formulas
+
+**Per-tick memory (Rust struct):**
+```rust
+struct DukascopyTick {
+    timestamp: i64,      // 8 bytes
+    ask: f64,            // 8 bytes
+    bid: f64,            // 8 bytes
+    ask_volume: f32,     // 4 bytes
+    bid_volume: f32,     // 4 bytes
+}
+// Total: 32 bytes per tick (vs 20 bytes compressed)
+```
+
+**Memory estimates for batch processing:**
+```
+1 hour  (avg 5,000 ticks):    160 KB
+1 day   (avg 120,000 ticks): 3.8 MB
+1 week  (avg 840,000 ticks): 27 MB
+1 month (3.6M ticks):        115 MB
+```
+
+**Pre-allocation sizing:**
+```rust
+// Conservative estimate: 7,200 ticks/hour (max observed)
+let estimated_capacity = hours * 7_200;
+let mut ticks = Vec::with_capacity(estimated_capacity);
+```
+
+### Processing Time Estimates
+
+**Benchmarks (single-threaded):**
+```
+Download (20KB):        ~50ms  (depends on network)
+Decompression (xz):     ~10ms  (CPU-bound)
+Parsing (3,600 ticks):  ~1ms   (memory-bound)
+Total per hour:         ~61ms
+```
+
+**Parallelization opportunities:**
+- Fetch 10 hours in parallel: ~61ms (not 610ms)
+- Rayon parallel parsing: ~0.3ms for 3,600 ticks
+
+### Implementation Optimization Hints
+
+**Zero-Copy Opportunities:**
+```rust
+// Binary data is perfectly aligned (20 bytes exact)
+// Can use unsafe pointer casting for performance
+let tick_bytes: &[u8; 20] = chunk.try_into()?;
+let tick: DukascopyTick = unsafe {
+    std::ptr::read(tick_bytes.as_ptr() as *const _)
+};
+// ⚠️  Requires careful endianness handling
+```
+
+**Parallel Decompression Strategy:**
+```rust
+// Each hour is independent - perfect for parallelism
+let handles: Vec<_> = hours
+    .into_par_iter()
+    .map(|hour| fetch_and_decompress(instrument, date, hour))
+    .collect();
+```
+
+**Critical Performance Notes:**
+- LZMA decompression is CPU-intensive (~10ms/hour)
+- Parsing is trivial (~1ms/hour)
+- Network latency dominates (batch requests aggressively)
+- Perfect alignment enables SIMD optimizations
+
+---
+
+## 11. Validation Summary
 
 ### What We've Proven Empirically
 
@@ -667,6 +775,57 @@ src/data/
 ⚠️ **Historical Data Availability** - Oldest available dates vary by instrument
 ⚠️ **Data Gaps** - Weekends, holidays, market closures not yet mapped
 ⚠️ **Alternative Timeframes** - Only tested tick data (not m1/h1/d1 candles)
+
+### Critical Implementation Gotchas
+
+**⚠️ These will break silently if done wrong:**
+
+1. **Month Indexing (0-based)**
+   ```rust
+   // WRONG: Will give you February data when you want January
+   let url = format!(".../{}/{:02}/...", year, date.month());
+
+   // CORRECT: Use month0() for 0-based indexing
+   let url = format!(".../{}/{:02}/...", year, date.month0());
+   ```
+
+2. **Big-Endian Byte Order**
+   ```rust
+   // WRONG: Little-endian will give garbage values
+   let ask = u32::from_le_bytes(bytes);
+
+   // CORRECT: Must use big-endian
+   let ask = u32::from_be_bytes(bytes);
+   ```
+
+3. **Decimal Factor Lookup**
+   ```rust
+   // WRONG: Assuming all crypto uses same factor
+   if instrument.contains("USD") { return 10.0; }
+
+   // CORRECT: ADAUSD is exception (uses 1000.0)
+   match instrument {
+       "ADAUSD" => 1000.0,
+       _ if crypto => 10.0,
+       // ...
+   }
+   ```
+
+4. **File Remainder Check**
+   ```rust
+   // MUST validate: decompressed_size % 20 == 0
+   assert_eq!(data.len() % 20, 0, "Corrupt data: not 20-byte aligned");
+   ```
+
+5. **Zero-Volume Semantic**
+   ```rust
+   // WRONG: Treating all ticks as trades
+   for tick in ticks { trades.push(tick); }
+
+   // CORRECT: Filter quote-only updates if needed
+   let trades = ticks.into_iter()
+       .filter(|t| t.ask_volume > 0.0 || t.bid_volume > 0.0);
+   ```
 
 ### Production Readiness
 
@@ -758,6 +917,81 @@ Date Range Tested:
 | bid_raw | 8 | 4 | u32 | Divide by decimal_factor |
 | ask_volume | 12 | 4 | f32 | IEEE 754 float |
 | bid_volume | 16 | 4 | f32 | IEEE 754 float |
+
+---
+
+## Appendix B: Implementation Quick Reference Card
+
+**Copy-paste ready patterns for Rust implementation:**
+
+```rust
+// URL Construction (0-based month!)
+fn build_url(instrument: &str, date: NaiveDate, hour: u32) -> String {
+    format!(
+        "https://datafeed.dukascopy.com/datafeed/{}/{:04}/{:02}/{:02}/{:02}h_ticks.bi5",
+        instrument.to_uppercase(),
+        date.year(),
+        date.month0(),  // ← CRITICAL: 0-based!
+        date.day(),
+        hour
+    )
+}
+
+// Decimal Factor Lookup
+fn decimal_factor(instrument: &str) -> f64 {
+    match instrument.to_uppercase().as_str() {
+        s if s.contains("JPY") => 1000.0,
+        "ADAUSD" => 1000.0,  // Exception!
+        s if s.starts_with("BTC") || s.starts_with("ETH") || s.starts_with("LTC") => 10.0,
+        _ => 100000.0,  // Default: Forex majors
+    }
+}
+
+// Tick Parsing (big-endian)
+use byteorder::{BigEndian, ReadBytesExt};
+fn parse_tick(chunk: &[u8; 20], base_ts_ms: i64, factor: f64) -> DukascopyTick {
+    let mut c = std::io::Cursor::new(chunk);
+    DukascopyTick {
+        timestamp: base_ts_ms + c.read_u32::<BigEndian>().unwrap() as i64,
+        ask: c.read_u32::<BigEndian>().unwrap() as f64 / factor,
+        bid: c.read_u32::<BigEndian>().unwrap() as f64 / factor,
+        ask_volume: c.read_f32::<BigEndian>().unwrap(),
+        bid_volume: c.read_f32::<BigEndian>().unwrap(),
+    }
+}
+
+// Decompression
+use xz2::read::XzDecoder;
+fn decompress(compressed: &[u8]) -> Result<Vec<u8>, std::io::Error> {
+    let mut decoder = XzDecoder::new(compressed);
+    let mut decompressed = Vec::new();
+    decoder.read_to_end(&mut decompressed)?;
+
+    // CRITICAL: Validate alignment
+    assert_eq!(decompressed.len() % 20, 0, "Corrupt data");
+    Ok(decompressed)
+}
+
+// Memory Pre-allocation
+const MAX_TICKS_PER_HOUR: usize = 7_200;
+let mut ticks = Vec::with_capacity(hours * MAX_TICKS_PER_HOUR);
+
+// Rate Limiting Config
+const BATCH_SIZE: usize = 10;
+const BATCH_PAUSE_MS: u64 = 2000;
+```
+
+**Performance Targets:**
+- Download + Decompress + Parse: <100ms per hour
+- Memory: <200KB per hour (parsed structs)
+- Parallelization: 10 hours in ~100ms (not 1000ms)
+
+**Validation Checklist:**
+- [x] Use month0() not month()
+- [x] Big-endian byte order
+- [x] Check decompressed_len % 20 == 0
+- [x] Handle ADAUSD exception
+- [x] Filter zero-volume ticks if needed
 
 ---
 
