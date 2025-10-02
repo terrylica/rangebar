@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+### 📚 Documentation
+
+- **dukascopy**: Complete range bar construction design with 18 Q&A decisions - Add comprehensive design document (707 lines) covering: - Executive summary and quick reference - Mid-price conversion with validation (3 strictness levels) - Per-bar SMA for spread statistics (not EMA) - Zero core changes via adapter pattern - Module-level error handling with Result types - Embedded instrument config (1,607 instruments) - Resolve all 9 critical integration gaps: - Volume semantics: total liquidity, no buy/sell segregation - Direction: is_buyer_maker = false (direction unknown for quotes) - SpreadStats: per-bar SMA, reset on bar close - Validation: type-specific price ranges (Forex 0.01-10k) - Config: embedded TOML via include_str! - Timestamp: expanded validation range (2000-2035) - Update planning docs with design references - Enhance endpoint validation with integration notes Implementation-ready: 6-12 hours estimated effort
+
+- **dukascopy**: Finalize implementation plan with Q19-Q22 architectural resolutions - Add processor state management solution (Q19: current_bar_state field) - Document instrument type inference from config path (Q20: zero edits) - Validate SMA integer division correctness (Q21: mathematically proven) - Define error recovery policy (Q22: Fatal vs Skip with 10% threshold) - Update implementation checklist with 4 core processor changes - Expand testing requirements for state persistence and error recovery - Add Quick Reference section with processor state requirements - Add final Implementation Resolutions summary Resolves all architectural gaps from deep-dive audit. Implementation-ready.
+
+
 ### ✨ Features
 
 - **release**: Implement git-cliff for automated changelog and release notes Integrate git-cliff as off-the-shelf solution for dual-output changelog generation: - Install git-cliff v2.10.1 via cargo (Rust-native performance) - Create cliff.toml for detailed CHANGELOG.md (developer-focused) - Create cliff-release-notes.toml for RELEASE_NOTES.md (user-focused) - Add scripts/release.sh for unified release workflow - Update CLAUDE.md with release process documentation Benefits: - Single source of truth: git history → dual outputs - Zero manual changelog maintenance - Consistent formatting with emoji sections - GitHub username attribution - Automated version bumping with Commitizen integration Workflow: ./scripts/release.sh executes: 1. Commitizen version bump 2. git-cliff CHANGELOG.md generation 3. git-cliff RELEASE_NOTES.md generation 4. Git push with tags 5. GitHub release creation Configuration files use TOML array of tables syntax for commit parsers and preprocessors.
@@ -19,8 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 📚 Documentation
 
 - **data-sources**: Add Dukascopy validation and instrument configuration Add comprehensive empirical validation of Dukascopy HTTP endpoints and instrument configurations as secondary data source option. - Validate public HTTP endpoints, LZMA compression, 20-byte binary format - Document decimal factors for 1,607 instruments (Forex, Crypto, Equities) - Test rate limiting behavior and error handling strategies - Provide Rust implementation checklist and working examples - Update CLAUDE.md with Dukascopy as validated secondary source Validated: 2025-09-30, Status: Production-ready reference
-
-- **dukascopy**: Complete range bar construction design with 18 Q&A decisions - Add comprehensive design document (707 lines) covering: - Executive summary and quick reference - Mid-price conversion with validation (3 strictness levels) - Per-bar SMA for spread statistics (not EMA) - Zero core changes via adapter pattern - Module-level error handling with Result types - Embedded instrument config (1,607 instruments) - Resolve all 9 critical integration gaps: - Volume semantics: total liquidity, no buy/sell segregation - Direction: is_buyer_maker = false (direction unknown for quotes) - SpreadStats: per-bar SMA, reset on bar close - Validation: type-specific price ranges (Forex 0.01-10k) - Config: embedded TOML via include_str! - Timestamp: expanded validation range (2000-2035) - Update planning docs with design references - Enhance endpoint validation with integration notes Implementation-ready: 6-12 hours estimated effort
 
 
 ### 📝 Other Changes

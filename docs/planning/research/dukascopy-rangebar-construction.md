@@ -410,12 +410,17 @@ DukascopyError {
 **Config:**
 - Instrument config: Embedded via `include_str!("dukascopy-instrument-config.toml")`
 - Decimal factors: 100000 (Forex majors), 1000 (JPY pairs), 10 (Crypto)
+- Instrument type: Inferred from config path (`instruments.forex.*` → Forex)
 - Validation: Configurable strictness (Permissive/Strict/Paranoid)
 
 **Timestamp:**
 - Input: Milliseconds (GMT)
 - Output: Microseconds (via `normalize_timestamp()`)
 - Validation: 2000-2035 range
+
+**Processor State (Q19):**
+- RangeBarProcessor requires `current_bar_state: Option<RangeBarState>` field
+- Enables `get_incomplete_bar()` for streaming use case
 
 ---
 
@@ -570,8 +575,8 @@ Ratio:  312:1 compression via range bars
 - [ ] `DukascopyRangeBar { base: RangeBar, spread_stats: SpreadStats }`
 - [ ] `SpreadStats` struct with SMA accumulators
 - [ ] Embed `dukascopy-instrument-config.toml` via `include_str!()`
-- [ ] `get_decimal_factor(instrument)` from embedded config
-- [ ] `get_instrument_type(instrument)` for validation
+- [ ] `get_instrument_info(instrument) -> (decimal_factor, InstrumentType)` (Q20)
+- [ ] Infer type from config path (forex/crypto/commodities/equities)
 
 **Error Handling:**
 - [ ] `DukascopyError` enum (Conversion, Processing)
@@ -597,19 +602,24 @@ Ratio:  312:1 compression via range bars
 **SpreadStats Implementation:**
 - [ ] Per-bar SMA accumulators (spread_sum, bid_sum, ask_sum)
 - [ ] `update(tick)` - O(1) accumulation
-- [ ] `avg_spread()`, `avg_bid_liquidity()`, `avg_ask_liquidity()` - O(1) calculation
+- [ ] `avg_spread()` - Integer division on FixedPoint (Q21: mathematically correct)
+- [ ] `avg_bid_liquidity()`, `avg_ask_liquidity()` - O(1) calculation
 - [ ] Min/max tracking, tick_count, zero_volume_tick_count
 - [ ] `Clone` trait implementation for snapshot on bar close
 
 **Core Changes:**
-- [ ] Expand `timestamp.rs` validation range: 2000-2035
-- [ ] Implement `RangeBarProcessor::get_incomplete_bar()` (currently stubbed)
+- [ ] Add `current_bar_state: Option<RangeBarState>` to RangeBarProcessor (Q19)
+- [ ] Refactor `process_single_trade()` to maintain state across calls
+- [ ] Implement `get_incomplete_bar()` returning current_bar_state.clone()
+- [ ] Expand `timestamp.rs` validation range: 2000-2035 (Q16)
 
 **Validation & Testing:**
 - [ ] Unit tests: mid-price calculation with decimal factors
 - [ ] Unit tests: tick validation (crossed markets, zero prices, excessive spread)
 - [ ] Unit tests: price range validation by instrument type
+- [ ] Unit tests: error recovery policy (Q22: Fatal vs Skip, 10% threshold)
 - [ ] Integration tests: threshold breach detection with Dukascopy ticks
+- [ ] Integration tests: processor state persistence across process_single_trade()
 - [ ] End-to-end: EURUSD ticks → `DukascopyRangeBar` with spread stats
 - [ ] Zero-volume tick handling (verify OHLC updates, volume = 0)
 - [ ] SpreadStats SMA correctness (verify per-bar averages)
@@ -705,3 +715,9 @@ fn main() -> Result<(), DukascopyError> {
 - Core implementation: 4-8 hours
 - Validation/testing: 2-4 hours
 - **Total: 6-12 hours** for complete, production-ready Dukascopy integration
+
+**Implementation Resolutions (Q19-Q22):**
+- Processor state: Add `current_bar_state` field to RangeBarProcessor
+- Instrument type: Infer from config path structure (zero manual edits)
+- SMA precision: Integer division mathematically correct for FixedPoint
+- Error recovery: Type-specific (Fatal: config/processing, Skip: validation with 10% safety threshold)
