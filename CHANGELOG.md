@@ -6,11 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+### ✨ Features
+
+- **dukascopy**: Complete implementation with comprehensive validation Implemented full Dukascopy integration for range bar construction from tick data with theoretical validation proving all 6 core principles across 105,060 real market ticks. Core Implementation (1,184 lines): - HTTP fetcher with LZMA decompression and binary parsing - Type inference from embedded config (1,607 instruments) - Stateful streaming with incomplete bar retrieval - Spread statistics with SMA calculation - Error recovery policy (Q22: abort at >10% error rate) Validation Results: - 143 unit tests passing - 0% error rate on 105K real ticks (BTCUSD, EURUSD) - 1,751 ticks/sec processing throughput - All Q1-Q22 design decisions verified Theoretical Proof: - Threshold sensitivity: 5 bps = 917 bars, 100 bps = 4 bars - Volatility clustering: High vol = 100% more bars than low vol - Breach inclusion: 100% non-lookahead compliance - Time independence: CV=0.64 (price-driven, not clock-driven) - Bar independence: No threshold carry-over - Statistical validity: Zero defects at scale Fixes: - .gitignore: Changed data/ to /data/ to exclude only root-level directory
+
+
 ### 📚 Documentation
 
 - **dukascopy**: Complete range bar construction design with 18 Q&A decisions - Add comprehensive design document (707 lines) covering: - Executive summary and quick reference - Mid-price conversion with validation (3 strictness levels) - Per-bar SMA for spread statistics (not EMA) - Zero core changes via adapter pattern - Module-level error handling with Result types - Embedded instrument config (1,607 instruments) - Resolve all 9 critical integration gaps: - Volume semantics: total liquidity, no buy/sell segregation - Direction: is_buyer_maker = false (direction unknown for quotes) - SpreadStats: per-bar SMA, reset on bar close - Validation: type-specific price ranges (Forex 0.01-10k) - Config: embedded TOML via include_str! - Timestamp: expanded validation range (2000-2035) - Update planning docs with design references - Enhance endpoint validation with integration notes Implementation-ready: 6-12 hours estimated effort
 
 - **dukascopy**: Finalize implementation plan with Q19-Q22 architectural resolutions - Add processor state management solution (Q19: current_bar_state field) - Document instrument type inference from config path (Q20: zero edits) - Validate SMA integer division correctness (Q21: mathematically proven) - Define error recovery policy (Q22: Fatal vs Skip with 10% threshold) - Update implementation checklist with 4 core processor changes - Expand testing requirements for state persistence and error recovery - Add Quick Reference section with processor state requirements - Add final Implementation Resolutions summary Resolves all architectural gaps from deep-dive audit. Implementation-ready.
+
+
+### 📝 Other Changes
+
+- Version 2.1.0 → 2.2.0
 
 
 ### ✨ Features

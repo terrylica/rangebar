@@ -82,8 +82,8 @@ Thumbs.db
 *.parquet
 *.json
 *.zip
-data/
-cache/
+/data/
+/cache/
 
 # Downloaded data directories
 repos/binance-public-data/

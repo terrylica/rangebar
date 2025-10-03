@@ -1,24 +1,18 @@
 
-## 2.1.0 - 2025-10-01
+## 2.2.0 - 2025-10-03
 
 
 ### ✨ New Features
 
-- Implement git-cliff for automated changelog and release notes Integrate git-cliff as off-the-shelf solution for dual-output changelog generation: - Install git-cliff v2.10.1 via cargo (Rust-native performance) - Create cliff.toml for detailed CHANGELOG.md (developer-focused) - Create cliff-release-notes.toml for RELEASE_NOTES.md (user-focused) - Add scripts/release.sh for unified release workflow - Update CLAUDE.md with release process documentation Benefits: - Single source of truth: git history → dual outputs - Zero manual changelog maintenance - Consistent formatting with emoji sections - GitHub username attribution - Automated version bumping with Commitizen integration Workflow: ./scripts/release.sh executes: 1. Commitizen version bump 2. git-cliff CHANGELOG.md generation 3. git-cliff RELEASE_NOTES.md generation 4. Git push with tags 5. GitHub release creation Configuration files use TOML array of tables syntax for commit parsers and preprocessors. (by @terrylica)
-
-
-
-### 🐛 Bug Fixes & Improvements
-
-- Resolve formatting issues for CI compliance (by @terrylica)
+- Complete implementation with comprehensive validation Implemented full Dukascopy integration for range bar construction from tick data with theoretical validation proving all 6 core principles across 105,060 real market ticks. Core Implementation (1,184 lines): - HTTP fetcher with LZMA decompression and binary parsing - Type inference from embedded config (1,607 instruments) - Stateful streaming with incomplete bar retrieval - Spread statistics with SMA calculation - Error recovery policy (Q22: abort at >10% error rate) Validation Results: - 143 unit tests passing - 0% error rate on 105K real ticks (BTCUSD, EURUSD) - 1,751 ticks/sec processing throughput - All Q1-Q22 design decisions verified Theoretical Proof: - Threshold sensitivity: 5 bps = 917 bars, 100 bps = 4 bars - Volatility clustering: High vol = 100% more bars than low vol - Breach inclusion: 100% non-lookahead compliance - Time independence: CV=0.64 (price-driven, not clock-driven) - Bar independence: No threshold carry-over - Statistical validity: Zero defects at scale Fixes: - .gitignore: Changed data/ to /data/ to exclude only root-level directory
 
 
 
 ### 📝 Other Changes
 
-- Version 2.0.0 → 2.1.0 (by @terrylica)
+- Version 2.1.0 → 2.2.0
 
 
 
 ---
-**Full Changelog**: https://github.com/Eon-Labs/rangebar/compare/v2.0.0...v2.1.0
+**Full Changelog**: https://github.com/Eon-Labs/rangebar/compare/v2.1.0...v2.2.0
