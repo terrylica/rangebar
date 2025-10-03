@@ -28,6 +28,4 @@
 //! 4. **Documented edge cases**: Timezone handling, decimal factors, etc.
 
 pub mod binance;
-
-// Dukascopy will be added in Phase 4
-// pub mod dukascopy;
+pub mod dukascopy;

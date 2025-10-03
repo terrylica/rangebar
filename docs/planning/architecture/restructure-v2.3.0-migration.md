@@ -113,27 +113,28 @@ src/
 
 ---
 
-### Phase 4: Providers - Dukascopy 🔜 PENDING
-- [ ] Create src/providers/dukascopy/mod.rs
-- [ ] CONSOLIDATE: fetcher.rs + config.rs → client.rs
-  - Move DukascopyFetcher + INSTRUMENT_CONFIG to client.rs
-  - Keep lazy static config loading
-- [ ] CONSOLIDATE: types.rs + error.rs → types.rs
-  - Move all error enums to types.rs
-  - Rationale: Tightly coupled, 388 lines total
-- [ ] Keep: builder.rs, conversion.rs (no changes)
-- [ ] Update internal imports
-- [ ] Run: cargo check --lib
-- [ ] Run: cargo test (dukascopy tests)
+### Phase 4: Providers - Dukascopy ✅ COMPLETE
+- [x] Create src/providers/dukascopy/mod.rs
+- [x] CONSOLIDATE: fetcher.rs + config.rs → client.rs (320 lines)
+  - ✅ Moved DukascopyFetcher + INSTRUMENT_CONFIG to client.rs
+  - ✅ Kept lazy static config loading
+- [x] CONSOLIDATE: types.rs + error.rs → types.rs (388 lines)
+  - ✅ Moved all error enums to types.rs
+  - ✅ Rationale: Tightly coupled error/data types
+- [x] Keep: builder.rs, conversion.rs (updated imports only)
+- [x] Update internal imports (crate::data::dukascopy → crate::providers::dukascopy)
+- [x] Run: cargo check --lib
+- [x] Run: cargo test (dukascopy tests)
 
-**Success Gate**: cargo check pass, dukascopy module compiles
+**Success Gate**: ✅ PASSED - cargo check + 15 tests passed in 0.14s
 
 **Validation SLOs**:
-- Correctness: DukascopyFetcher can fetch EURUSD hour
-- Observability: Module structure clear (5 files not 7)
-- Maintainability: Related code colocated
+- Correctness: ✅ All Dukascopy tests pass (15/15)
+- Observability: ✅ Module structure clear (5 files: client, types, builder, conversion, mod)
+- Maintainability: ✅ Related code colocated (fetcher+config, types+errors)
 
-**Commit**: Dukascopy provider consolidated
+**Result**: Dukascopy provider operational at src/providers/dukascopy/ (7→5 files)
+**Note**: Old files (src/data/dukascopy/) remain temporarily. Will be deleted in Phase 11.
 
 ---
 
