@@ -24,7 +24,13 @@ This directory contains all planning, architectural, and research documentation 
 - `pattern-continuation-entropy-research-synthesis.yml` - Pattern research synthesis
 - `dukascopy-endpoint-validation.md` - Empirical Dukascopy API validation (HTTP, LZMA, binary format)
 - `dukascopy-instrument-config.toml` - Dukascopy instrument configuration reference (1,607 instruments)
-- `dukascopy-rangebar-construction.md` - Design: Range bar construction from Dukascopy tick data
+- `dukascopy-rangebar-construction.md` - Design: Range bar construction from Dukascopy tick data (Q1-Q22 decisions)
+- `dukascopy-rangebar-qa-log.md` - Decision history: All 22 Q&A resolutions
+- `dukascopy-slo-spec.md` - Service level objectives for Dukascopy integration
+- `dukascopy-implementation-complete.md` - Implementation summary: v2.1.0+dukascopy (1,184 lines, 2025-10-02)
+- `dukascopy-data-fetcher-validation.md` - HTTP fetcher + binary parser validation with real data
+- `dukascopy-implementation-audit.md` - Comprehensive audit: 143 tests, 10K+ real ticks, 0 defects
+- `dukascopy-comprehensive-validation.md` - **THEORETICAL PROOF**: 105K ticks, 6 principles, all validated
 
 ### `/legacy/`
 **Historical planning documents** - Completed phases and superseded plans

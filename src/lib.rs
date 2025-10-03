@@ -88,6 +88,7 @@
 // Core modules (always available)
 pub mod config;
 pub mod core;
+pub mod data;
 pub mod market;
 pub mod streaming;
 pub mod streaming_processor;

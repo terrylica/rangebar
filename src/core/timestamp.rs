@@ -37,12 +37,27 @@ pub fn normalize_timestamp(raw_timestamp: u64) -> i64 {
 
 /// Validate timestamp is in expected microsecond range
 ///
-/// Checks if timestamp falls within reasonable bounds for cryptocurrency data
-/// (2020-2030 range in microseconds)
+/// Checks if timestamp falls within reasonable bounds for financial data.
+/// Expanded range (2000-2035) covers historical Forex data from Dukascopy (2003+)
+/// and cryptocurrency data (2009+) while rejecting obviously invalid timestamps.
+///
+/// # Arguments
+///
+/// * `timestamp` - Timestamp in microseconds (16-digit precision)
+///
+/// # Returns
+///
+/// `true` if timestamp is within valid range, `false` otherwise
+///
+/// # Validation Range (Q16)
+///
+/// - MIN: 2000-01-01 (covers Dukascopy historical Forex from 2003)
+/// - MAX: 2035-01-01 (future-proof for upcoming data)
+/// - Rejects: Unix epoch (1970), far future (2100+), negative timestamps
 pub fn validate_timestamp(timestamp: i64) -> bool {
-    // Reasonable bounds: 2020-01-01 to 2030-01-01 in microseconds
-    const MIN_TIMESTAMP: i64 = 1_577_836_800_000_000; // 2020-01-01
-    const MAX_TIMESTAMP: i64 = 1_893_456_000_000_000; // 2030-01-01
+    // Expanded bounds: 2000-01-01 to 2035-01-01 in microseconds (Q16)
+    const MIN_TIMESTAMP: i64 = 946_684_800_000_000; // 2000-01-01 00:00:00 UTC
+    const MAX_TIMESTAMP: i64 = 2_051_222_400_000_000; // 2035-01-01 00:00:00 UTC
 
     (MIN_TIMESTAMP..=MAX_TIMESTAMP).contains(&timestamp)
 }
@@ -112,13 +127,25 @@ mod tests {
 
     #[test]
     fn test_validate_timestamp() {
-        // Valid 2024 timestamp
+        // Valid: 2024 timestamp (crypto era)
         assert!(validate_timestamp(1704067200_000_000)); // 2024-01-01
 
-        // Invalid: too early
-        assert!(!validate_timestamp(1000000_000_000)); // 2001
+        // Valid: 2003 timestamp (Dukascopy Forex historical data)
+        assert!(validate_timestamp(1041379200_000_000)); // 2003-01-01
 
-        // Invalid: too late
-        assert!(!validate_timestamp(2000000000_000_000)); // 2033+
+        // Valid: 2000 timestamp (min boundary)
+        assert!(validate_timestamp(946_684_800_000_000)); // 2000-01-01
+
+        // Valid: 2034 timestamp (near max boundary)
+        assert!(validate_timestamp(2_019_686_400_000_000)); // 2034-01-01
+
+        // Invalid: 1999 (before historical Forex data)
+        assert!(!validate_timestamp(915_148_800_000_000)); // 1999-01-01
+
+        // Invalid: Unix epoch era (1970s)
+        assert!(!validate_timestamp(1_000_000_000_000)); // 1970-01-12
+
+        // Invalid: Far future (2050+)
+        assert!(!validate_timestamp(2_524_608_000_000_000)); // 2050-01-01
     }
 }

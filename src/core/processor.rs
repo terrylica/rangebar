@@ -13,6 +13,10 @@ use thiserror::Error;
 pub struct RangeBarProcessor {
     /// Threshold in basis points (25 = 25 bps)
     threshold_bps: u32,
+
+    /// Current bar state for streaming processing (Q19)
+    /// Enables get_incomplete_bar() and stateful process_single_trade()
+    current_bar_state: Option<RangeBarState>,
 }
 
 impl RangeBarProcessor {
@@ -22,10 +26,16 @@ impl RangeBarProcessor {
     ///
     /// * `threshold_bps` - Threshold value (25 for 25 bps)
     pub fn new(threshold_bps: u32) -> Self {
-        Self { threshold_bps }
+        Self {
+            threshold_bps,
+            current_bar_state: None,
+        }
     }
 
     /// Process a single trade and return completed bar if any
+    ///
+    /// Maintains internal state for streaming use case. State persists across calls
+    /// until a bar completes (threshold breach), enabling get_incomplete_bar().
     ///
     /// # Arguments
     ///
@@ -34,26 +44,65 @@ impl RangeBarProcessor {
     /// # Returns
     ///
     /// `Some(RangeBar)` if a bar was completed, `None` otherwise
+    ///
+    /// # State Management
+    ///
+    /// - First trade: Initializes new bar state
+    /// - Subsequent trades: Updates existing bar or closes on breach
+    /// - Breach: Returns completed bar, starts new bar with breaching trade
     pub fn process_single_trade(
         &mut self,
         trade: AggTrade,
     ) -> Result<Option<RangeBar>, ProcessingError> {
-        // Create single-element slice and process
-        let trades = vec![trade];
-        let mut bars = self.process_agg_trade_records(&trades)?;
+        match &mut self.current_bar_state {
+            None => {
+                // First trade - initialize new bar
+                self.current_bar_state = Some(RangeBarState::new(&trade, self.threshold_bps));
+                Ok(None)
+            }
+            Some(bar_state) => {
+                // Check for threshold breach
+                if bar_state.bar.is_breach(
+                    trade.price,
+                    bar_state.upper_threshold,
+                    bar_state.lower_threshold,
+                ) {
+                    // Breach detected - close current bar
+                    bar_state.bar.update_with_trade(&trade);
 
-        // Return the last completed bar if any
-        if bars.is_empty() {
-            Ok(None)
-        } else {
-            Ok(bars.pop())
+                    // Validation: Ensure high/low include open/close extremes
+                    debug_assert!(
+                        bar_state.bar.high >= bar_state.bar.open.max(bar_state.bar.close)
+                    );
+                    debug_assert!(bar_state.bar.low <= bar_state.bar.open.min(bar_state.bar.close));
+
+                    let completed_bar = bar_state.bar.clone();
+
+                    // Start new bar with breaching trade
+                    self.current_bar_state = Some(RangeBarState::new(&trade, self.threshold_bps));
+
+                    Ok(Some(completed_bar))
+                } else {
+                    // No breach - update existing bar
+                    bar_state.bar.update_with_trade(&trade);
+                    Ok(None)
+                }
+            }
         }
     }
 
     /// Get any incomplete bar currently being processed
+    ///
+    /// Returns clone of current bar state for inspection without consuming it.
+    /// Useful for final bar at stream end or progress monitoring.
+    ///
+    /// # Returns
+    ///
+    /// `Some(RangeBar)` if bar is in progress, `None` if no active bar
     pub fn get_incomplete_bar(&self) -> Option<RangeBar> {
-        // This would need internal state tracking - simplified for now
-        None
+        self.current_bar_state
+            .as_ref()
+            .map(|state| state.bar.clone())
     }
 
     /// Process AggTrade records into range bars including incomplete bars for analysis
@@ -100,6 +149,9 @@ impl RangeBarProcessor {
 
     /// Process AggTrade records with options for including incomplete bars
     ///
+    /// Batch processing mode: Clears any existing state before processing.
+    /// Use process_single_trade() for stateful streaming instead.
+    ///
     /// # Parameters
     ///
     /// * `agg_trade_records` - Slice of AggTrade records sorted by (timestamp, agg_trade_id)
@@ -119,6 +171,9 @@ impl RangeBarProcessor {
 
         // Validate records are sorted
         self.validate_trade_ordering(agg_trade_records)?;
+
+        // Clear streaming state - batch mode uses local state
+        self.current_bar_state = None;
 
         let mut bars = Vec::with_capacity(agg_trade_records.len() / 100); // Heuristic capacity
         let mut current_bar: Option<RangeBarState> = None;
