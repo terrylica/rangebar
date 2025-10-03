@@ -93,6 +93,9 @@ pub mod market;
 pub mod streaming;
 pub mod streaming_processor;
 
+// New structure (Phase 3: Providers)
+pub mod providers;
+
 // Test utilities (only available in test builds)
 #[cfg(any(test, feature = "test-utils"))]
 pub mod test_utils;

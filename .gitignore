@@ -77,18 +77,26 @@ Cargo.lock
 ehthumbs.db
 Thumbs.db
 
-# Data files
+# Data files (global patterns)
 *.csv
 *.parquet
 *.json
 *.zip
-/data/
-/cache/
+
+# Data directories
+/data/              # Raw input data from providers
+/cache/             # Provider-specific cache
+/output/production/ # Large production exports
+/output/experiments/# Ad-hoc experiments
+
+# Keep these in git (selective output tracking)
+!/output/benchmarks/**/*.json      # Benchmark summaries
+!/output/validation/**/*.md        # Validation reports
+!/test_data/**/*                   # Test fixtures (override *.csv pattern)
 
 # Downloaded data directories
 repos/binance-public-data/
 test_comparison/
-test_data/
 
 # Build artifacts
 *.whl
