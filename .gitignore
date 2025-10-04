@@ -111,6 +111,7 @@ statistics_v2_validation
 
 # Release notes drafts (generated artifacts)
 RELEASE_NOTES.draft.md
+RELEASE_NOTES_SHORT.md
 
 # .Sessions folder - never delete
 .sessions/
