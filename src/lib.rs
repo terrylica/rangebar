@@ -51,7 +51,7 @@
 //! ### Batch Mode (Analytics)
 //! ```rust
 //! #[cfg(feature = "polars-analytics")]
-//! use rangebar::batch::BatchAnalysisEngine;
+//! use rangebar::engines::batch::BatchAnalysisEngine;
 //! use rangebar::core::types::RangeBar;
 //!
 //! #[cfg(feature = "polars-analytics")]
@@ -65,7 +65,7 @@
 //! ## I/O Operations
 //! ```rust
 //! #[cfg(feature = "polars-io")]
-//! use rangebar::io::ParquetExporter;
+//! use rangebar::infrastructure::io::ParquetExporter;
 //! use rangebar::core::types::RangeBar;
 //!
 //! #[cfg(feature = "polars-io")]
@@ -86,29 +86,18 @@
 //!
 
 // Core modules (always available)
-pub mod config;
 pub mod core;
-pub mod data;
-pub mod market;
-pub mod streaming;
-pub mod streaming_processor;
 
-// New structure (Phase 3: Providers)
+// New structure (Phases 3-7: Providers + Engines + Infrastructure)
 pub mod providers;
+pub mod engines;
+pub mod infrastructure;
 
 // Test utilities (only available in test builds)
 #[cfg(any(test, feature = "test-utils"))]
 pub mod test_utils;
 
-// Optional modules based on feature flags
-#[cfg(feature = "polars-io")]
-pub mod io;
-
-#[cfg(feature = "polars-analytics")]
-pub mod batch;
-
-#[cfg(feature = "api")]
-pub mod api;
+// Optional modules based on feature flags (now in infrastructure/engines)
 
 // Legacy modules for backward compatibility
 
@@ -124,7 +113,7 @@ pub mod range_bars {
 }
 
 pub mod tier1 {
-    pub use crate::market::symbols::*;
+    pub use crate::providers::binance::symbols::*;
 }
 
 pub mod types {
@@ -132,30 +121,30 @@ pub mod types {
 }
 
 // Re-export commonly used types for convenience
-pub use config::Settings;
+pub use infrastructure::config::Settings;
 pub use core::{
     AggTrade, ExportRangeBarProcessor, FixedPoint, ProcessingError, RangeBar, RangeBarProcessor,
 };
-pub use market::{TIER1_SYMBOLS, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol};
-pub use streaming_processor::{
+pub use providers::binance::symbols::{TIER1_SYMBOLS, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol};
+pub use engines::streaming::processor::{
     StreamingError, StreamingMetrics, StreamingProcessor, StreamingProcessorConfig,
 };
 
 // Re-export Polars-powered modules when features are enabled
 #[cfg(feature = "polars-io")]
-pub use io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
+pub use infrastructure::io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
 
 #[cfg(feature = "polars-analytics")]
-pub use batch::{AnalysisReport, BatchAnalysisEngine, BatchConfig, BatchResult};
+pub use engines::batch::{AnalysisReport, BatchAnalysisEngine, BatchConfig, BatchResult};
 
 #[cfg(feature = "streaming-stats")]
-pub use streaming::{
+pub use engines::streaming::stats::{
     BarStats, OhlcStatistics, PriceStatistics, RollingStats, StatisticsSnapshot,
     StreamingStatsEngine, TradeStats, VolumeStatistics,
 };
 
 #[cfg(feature = "real-time-indicators")]
-pub use streaming::{
+pub use engines::streaming::indicators::{
     CCI, ExponentialMovingAverage, IndicatorError, MACD, MACDValue, RSI, SimpleMovingAverage,
 };
 

@@ -11,7 +11,7 @@ use std::fs;
 use std::process::Command;
 use std::time::Instant;
 
-use rangebar::config::{CliConfigMerge, Settings};
+use rangebar::infrastructure::config::{CliConfigMerge, Settings};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct AnalysisConfig {

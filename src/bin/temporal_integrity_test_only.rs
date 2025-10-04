@@ -10,7 +10,7 @@ use rangebar::core::types::RangeBar;
 use std::time::Instant;
 
 #[cfg(feature = "polars-io")]
-use rangebar::io::formats::DataFrameConverter;
+use rangebar::infrastructure::io::formats::DataFrameConverter;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("temporal-integrity-test-only")

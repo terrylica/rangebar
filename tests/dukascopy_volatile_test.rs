@@ -1,6 +1,6 @@
 //! Test with different time periods to find bars
 
-use rangebar::data::dukascopy::{
+use rangebar::providers::dukascopy::{
     DukascopyFetcher, DukascopyRangeBarBuilder, ValidationStrictness,
 };
 

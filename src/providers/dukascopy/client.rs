@@ -19,6 +19,7 @@ use reqwest::Client;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::io::Cursor;
+use std::time::Duration;
 
 /// Embedded instrument configuration TOML (Q15)
 ///
@@ -128,9 +129,28 @@ pub struct DukascopyFetcher {
 
 impl DukascopyFetcher {
     /// Create new fetcher for instrument
+    ///
+    /// # Timeout Configuration
+    ///
+    /// Dukascopy-specific timeout values based on empirical measurements:
+    /// - Request timeout: 120s (2.8x safety margin over 42.5s observed max)
+    /// - Connect timeout: 30s (separate connection establishment limit)
+    ///
+    /// Reference: docs/planning/dukascopy-timeout-retry-strategy.md
     pub fn new(instrument: &str) -> Self {
+        // Dukascopy server characteristics (empirical data):
+        // - Response time: 15-45s typical, 42.5s max observed
+        // - Rate limit: Requires 2s spacing between requests
+        // - Timeout: 120s total, 30s connection (2.8x safety margin)
+        const DUKASCOPY_REQUEST_TIMEOUT_SECS: u64 = 120;
+        const DUKASCOPY_CONNECT_TIMEOUT_SECS: u64 = 30;
+
         Self {
-            client: Client::new(),
+            client: Client::builder()
+                .timeout(Duration::from_secs(DUKASCOPY_REQUEST_TIMEOUT_SECS))
+                .connect_timeout(Duration::from_secs(DUKASCOPY_CONNECT_TIMEOUT_SECS))
+                .build()
+                .expect("Failed to build Dukascopy HTTP client with timeout configuration"),
             instrument: instrument.to_uppercase(),
         }
     }

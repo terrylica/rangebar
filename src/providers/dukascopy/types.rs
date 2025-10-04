@@ -124,22 +124,17 @@ impl InstrumentType {
 /// - Permissive: Production (trust Dukascopy quality)
 /// - Strict: Development (catch obvious issues) [DEFAULT]
 /// - Paranoid: Data quality audits (flag all anomalies)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ValidationStrictness {
     /// Basic checks only (bid > 0, ask > 0, bid < ask)
     Permissive,
 
     /// + Spread < 10% (catches obvious errors) [DEFAULT]
+    #[default]
     Strict,
 
     /// + Spread < 1% (flags suspicious data)
     Paranoid,
-}
-
-impl Default for ValidationStrictness {
-    fn default() -> Self {
-        ValidationStrictness::Strict
-    }
 }
 
 // ============================================================================

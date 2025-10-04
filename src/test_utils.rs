@@ -63,6 +63,7 @@ pub fn create_test_spot_agg_trade(
 }
 
 /// Creates a test RangeBar with sensible defaults
+#[allow(clippy::too_many_arguments)]
 pub fn create_test_range_bar(
     open_time: i64,
     close_time: i64,
@@ -121,6 +122,12 @@ pub struct AggTradeBuilder {
     base_timestamp: i64,
     base_volume: String,
     trades: Vec<AggTrade>,
+}
+
+impl Default for AggTradeBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AggTradeBuilder {
@@ -188,8 +195,9 @@ pub mod scenarios {
     use super::*;
 
     /// Creates trades that should produce no range bars (all within threshold)
+    /// v3.0.0: threshold_bps now in 0.1bps units (divide by 100,000)
     pub fn no_breach_sequence(threshold_bps: u32) -> Vec<AggTrade> {
-        let max_change = (threshold_bps as f64 / 10000.0) * 0.8; // Stay within threshold
+        let max_change = (threshold_bps as f64 / 100_000.0) * 0.8; // Stay within threshold
         AggTradeBuilder::new()
             .add_trade(1, 1.0, 0)
             .add_trade(2, 1.0 + max_change, 1000)
@@ -198,8 +206,9 @@ pub mod scenarios {
     }
 
     /// Creates trades that should produce exactly one range bar
+    /// v3.0.0: threshold_bps now in 0.1bps units (divide by 100,000)
     pub fn single_breach_sequence(threshold_bps: u32) -> Vec<AggTrade> {
-        let breach_change = (threshold_bps as f64 / 10000.0) * 1.2; // Exceed threshold
+        let breach_change = (threshold_bps as f64 / 100_000.0) * 1.2; // Exceed threshold
         AggTradeBuilder::new()
             .add_trade(1, 1.0, 0)
             .add_trade(2, 1.0 + breach_change, 1000) // Breach upward
@@ -212,8 +221,9 @@ pub mod scenarios {
     }
 
     /// Creates trades for exact threshold breach testing
+    /// v3.0.0: threshold_bps now in 0.1bps units (divide by 100,000)
     pub fn exact_breach_upward(threshold_bps: u32) -> Vec<AggTrade> {
-        let breach_change = threshold_bps as f64 / 10000.0; // Exact threshold
+        let breach_change = threshold_bps as f64 / 100_000.0; // Exact threshold
         AggTradeBuilder::new()
             .add_trade(1, 1.0, 0) // Open
             .add_trade(2, 1.0 + breach_change * 0.8, 1000) // Approach threshold
@@ -223,8 +233,9 @@ pub mod scenarios {
     }
 
     /// Creates trades for exact threshold breach testing (downward)
+    /// v3.0.0: threshold_bps now in 0.1bps units (divide by 100,000)
     pub fn exact_breach_downward(threshold_bps: u32) -> Vec<AggTrade> {
-        let breach_change = threshold_bps as f64 / 10000.0; // Exact threshold
+        let breach_change = threshold_bps as f64 / 100_000.0; // Exact threshold
         AggTradeBuilder::new()
             .add_trade(1, 1.0, 0) // Open
             .add_trade(2, 1.0 - breach_change * 0.8, 1000) // Approach threshold

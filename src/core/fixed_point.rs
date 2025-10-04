@@ -9,8 +9,10 @@ use std::str::FromStr;
 /// Scale factor for 8 decimal places (100,000,000)
 pub const SCALE: i64 = 100_000_000;
 
-/// Scale factor for basis points calculations (standard: 10,000)
-pub const BASIS_POINTS_SCALE: u32 = 10_000;
+/// Scale factor for basis points calculations (v3.0.0: tenths of bps, 100,000)
+/// Prior to v3.0.0, this was 10,000 (1bps units). Now 100,000 (0.1bps units).
+/// Migration: multiply all threshold_bps values by 10.
+pub const BASIS_POINTS_SCALE: u32 = 100_000;
 
 /// Fixed-point decimal representation using i64 with 8 decimal precision
 ///
@@ -93,13 +95,22 @@ impl FixedPoint {
     ///
     /// # Arguments
     ///
-    /// * `threshold_bps` - Threshold value (25 for 25 bps)
+    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    ///   - Example: `250` → 25bps = 0.25%
+    ///   - Example: `10` → 1bps = 0.01%
+    ///   - Minimum: `1` → 0.1bps = 0.001%
     ///
     /// # Returns
     ///
     /// Tuple of (upper_threshold, lower_threshold)
+    ///
+    /// # Breaking Change (v3.0.0)
+    ///
+    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// **Migration**: Multiply all threshold values by 10.
     pub fn compute_range_thresholds(&self, threshold_bps: u32) -> (FixedPoint, FixedPoint) {
-        // Calculate threshold delta: price * (threshold_bps / 10,000)
+        // Calculate threshold delta: price * (threshold_bps / 100,000)
+        // v3.0.0: threshold_bps now in 0.1bps units (e.g., 250 = 25bps)
         let delta = (self.0 as i128 * threshold_bps as i128) / BASIS_POINTS_SCALE as i128;
         let delta = delta as i64;
 
@@ -219,9 +230,9 @@ mod tests {
     #[test]
     fn test_compute_thresholds() {
         let price = FixedPoint::from_str("50000.0").unwrap();
-        let (upper, lower) = price.compute_range_thresholds(25); // 25 bps
+        let (upper, lower) = price.compute_range_thresholds(250); // 250 × 0.1bps = 25bps
 
-        // 50000 * 0.0025 = 125
+        // 50000 * 0.0025 = 125 (25bps = 0.25%)
         assert_eq!(upper.to_string(), "50125.00000000");
         assert_eq!(lower.to_string(), "49875.00000000");
     }

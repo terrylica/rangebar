@@ -13,7 +13,7 @@ use std::fs;
 use std::time::Instant;
 
 #[cfg(feature = "polars-io")]
-use rangebar::io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
+use rangebar::infrastructure::io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = Command::new("polars-benchmark")

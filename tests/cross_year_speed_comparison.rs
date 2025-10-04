@@ -10,7 +10,7 @@ use rangebar::types::AggTrade;
 use std::time::Instant;
 
 #[cfg(feature = "streaming-v2")]
-use rangebar::streaming_processor::{StreamingProcessor, StreamingProcessorConfig};
+use rangebar::engines::streaming::processor::{StreamingProcessor, StreamingProcessorConfig};
 use tokio::runtime::Runtime;
 
 /// Performance metrics for cross-year comparison

@@ -2,7 +2,7 @@
 //!
 //! Deep validation of data quality, range bar construction, and spread statistics
 
-use rangebar::data::dukascopy::{
+use rangebar::providers::dukascopy::{
     DukascopyFetcher, DukascopyRangeBarBuilder, ValidationStrictness,
 };
 

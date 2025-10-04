@@ -3,7 +3,7 @@
 //! Validates end-to-end flow: ticks → range bars → spread stats
 //! Tests error recovery policy (Q22) and SLO compliance
 
-use rangebar::data::dukascopy::{
+use rangebar::providers::dukascopy::{
     DukascopyRangeBarBuilder, DukascopyTick, ValidationStrictness,
 };
 

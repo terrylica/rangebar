@@ -5,6 +5,43 @@ All notable changes to RangeBar will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2025-10-03
+
+### ⚠️ BREAKING CHANGES
+
+#### Threshold Granularity: 1bps → 0.1bps Units
+
+**Changed `threshold_bps` parameter interpretation from 1bps units to 0.1bps units**
+
+**Migration Required**: Multiply all threshold values by 10
+
+**Rationale**: Enable ultra-low thresholds (0.1-0.9bps) for forex instruments with 5-decimal precision (e.g., EURUSD with pipettes). Previous minimum of 1bps insufficient for high-frequency range bar generation (e.g., 480 bars/day target).
+
+**Example Migration**:
+```rust
+// v2.x code (OLD):
+let processor = RangeBarProcessor::new(25);  // 25bps = 0.25%
+let builder = DukascopyRangeBarBuilder::new(10, "EURUSD", Strict); // 10bps = 0.1%
+
+// v3.x code (NEW - multiply by 10):
+let processor = RangeBarProcessor::new(250);  // 250 × 0.1bps = 25bps = 0.25%
+let builder = DukascopyRangeBarBuilder::new(100, "EURUSD", Strict); // 100 × 0.1bps = 10bps = 0.1%
+
+// v3.x NEW capability (ultra-low thresholds):
+let builder = DukascopyRangeBarBuilder::new(1, "EURUSD", Strict);  // 1 × 0.1bps = 0.1bps (NEW)
+let builder = DukascopyRangeBarBuilder::new(5, "EURUSD", Strict);  // 5 × 0.1bps = 0.5bps (NEW)
+```
+
+**Technical Changes**:
+- `BASIS_POINTS_SCALE` constant: 10,000 → 100,000
+- Threshold calculation: `threshold_bps / 10_000.0` → `threshold_bps / 100_000.0`
+- All test threshold values multiplied by 10
+
+**Impact**: All `RangeBarProcessor` and `DukascopyRangeBarBuilder` usage
+
+**Minimum threshold**: Now 0.1bps (1 unit) vs 1bps (1 unit) previously
+
+**Benefit**: Enables 400-600 bars/day for EURUSD at 0.1bps threshold (vs ~50 bars/day at 1bps)
 
 ### ✨ Features
 

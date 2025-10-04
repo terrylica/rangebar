@@ -11,7 +11,7 @@ use thiserror::Error;
 
 /// Range bar processor with non-lookahead bias guarantee
 pub struct RangeBarProcessor {
-    /// Threshold in basis points (25 = 25 bps)
+    /// Threshold in tenths of basis points (250 = 25bps, v3.0.0+)
     threshold_bps: u32,
 
     /// Current bar state for streaming processing (Q19)
@@ -24,7 +24,15 @@ impl RangeBarProcessor {
     ///
     /// # Arguments
     ///
-    /// * `threshold_bps` - Threshold value (25 for 25 bps)
+    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    ///   - Example: `250` → 25bps = 0.25%
+    ///   - Example: `10` → 1bps = 0.01%
+    ///   - Minimum: `1` → 0.1bps = 0.001%
+    ///
+    /// # Breaking Change (v3.0.0)
+    ///
+    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// **Migration**: Multiply all threshold values by 10.
     pub fn new(threshold_bps: u32) -> Self {
         Self {
             threshold_bps,
@@ -337,10 +345,10 @@ mod tests {
 
     #[test]
     fn test_single_bar_no_breach() {
-        let mut processor = RangeBarProcessor::new(25); // 25 bps
+        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
 
         // Create trades that stay within 25 bps threshold
-        let trades = scenarios::no_breach_sequence(25);
+        let trades = scenarios::no_breach_sequence(250);
 
         // Test strict algorithm compliance: no bars should be created without breach
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -369,9 +377,9 @@ mod tests {
 
     #[test]
     fn test_exact_breach_upward() {
-        let mut processor = RangeBarProcessor::new(25); // 25 bps
+        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
 
-        let trades = scenarios::exact_breach_upward(25);
+        let trades = scenarios::exact_breach_upward(250);
 
         // Test strict algorithm: only completed bars (with breach)
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -407,9 +415,9 @@ mod tests {
 
     #[test]
     fn test_exact_breach_downward() {
-        let mut processor = RangeBarProcessor::new(25); // 0.25%
+        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps = 0.25%
 
-        let trades = scenarios::exact_breach_downward(25);
+        let trades = scenarios::exact_breach_downward(250);
 
         let bars = processor.process_agg_trade_records(&trades).unwrap();
 
@@ -424,7 +432,7 @@ mod tests {
 
     #[test]
     fn test_large_gap_single_bar() {
-        let mut processor = RangeBarProcessor::new(25); // 0.25%
+        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps = 0.25%
 
         let trades = scenarios::large_gap_sequence();
 
@@ -442,7 +450,7 @@ mod tests {
 
     #[test]
     fn test_unsorted_trades_error() {
-        let mut processor = RangeBarProcessor::new(25);
+        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
 
         let trades = scenarios::unsorted_sequence();
 
@@ -459,19 +467,19 @@ mod tests {
 
     #[test]
     fn test_threshold_calculation() {
-        let processor = RangeBarProcessor::new(25); // 0.25%
+        let processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps = 0.25%
 
         let trade = test_utils::create_test_agg_trade(1, "50000.0", "1.0", 1000);
         let bar_state = RangeBarState::new(&trade, processor.threshold_bps);
 
-        // 50000 * 0.0025 = 125
+        // 50000 * 0.0025 = 125 (25bps = 0.25%)
         assert_eq!(bar_state.upper_threshold.to_string(), "50125.00000000");
         assert_eq!(bar_state.lower_threshold.to_string(), "49875.00000000");
     }
 
     #[test]
     fn test_empty_trades() {
-        let mut processor = RangeBarProcessor::new(25);
+        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
         let trades = scenarios::empty_sequence();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
         assert_eq!(bars.len(), 0);
@@ -479,7 +487,7 @@ mod tests {
 
     #[test]
     fn test_debug_streaming_data() {
-        let mut processor = RangeBarProcessor::new(10); // 0.1% = 10 bps
+        let mut processor = RangeBarProcessor::new(100); // 100 × 0.1bps = 10bps = 0.1%
 
         // Create trades similar to our test data
         let trades = vec![
@@ -516,7 +524,7 @@ mod tests {
     fn test_export_processor_with_manual_trades() {
         println!("Testing ExportRangeBarProcessor with same trade data...");
 
-        let mut export_processor = ExportRangeBarProcessor::new(10); // 0.1% = 10 bps
+        let mut export_processor = ExportRangeBarProcessor::new(100); // 100 × 0.1bps = 10bps = 0.1%
 
         // Use same trades as the working basic test
         let trades = vec![
@@ -599,6 +607,18 @@ pub struct ExportRangeBarProcessor {
 
 impl ExportRangeBarProcessor {
     /// Create new export processor with given threshold
+    ///
+    /// # Arguments
+    ///
+    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    ///   - Example: `250` → 25bps = 0.25%
+    ///   - Example: `10` → 1bps = 0.01%
+    ///   - Minimum: `1` → 0.1bps = 0.001%
+    ///
+    /// # Breaking Change (v3.0.0)
+    ///
+    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// **Migration**: Multiply all threshold values by 10.
     pub fn new(threshold_bps: u32) -> Self {
         Self {
             threshold_bps,
@@ -667,11 +687,12 @@ impl ExportRangeBarProcessor {
         let trade_turnover = (trade.price.to_f64() * trade.volume.to_f64()) as i128;
 
         // CRITICAL FIX: Use fixed-point integer arithmetic for precise threshold calculation
+        // v3.0.0: threshold_bps now in 0.1bps units, using BASIS_POINTS_SCALE = 100_000
         let price_val = trade.price.0;
         let bar_open_val = bar.open.0;
         let threshold_bps = self.threshold_bps as i64;
-        let upper_threshold = bar_open_val + (bar_open_val * threshold_bps) / 10_000;
-        let lower_threshold = bar_open_val - (bar_open_val * threshold_bps) / 10_000;
+        let upper_threshold = bar_open_val + (bar_open_val * threshold_bps) / 100_000;
+        let lower_threshold = bar_open_val - (bar_open_val * threshold_bps) / 100_000;
 
         // Update bar with new trade
         bar.close_time = trade.timestamp;

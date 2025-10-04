@@ -7,7 +7,7 @@
 //! 4. Time independence (bars not clock-based)
 //! 5. Statistical properties across market regimes
 
-use rangebar::data::dukascopy::{
+use rangebar::providers::dukascopy::{
     DukascopyFetcher, DukascopyRangeBarBuilder, ValidationStrictness,
 };
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ async fn fetch_full_day(
     year: u32,
     month: u32,
     day: u32,
-) -> Vec<rangebar::data::dukascopy::DukascopyTick> {
+) -> Vec<rangebar::providers::dukascopy::DukascopyTick> {
     let fetcher = DukascopyFetcher::new(instrument);
     let mut all_ticks = Vec::new();
 

@@ -43,13 +43,21 @@ impl DukascopyRangeBarBuilder {
     ///
     /// # Arguments
     ///
-    /// * `threshold_bps` - Threshold in basis points (25 = 0.25%)
+    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    ///   - Example: `250` → 25bps = 0.25%
+    ///   - Example: `10` → 1bps = 0.01%
+    ///   - Minimum: `1` → 0.1bps = 0.001%
     /// * `instrument` - Instrument symbol (e.g., "EURUSD")
     /// * `validation_strictness` - Validation level (Permissive/Strict/Paranoid)
     ///
     /// # Returns
     ///
     /// New builder instance with zero state
+    ///
+    /// # Breaking Change (v3.0.0)
+    ///
+    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// **Migration**: Multiply all threshold values by 10.
     ///
     /// # Examples
     ///
@@ -58,7 +66,7 @@ impl DukascopyRangeBarBuilder {
     /// use rangebar::data::dukascopy::error::ValidationStrictness;
     ///
     /// let builder = DukascopyRangeBarBuilder::new(
-    ///     25,                           // 25 bps threshold
+    ///     250,                          // 250 × 0.1bps = 25bps = 0.25% (v3.0.0)
     ///     "EURUSD",                     // Forex major
     ///     ValidationStrictness::Strict  // Default level
     /// );

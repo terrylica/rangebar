@@ -5,7 +5,7 @@
 #[cfg(feature = "api")]
 use clap::Parser;
 #[cfg(feature = "api")]
-use rangebar::api::server::start_server;
+use rangebar::infrastructure::api::server::start_server;
 #[cfg(feature = "api")]
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 

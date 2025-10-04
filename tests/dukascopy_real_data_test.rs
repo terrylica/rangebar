@@ -10,7 +10,7 @@
 //! - The specific date/hour has no data
 //! - Network connectivity issues
 
-use rangebar::data::dukascopy::{
+use rangebar::providers::dukascopy::{
     DukascopyFetcher, DukascopyRangeBarBuilder, ValidationStrictness,
 };
 

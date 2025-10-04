@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Non-lookahead bias range bar construction from Binance UM Futures aggTrades data.
+Non-lookahead bias range bar construction from tick data (crypto: Binance aggTrades, forex: Exness EURUSD Standard).
 
 **Core Algorithm**: Range bars close when price moves ±threshold basis points from the bar's OPEN price (not from high/low range).
 
@@ -58,15 +58,14 @@ Non-lookahead bias range bar construction from Binance UM Futures aggTrades data
 - **Data Type**: `"aggTrades"` **ONLY**
 - **Usage**: Specify market type via command line arguments or use spot by default
 
-#### Dukascopy (Secondary - Forex/Multi-Asset)
-- **Status**: ✅ Validated 2025-09-30 (see `docs/planning/research/dukascopy-endpoint-validation.md`)
-- **Coverage**: 1,607 instruments (Forex, Crypto, Equities, Commodities)
-- **Data Type**: Tick-level quotes (bid/ask with volumes)
-- **Access**: Public HTTP endpoints (no authentication)
-- **Format**: LZMA compressed binary (.bi5), 20 bytes per tick
-- **Historical Depth**: Forex from 2003+, Crypto from 2017+
-- **Implementation**: Direct Rust (xz2 + byteorder crates)
-- **Config Reference**: `docs/planning/research/dukascopy-instrument-config.toml`
+#### Exness (Primary - Forex)
+- **Variant**: `EURUSD` (Standard) - 1.26M ticks/month (2019-2025), SNR=1.90, 0.69 pips baseline, 18-53% more ticks than alternatives pre-2024
+- **Rejected**: Standard_Plus (fewer historical ticks, 2× cost), Raw_Spread (98% zero-spread, poor events), Cent (unnecessary)
+- **API**: `https://ticks.ex2archive.com/ticks/EURUSD/{year}/{month}/Exness_EURUSD_{year}_{month}.zip`
+- **Format**: ZIP→CSV (Bid/Ask/Timestamp), ~1.6M ticks/month, 2019+ validated (7 periods tested)
+- **Avoid**: Hour 22 UTC (rollover), Sunday (gap risk); **Best**: Hours 0-12, 14-17 UTC
+- **Event Detection**: Spread >1.4 pips = exit; use ±15min windows
+- **Thresholds**: 0.2bps (HFT), 0.5bps (intraday), 1.0bps (swing)
 
 ### Tier-1 Instruments Definition
 **Tier-1 instruments** are crypto assets that Binance respects highly enough to list across **ALL THREE** futures markets:

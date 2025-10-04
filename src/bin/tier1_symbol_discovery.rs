@@ -14,7 +14,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::path::Path;
 
-use rangebar::config::{CliConfigMerge, Settings};
+use rangebar::infrastructure::config::{CliConfigMerge, Settings};
 
 /// Output format for the symbol analysis
 #[derive(Debug, Clone, ValueEnum)]
