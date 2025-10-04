@@ -5,43 +5,20 @@ All notable changes to RangeBar will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2025-10-03
 
-### ⚠️ BREAKING CHANGES
+### ♻️ Refactoring
 
-#### Threshold Granularity: 1bps → 0.1bps Units
+- Workspace restructuring phases 1-3 (data management + binance provider) Phase 1: Data Management Structure - Create data/ and cache/ directories for raw inputs and provider cache - Create output/ subdirectories (benchmarks, validation, production, experiments) - Add README.md to data/, cache/, output/, test_data/ with taxonomy documentation - Update .gitignore with selective output tracking (commit summaries, ignore large files) Phase 2: Core Verification - Verified src/core/ compiles standalone (cargo check + 88 tests pass) - No changes to core algorithm (stability confirmed) Phase 3: Binance Provider Migration - Create src/providers/binance/ module - Migrate data/historical.rs → providers/binance/historical.rs - Merge tier1.rs + market/symbols.rs → providers/binance/symbols.rs (verified identical) - Migrate streaming/websocket.rs → providers/binance/websocket.rs - Add providers module to lib.rs - All 7 Binance provider tests pass Validation: - cargo check: PASS - cargo test --lib providers: PASS (7/7 tests) - SLO compliance: Correctness ✅, Observability ✅, Maintainability ✅ Note: Old files remain temporarily for backward compatibility. Will be removed in Phase 11. Related: docs/planning/architecture/restructure-v2.3.0-migration.md
 
-**Changed `threshold_bps` parameter interpretation from 1bps units to 0.1bps units**
+- Workspace restructuring phase 4 (dukascopy provider consolidation) Phase 4: Dukascopy Provider Consolidation (7→5 files) - Create src/providers/dukascopy/ module - Consolidate fetcher.rs + config.rs → client.rs (320 lines) - HTTP fetcher + embedded TOML config in one file - Preserved lazy static config loading - Kept all instrument lookups and type inference (Q20) - Consolidate types.rs + error.rs → types.rs (388 lines) - Error types and data types are tightly coupled - All enums (DukascopyError, ConversionError, InstrumentType, ValidationStrictness) - All structs (DukascopyTick, SpreadStats, DukascopyRangeBar) - Copy builder.rs, conversion.rs (updated imports only) - Update all internal imports: crate::dukascopy → crate::dukascopy Validation: - cargo check: PASS - cargo test --lib providers: PASS (15/15 tests in 0.14s) - SLO compliance: Correctness ✅, Observability ✅, Maintainability ✅ Note: Old files (src/data/dukascopy/) remain temporarily for backward compatibility. Will be removed in Phase 11. Related: docs/planning/architecture/restructure-v2.3.0-migration.md
 
-**Migration Required**: Multiply all threshold values by 10
+- Workspace restructuring phase 5 (exness provider + infrastructure consolidation) - Add Exness forex provider with EURUSD Standard support - Migrate infrastructure components (api, config, io) to dedicated module - Consolidate engines (batch, streaming) into unified namespace - Add comprehensive planning docs for Dukascopy/Exness optimization - Add adversarial audit test suite for EURUSD validation - Update module paths across binaries and tests - Improve fixed-point arithmetic and processor architecture Breaking Changes: - Module reorganization: src/{api,config,io} → src/infrastructure/* - Module reorganization: src/{batch,streaming} → src/engines/* - Removed deprecated data/* modules (migrated to providers/*) BREAKING CHANGE: Module paths updated for cleaner architecture
 
-**Rationale**: Enable ultra-low thresholds (0.1-0.9bps) for forex instruments with 5-decimal precision (e.g., EURUSD with pipettes). Previous minimum of 1bps insufficient for high-frequency range bar generation (e.g., 480 bars/day target).
 
-**Example Migration**:
-```rust
-// v2.x code (OLD):
-let processor = RangeBarProcessor::new(25);  // 25bps = 0.25%
-let builder = DukascopyRangeBarBuilder::new(10, "EURUSD", Strict); // 10bps = 0.1%
+### 📝 Other Changes
 
-// v3.x code (NEW - multiply by 10):
-let processor = RangeBarProcessor::new(250);  // 250 × 0.1bps = 25bps = 0.25%
-let builder = DukascopyRangeBarBuilder::new(100, "EURUSD", Strict); // 100 × 0.1bps = 10bps = 0.1%
+- Version 3.0.0 → 4.0.0
 
-// v3.x NEW capability (ultra-low thresholds):
-let builder = DukascopyRangeBarBuilder::new(1, "EURUSD", Strict);  // 1 × 0.1bps = 0.1bps (NEW)
-let builder = DukascopyRangeBarBuilder::new(5, "EURUSD", Strict);  // 5 × 0.1bps = 0.5bps (NEW)
-```
-
-**Technical Changes**:
-- `BASIS_POINTS_SCALE` constant: 10,000 → 100,000
-- Threshold calculation: `threshold_bps / 10_000.0` → `threshold_bps / 100_000.0`
-- All test threshold values multiplied by 10
-
-**Impact**: All `RangeBarProcessor` and `DukascopyRangeBarBuilder` usage
-
-**Minimum threshold**: Now 0.1bps (1 unit) vs 1bps (1 unit) previously
-
-**Benefit**: Enables 400-600 bars/day for EURUSD at 0.1bps threshold (vs ~50 bars/day at 1bps)
 
 ### ✨ Features
 
