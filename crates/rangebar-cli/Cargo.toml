@@ -80,6 +80,7 @@ path = "src/bin/polars_benchmark.rs"
 name = "temporal-integrity-validator"
 path = "src/bin/temporal_integrity_test_only.rs"
 
-[[bin]]
-name = "rangebar-api"
-path = "src/bin/rangebar_api.rs"
+# TODO: Uncomment when API infrastructure is extracted to dedicated crate
+# [[bin]]
+# name = "rangebar-api"
+# path = "src/bin/rangebar_api.rs"

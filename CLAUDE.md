@@ -10,6 +10,27 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Architecture**: Pure Rust implementation for performance and reliability (processes 1B+ ticks). All components native Rust: symbol discovery, data processing, and analysis.
 
+## Workspace Structure (v5.0.0)
+
+**Modular Crate Architecture**: 8 specialized crates organized as Cargo workspace
+
+**Core Crates**:
+- `crates/rangebar-core/` - Core algorithm, fixed-point arithmetic, types
+- `crates/rangebar-providers/` - Data providers (Binance, Exness, Dukascopy)
+- `crates/rangebar-config/` - Configuration management
+- `crates/rangebar-io/` - I/O operations and Polars integration
+
+**Engine Crates**:
+- `crates/rangebar-streaming/` - Real-time streaming processor
+- `crates/rangebar-batch/` - Batch analytics engine
+
+**Tools & Compatibility**:
+- `crates/rangebar-cli/` - Command-line tools (all binaries)
+- `crates/rangebar/` - Meta-crate for v4.0.0 backward compatibility
+
+**Legacy**:
+- `src-archived/` - v4.0.0 monolithic structure (archived, git tracked)
+
 ## Key Commands
 
 **Dev**: `cargo build --release`, `cargo test`, `cargo clippy`, `./scripts/update-deps.sh`
@@ -77,7 +98,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 **Key Characteristic**: Multi-market availability indicates Binance's highest confidence
 **Use Cases**: Cross-market extrapolative reliability analysis, settlement currency arbitrage
 
-**Structure**: `src/bin/` (tools), `tests/` (validation), `scripts/` (automation), `output/` (results)
+**Directory Structure**: `crates/` (workspace crates), `tests/` (integration tests), `scripts/` (automation), `output/` (results), `src-archived/` (v4.0.0 legacy code)
 
 ## Common Issues
 
@@ -85,11 +106,13 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 ## Rust Binaries
 
-**Tools**: `tier1-symbol-discovery --format [comprehensive|minimal]`, `rangebar-analyze`, `rangebar-export`
+**Location**: All command-line tools consolidated in `crates/rangebar-cli/src/bin/`
+
+**Tools**: `tier1-symbol-discovery --format [comprehensive|minimal]`, `rangebar-analyze`, `rangebar-export`, `data-structure-validator`, `polars-benchmark`, `temporal-integrity-validator`, `rangebar-api`
 
 **Testing**: `cargo test`, `cargo bench` - validates non-lookahead, performance <100ms/1M ticks
 
-**Publishing**: GitHub Actions OIDC on git tags, manual: `cargo publish --all-features`
+**Publishing**: GitHub Actions OIDC on git tags, manual: `cargo publish -p <crate-name>`
 
 ## Dependency Management
 
