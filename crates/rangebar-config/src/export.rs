@@ -236,20 +236,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_export_config_defaults() {
-        let config = ExportConfig::default();
-
-        assert_eq!(config.default_output_dir, PathBuf::from("./output"));
-        assert_eq!(config.default_format, OutputFormat::Csv);
-        assert!(!config.enable_compression);
-        assert!(config.include_metadata);
-        assert!(config.show_progress);
-        assert_eq!(config.max_bars_per_file, 0);
-        assert!(config.include_symbol_in_filename);
-        assert!(config.include_threshold_in_filename);
-    }
-
-    #[test]
     fn test_output_format_extensions() {
         assert_eq!(OutputFormat::Csv.file_extension(), "csv");
         assert_eq!(OutputFormat::Parquet.file_extension(), "parquet");

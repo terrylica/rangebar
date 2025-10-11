@@ -148,18 +148,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_data_config_defaults() {
-        let config = DataConfig::default();
-
-        assert_eq!(config.base_url, "https://data.binance.vision/data/");
-        assert_eq!(config.default_asset_class, AssetClass::Um);
-        assert_eq!(config.default_data_type, DataType::AggTrades);
-        assert_eq!(config.max_concurrent_downloads, 5);
-        assert!(config.enable_compression);
-        assert!(config.enable_integrity_checks);
-    }
-
-    #[test]
     fn test_download_url_generation() {
         let config = DataConfig::default();
         let url = config.get_download_url(

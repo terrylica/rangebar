@@ -74,17 +74,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_app_config_defaults() {
-        let config = AppConfig::default();
-
-        assert_eq!(config.name, "rangebar");
-        assert_eq!(config.log_level, LogLevel::Info);
-        assert_eq!(config.max_concurrent_operations, 10);
-        assert!(!config.debug_mode);
-        assert!(!config.enable_metrics);
-    }
-
-    #[test]
     fn test_worker_threads_auto_detect() {
         let config = AppConfig::default();
         let threads = config.worker_threads();

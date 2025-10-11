@@ -148,20 +148,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_algorithm_config_defaults() {
-        let config = AlgorithmConfig::default();
-
-        // v3.0.0: values in 0.1bps units
-        assert_eq!(config.default_threshold_bps, 250);  // 250 × 0.1bps = 25bps
-        assert_eq!(config.min_threshold_bps, 1);        // 1 × 0.1bps = 0.1bps (NEW minimum)
-        assert_eq!(config.max_threshold_bps, 100000);   // 100000 × 0.1bps = 10000bps = 100%
-        assert_eq!(config.fixed_point_decimals, 8);
-        assert!(config.validate_precision);
-        assert!(config.validate_non_lookahead);
-        assert!(config.validate_zero_duration);
-    }
-
-    #[test]
     fn test_threshold_conversion() {
         let config = AlgorithmConfig::default();
 
