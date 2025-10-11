@@ -1,8 +1,8 @@
 # Workspace Migration Plan v5.0.0
 
-**Status**: In Progress
+**Status**: ✅ Complete
 **Start Date**: 2025-10-04
-**Target Completion**: 2025-10-09 (5 days)
+**Completion Date**: 2025-10-11 (7 days actual)
 **Version**: rangebar v4.0.0 → v5.0.0
 
 ## SLOs
@@ -454,16 +454,16 @@ SLO: Correctness ✓ (tests pass), Maintainability ✓ (zero external deps)"
 
 ## Timeline
 
-| Phase | Duration | Start | End | Status |
-|-------|----------|-------|-----|--------|
-| 1. Workspace setup | 2h | - | - | Pending |
-| 2. Extract core | 6h | - | - | Pending |
-| 3. Extract providers | 8h | - | - | Pending |
-| 4. Extract config+io | 8h | - | - | Pending |
-| 5. Extract engines | 10h | - | - | Pending |
-| 6. Extract CLI | 6h | - | - | Pending |
-| 7. Meta-crate | 4h | - | - | Pending |
-| 8. Root cleanup | 2h | - | - | Pending |
+| Phase | Duration | Commit | Date | Status |
+|-------|----------|--------|------|--------|
+| 1. Workspace setup | 2h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 2. Extract core | 6h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 3. Extract providers | 8h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 4. Extract config+io | 8h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 5. Extract engines | 10h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 6. Extract CLI | 6h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 7. Meta-crate | 4h | 44c9515 | 2025-10-04 | ✅ Complete |
+| 8. Root cleanup | 2h | dd8f971 | 2025-10-11 | ✅ Complete |
 
 **Total**: 46 hours (~6 days at 8h/day)
 
@@ -471,12 +471,12 @@ SLO: Correctness ✓ (tests pass), Maintainability ✓ (zero external deps)"
 
 ## Success Metrics
 
-- [ ] All 16 test suites pass
-- [ ] All 7 binaries build successfully
-- [ ] Compilation time unchanged (±10%)
-- [ ] Zero clippy warnings
-- [ ] CI/CD pipeline green
-- [ ] Crates.io publication succeeds
+- [x] All 16 test suites pass
+- [x] All 7 binaries build successfully
+- [x] Compilation time unchanged (±10%)
+- [x] Zero clippy warnings
+- [x] CI/CD pipeline green
+- [ ] Crates.io publication succeeds (pending release)
 
 ---
 
@@ -489,4 +489,4 @@ SLO: Correctness ✓ (tests pass), Maintainability ✓ (zero external deps)"
 
 ---
 
-**Next Action**: Begin Phase 1 (Workspace Setup)
+**Next Action**: Migration complete. Archive to `docs/planning/legacy/` if needed.

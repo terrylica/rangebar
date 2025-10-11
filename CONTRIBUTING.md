@@ -10,7 +10,7 @@ Rangebar is a pure Rust implementation of non-lookahead bias range bar construct
 
 ### Prerequisites
 
-- Rust 1.85+ (specified in `rust-version` field)
+- Rust 1.90+ (specified in `rust-version` field)
 - Git for version control
 
 ### Local Development
@@ -95,19 +95,29 @@ cargo bench
 3. **Zero-copy Processing**: Minimize allocations in hot paths
 4. **Temporal Integrity**: Maintain strict chronological ordering
 
-### Module Organization
+### Module Organization (v5.0.0 Workspace)
 
 ```
-src/
-├── lib.rs              # Public API and re-exports
-├── types.rs            # Core data structures
-├── fixed_point.rs      # Fixed-point arithmetic
-├── range_bars.rs       # Core algorithm implementation
-├── tier1.rs            # Tier-1 symbol functionality
-└── bin/                # Binary executables
-    ├── rangebar_export.rs
-    ├── tier1_symbol_discovery.rs
-    └── parallel_tier1_analysis.rs
+crates/
+├── rangebar-core/          # Core algorithm and types
+│   ├── fixed_point.rs      # Fixed-point arithmetic
+│   ├── types.rs            # Core data structures
+│   ├── processor.rs        # Range bar algorithm
+│   └── timestamp.rs        # Timestamp handling
+├── rangebar-providers/     # Data providers
+│   ├── binance/            # Binance integration
+│   └── exness/             # Exness forex data
+├── rangebar-config/        # Configuration management
+├── rangebar-io/            # I/O and Polars integration
+├── rangebar-streaming/     # Real-time processor
+├── rangebar-batch/         # Batch analytics
+├── rangebar-cli/           # All binary executables
+│   └── src/bin/
+│       ├── tier1_symbol_discovery.rs
+│       ├── rangebar_analyze.rs
+│       └── data_structure_validator.rs
+└── rangebar/               # Meta-crate for compatibility
+    └── lib.rs              # Re-exports all crates
 ```
 
 ## 📝 Contribution Types
@@ -176,8 +186,8 @@ Current performance targets:
 # Run performance benchmarks
 cargo bench
 
-# Profile with specific datasets
-cargo run --release --bin rangebar-export -- BTCUSDT 2024-01-01 2024-01-02 0.008 ./output
+# Profile with specific datasets (800 = 80bps = 0.8% threshold)
+cargo run --release --bin rangebar-export -- BTCUSDT 2024-01-01 2024-01-02 800 ./output
 ```
 
 ## 🚨 Security Considerations
