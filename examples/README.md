@@ -38,7 +38,7 @@ cargo run --example analysis-market-efficiency
 
 ### Algorithm Validation
 ```bash
-# Validate 25 BPS threshold
+# Validate 250 threshold (25 basis points = 0.25%)
 cargo run --example validate-25bps-threshold
 
 # Test custom thresholds

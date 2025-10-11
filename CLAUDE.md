@@ -16,7 +16,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Core Crates**:
 - `crates/rangebar-core/` - Core algorithm, fixed-point arithmetic, types
-- `crates/rangebar-providers/` - Data providers (Binance, Exness, Dukascopy)
+- `crates/rangebar-providers/` - Data providers (Binance, Exness)
 - `crates/rangebar-config/` - Configuration management
 - `crates/rangebar-io/` - I/O operations and Polars integration
 
