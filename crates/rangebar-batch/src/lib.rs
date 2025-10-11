@@ -1,5 +1,9 @@
-//! Batch processing engine
+//! Batch processing and analysis using Polars
 //!
-//! Large-scale analytics with Polars integration.
+//! This module provides batch analytics capabilities powered by Polars
+//! for research, backtesting, and advanced statistical analysis.
 
-// Module will be populated in Phase 5
+pub mod engine;
+
+// Re-export commonly used types
+pub use engine::{AnalysisReport, BatchAnalysisEngine, BatchConfig, BatchError, BatchResult};
