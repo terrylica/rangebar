@@ -6,8 +6,8 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-description = "Data providers for rangebar: Binance, Exness, Dukascopy"
-keywords = ["binance", "exness", "dukascopy", "trading", "data-provider"]
+description = "Data providers for rangebar: Binance, Exness"
+keywords = ["binance", "exness", "trading", "data-provider"]
 categories = ["finance", "api-bindings"]
 
 [dependencies]
@@ -29,14 +29,8 @@ futures-util = { version = "0.3", optional = true }
 # Data formats
 csv.workspace = true
 
-# Compression (binance uses zip, dukascopy uses lzma)
+# Compression
 zip.workspace = true
-lzma-rs = { version = "0.3", optional = true }
-
-# Dukascopy-specific dependencies
-byteorder = { version = "1.5", optional = true }
-once_cell = { version = "1.20", optional = true }
-toml = { version = "0.8", optional = true }
 
 # Time handling
 chrono.workspace = true
@@ -47,6 +41,5 @@ thiserror.workspace = true
 [features]
 default = ["binance"]
 binance = ["tokio-tungstenite", "tokio-stream", "futures-util"]
-exness = ["lzma-rs"]
-dukascopy = ["lzma-rs", "byteorder", "once_cell", "toml"]
-all-providers = ["binance", "exness", "dukascopy"]
+exness = []
+all-providers = ["binance", "exness"]

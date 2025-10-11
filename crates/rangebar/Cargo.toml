@@ -35,7 +35,6 @@ api = ["rangebar-core/api"]
 providers = ["rangebar-providers"]
 binance = ["providers", "rangebar-providers/binance"]
 exness = ["providers", "rangebar-providers/exness"]
-dukascopy = ["providers", "rangebar-providers/dukascopy"]
 all-providers = ["providers", "rangebar-providers/all-providers"]
 
 config = ["rangebar-config"]

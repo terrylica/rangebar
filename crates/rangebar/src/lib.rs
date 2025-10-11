@@ -19,7 +19,7 @@
 //! ## Features
 //!
 //! - `core` - Core algorithm (always enabled)
-//! - `providers` - Data providers (Binance, Exness, Dukascopy)
+//! - `providers` - Data providers (Binance, Exness)
 //! - `config` - Configuration management
 //! - `io` - I/O operations and Polars integration
 //! - `streaming` - Real-time streaming processor

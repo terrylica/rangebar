@@ -5,8 +5,7 @@
 //! ## Supported Providers
 //!
 //! - `binance` - Binance spot and futures markets (primary - crypto)
-//! - `exness` - Exness Raw_Spread tick data (primary - forex)
-//! - `dukascopy` - ⚠️ DEPRECATED (rate limiting issues, use `exness`)
+//! - `exness` - Exness EURUSD Standard tick data (primary - forex)
 //!
 //! ## Provider Selection
 //!
@@ -14,7 +13,6 @@
 //! |-------------|----------|-----------|
 //! | Crypto | Binance | Official data, high volume, REST + WebSocket |
 //! | Forex | Exness | Zero rate limiting, 100% reliability, simple format |
-//! | ~~Forex~~ | ~~Dukascopy~~ | DEPRECATED (77.5% success rate, see `dukascopy/README.md`) |
 //!
 //! ## Adding New Providers
 //!
@@ -43,10 +41,3 @@ pub mod binance;
 
 #[cfg(feature = "exness")]
 pub mod exness;
-
-#[cfg(feature = "dukascopy")]
-#[deprecated(
-    since = "2.3.0",
-    note = "Use `exness` provider instead (zero rate limiting, 100% reliability). See src/providers/dukascopy/README.md"
-)]
-pub mod dukascopy;
