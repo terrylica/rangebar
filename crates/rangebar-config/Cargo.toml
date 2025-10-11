@@ -11,11 +11,18 @@ keywords = ["finance", "trading", "configuration"]
 categories = ["config"]
 
 [dependencies]
-rangebar-core = { path = "../rangebar-core", version = "5.0" }
+rangebar-core = { path = "../rangebar-core" }
+
+# Serialization
 serde.workspace = true
-config.workspace = true
-clap.workspace = true
 toml.workspace = true
+
+# Configuration management
+config.workspace = true
+
+# Utilities
+chrono.workspace = true
+num_cpus.workspace = true
 
 [features]
 default = []
