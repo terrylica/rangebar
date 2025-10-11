@@ -148,20 +148,23 @@ cargo build --release
 
 **Duration**: 8 hours
 **Risk**: Medium
-**Status**: Ready to start (2025-10-10)
+**Status**: ✅ Completed (2025-10-10)
 
 ### Dependencies
 - `rangebar-core` (from Phase 2)
 
 ### Tasks
-- [ ] Create `crates/rangebar-providers/Cargo.toml`
-  - Dependencies: rangebar-core, reqwest, tokio, csv, zip, lzma-rs
+- [x] Create `crates/rangebar-providers/Cargo.toml`
+  - Dependencies: rangebar-core, reqwest, tokio, csv, zip, lzma-rs, tokio-tungstenite, tokio-stream, futures-util, byteorder, once_cell, toml
   - Features: binance (default), exness, dukascopy, all-providers
-- [ ] Copy `src/providers/*` → `crates/rangebar-providers/src/`
-- [ ] Update imports:
+- [x] Copy `src/providers/*` → `crates/rangebar-providers/src/`
+- [x] Update imports:
   - `use crate::core::FixedPoint;` → `use rangebar_core::FixedPoint;`
   - `use crate::core::types::AggTrade;` → `use rangebar_core::AggTrade;`
-- [ ] Feature-gate providers in `lib.rs`
+  - `use crate::providers::exness::` → `use crate::exness::`
+- [x] Feature-gate providers in `lib.rs`
+- [x] Fix doctests with correct module paths
+- [x] Fix include_str! path for Dukascopy instrument config
 
 ### Import Changes
 ```rust
@@ -169,17 +172,36 @@ cargo build --release
 use crate::core::fixed_point::FixedPoint;
 use crate::core::types::{AggTrade, RangeBar};
 use crate::core::timestamp::normalize_timestamp;
+use crate::providers::exness::types::ExnessTick;
 
 // After
 use rangebar_core::{FixedPoint, AggTrade, RangeBar, normalize_timestamp};
+use crate::exness::types::ExnessTick;
 ```
 
 ### Validation
 ```bash
-cargo test -p rangebar-providers --features binance
-cargo test -p rangebar-providers --features exness
-cargo test -p rangebar-providers --all-features
+cargo test -p rangebar-providers --features binance       # 7 unit + 3 doctests ✅
+cargo test -p rangebar-providers --features exness        # 23 unit + 3 doctests ✅
+cargo test -p rangebar-providers --features dukascopy     # 22 unit + 4 doctests ✅
+cargo test -p rangebar-providers --all-features           # 38 unit + 10 doctests ✅
+cargo clippy -p rangebar-providers --all-features -- -D warnings  # ✅ Clean
 ```
+
+### Success Criteria
+- ✅ All 38 unit tests pass (binance: 7, exness: 23, dukascopy: 22)
+- ✅ All 10 doctests pass (binance: 3, exness: 3, dukascopy: 4)
+- ✅ Feature-isolated compilation works (each provider compiles independently)
+- ✅ Zero clippy warnings (with `-D warnings`)
+
+### Implementation Notes
+- Added provider-specific optional dependencies:
+  - **Binance**: tokio-tungstenite 0.23, tokio-stream 0.1, futures-util 0.3 (WebSocket support)
+  - **Exness/Dukascopy**: lzma-rs 0.3 (LZMA compression)
+  - **Dukascopy only**: byteorder 1.5, once_cell 1.20, toml 0.8 (binary parsing + config)
+- Fixed include_str! path: `../../../docs/` → `../../../../docs/` (workspace depth adjustment)
+- Updated all doctests from `use rangebar::providers::` to `use rangebar_providers::`
+- Fixed exness mod.rs doctest error handling to avoid returning Result in unit function
 
 ---
 
