@@ -58,7 +58,7 @@ Before submitting any changes, ensure:
 
 ### Test Categories
 
-1. **Unit Tests**: Located in `src/` modules with `#[cfg(test)]`
+1. **Unit Tests**: Located in `crates/*/src/` modules with `#[cfg(test)]`
 2. **Integration Tests**: Located in `tests/` directory
 3. **Benchmarks**: Located in `benches/` directory
 4. **Examples**: Located in `examples/` directory
