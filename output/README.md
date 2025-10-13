@@ -27,7 +27,7 @@ output/
 - **Purpose**: Performance validation, throughput testing
 - **Git Policy**: Commit JSON summaries only (< 1MB)
 - **Naming**: `YYYY-MM-DD_benchmark-name/`
-- **Example**: `2025-10-02_dukascopy-105k-ticks/summary.json`
+- **Example**: `2025-10-02_binance-spot-1M-ticks/summary.json`
 
 ### `validation/`
 - **Purpose**: Data structure validation, integrity checks
@@ -53,7 +53,7 @@ output/
 
 **Examples**:
 - `binance_spot_BTCUSDT_rangebar_20240701_20241031_0025bps.parquet`
-- `dukascopy_EURUSD_rangebar_20250115_20250115_0025bps.csv`
+- `exness_EURUSD_rangebar_20250115_20250131_0025bps.csv`
 - `binance_um_ETHUSDT_rangebar_20240801_20240831_0050bps.json`
 
 ## File Formats

@@ -135,9 +135,9 @@ for i in 1..ticks.len() {
 
 ### Initial Expectation vs Reality
 
-**Expected** (from Dukascopy planning):
+**Expected** (from initial planning with other forex providers):
 - 0.1bps threshold → ~480 bars/day
-- Based on: Dukascopy data (84K ticks/day, has volumes)
+- Based on: Historical forex data (84K ticks/day, with volumes)
 
 **Actual** (Exness Raw_Spread):
 - 0.1bps threshold → 29,519 bars/day
@@ -191,7 +191,7 @@ Based on empirical results:
 ### Availability SLO: 100% Fetch Success
 - **Target**: Zero rate limiting
 - **Result**: ✅ 100% success (1 request, 1.2M ticks, 3.53 seconds)
-- **Comparison**: Dukascopy 77.5% (27/120 requests failed)
+- **Comparison**: Previous provider 77.5% (27/120 requests failed)
 
 ### Correctness SLO: 100% Validation Pass
 - **Target**: All ticks pass validation
@@ -205,7 +205,7 @@ Based on empirical results:
 
 ### Maintainability SLO: Out-of-Box Dependencies
 - **Target**: Standard crates only
-- **Result**: ✅ zip, csv, chrono (vs Dukascopy: lzma-rs, byteorder, custom parser)
+- **Result**: ✅ zip, csv, chrono (simpler than previous provider's lzma-rs, byteorder, custom parser)
 
 ---
 
@@ -248,14 +248,14 @@ Based on empirical results:
 **Reality**: Bar count depends on data characteristics (spread distribution)
 
 **Exness Raw_Spread**: 98.46% zero spread → 29K bars/day
-**Dukascopy**: Lower zero-spread % → fewer bars/day
+**Other providers**: Lower zero-spread % → fewer bars/day
 
 ### Fallacy 3: "More ticks = Better data"
 
-**Incorrect Assumption**: Dukascopy better (84K ticks/day vs 53K)
+**Incorrect Assumption**: More ticks always means better data (84K ticks/day vs 53K)
 **Reality**: Signal quality > quantity
-- Exness: 100% reliability, simpler format
-- Dukascopy: 77.5% reliability, complex parsing
+- Exness: 100% reliability, simpler format (zip, csv, chrono)
+- Previous provider: 77.5% reliability, complex parsing (lzma-rs, byteorder)
 
 ---
 
