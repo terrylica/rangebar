@@ -29,7 +29,7 @@ use zip::ZipArchive;
 /// Exness HTTP data fetcher
 ///
 /// Fetches monthly tick data for specified Raw_Spread symbol variant.
-/// Zero rate limiting (100% reliability vs Dukascopy 77.5%).
+/// Zero rate limiting (100% reliability).
 pub struct ExnessFetcher {
     client: Client,
     symbol: String,

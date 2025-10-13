@@ -38,7 +38,7 @@ pub fn normalize_timestamp(raw_timestamp: u64) -> i64 {
 /// Validate timestamp is in expected microsecond range
 ///
 /// Checks if timestamp falls within reasonable bounds for financial data.
-/// Expanded range (2000-2035) covers historical Forex data from Dukascopy (2003+)
+/// Expanded range (2000-2035) covers historical Forex data (2003+)
 /// and cryptocurrency data (2009+) while rejecting obviously invalid timestamps.
 ///
 /// # Arguments
@@ -51,7 +51,7 @@ pub fn normalize_timestamp(raw_timestamp: u64) -> i64 {
 ///
 /// # Validation Range (Q16)
 ///
-/// - MIN: 2000-01-01 (covers Dukascopy historical Forex from 2003)
+/// - MIN: 2000-01-01 (covers historical Forex from 2003)
 /// - MAX: 2035-01-01 (future-proof for upcoming data)
 /// - Rejects: Unix epoch (1970), far future (2100+), negative timestamps
 pub fn validate_timestamp(timestamp: i64) -> bool {
@@ -130,7 +130,7 @@ mod tests {
         // Valid: 2024 timestamp (crypto era)
         assert!(validate_timestamp(1704067200_000_000)); // 2024-01-01
 
-        // Valid: 2003 timestamp (Dukascopy Forex historical data)
+        // Valid: 2003 timestamp (Forex historical data)
         assert!(validate_timestamp(1041379200_000_000)); // 2003-01-01
 
         // Valid: 2000 timestamp (min boundary)

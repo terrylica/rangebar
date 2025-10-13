@@ -20,7 +20,7 @@ Provide **minimal, representative** test data for:
 Rationale: Keep git clone fast, CI/CD responsive
 
 ### Data Quality
-- **Real data samples** from Binance/Dukascopy (not synthetic)
+- **Real data samples** from Binance (not synthetic)
 - **Edge cases prioritized**:
   - Year boundary crossings (2024-12-31 → 2025-01-01)
   - Threshold breach sequences

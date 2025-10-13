@@ -1,95 +1,24 @@
-# Next Steps - Post-Restructuring v2.3.0
+# Next Steps - Post-Restructuring v5.0.0
 
-**Status**: Restructuring complete, audit plan created
-**Date**: 2025-10-03
+**Status**: Workspace migration complete
+**Date**: 2025-10-11
 
 ---
 
 ## Completed ✅
 
-1. **Workspace Restructuring (v2.3.0)**
-   - 4-layer architecture (Core → Providers → Engines → Infrastructure)
+1. **Workspace Restructuring (v5.0.0)**
+   - 8-crate modular architecture
+   - Provider pattern (Binance, Exness)
    - Data management (data/, cache/, output/ with READMEs)
-   - Provider pattern for future sources
-   - 173 tests passing (99 lib + integration)
+   - 108+ tests passing
    - All clippy warnings fixed
-   - Zero breaking changes (backward compat via re-exports)
+   - Backward compatibility via meta-crate
 
 2. **Documentation**
-   - Updated CLAUDE.md with new architecture
-   - Migration plan with lessons learned
-   - EURUSD audit plan created
-
----
-
-## Completed ✅
-
-### 1. EURUSD Audit Test Implementation ✅
-
-**Status**: All 4 phases complete (Implementation finished)
-
-**Phase 1** - Compilation fixes:
-- Fixed 4 types of errors (12 locations)
-- Discovered 5 API nuances (documented in tracker)
-
-**Phase 2** - Synthetic tests:
-- ✅ 8/8 tests passing (100% pass rate)
-- Validates: known-answer, threshold sensitivity, temporal integrity, breach inclusion, edge cases
-
-**Phase 3** - Real-world validation:
-- ✅ Fetched 3,952 live EURUSD ticks from Dukascopy
-- ✅ Implementation validated (0 bars for low-volatility hour is correct)
-- Added diagnostics: price range analysis, error tracking
-
-**Phase 4** - CI/CD recommendations:
-- ✅ Documented GitHub Actions workflow template
-- ✅ Defined alert configuration (CRITICAL vs WARNING)
-- Ready for optional CI/CD integration
-
-**Tracker**: `docs/planning/dukascopy-eurusd-audit-implementation.md`
-**Test File**: `tests/dukascopy_eurusd_adversarial_audit.rs`
-
-**Commands**:
-```bash
-# Run all audit tests:
-cargo test --test dukascopy_eurusd_adversarial_audit
-
-# Run with real-world data:
-cargo test audit_7 -- --ignored --nocapture
-```
-
----
-
-## Summary
-
-**EURUSD Adversarial Audit**: ✅ COMPLETE - Option 1 successful with 3bps threshold
-
-**Completed**:
-- ✅ Phase 1-2: 8/8 synthetic tests passing (100%)
-- ✅ Phase 3: Real-world validation with multi-threshold optimization
-- ✅ Option 1: Lower threshold implementation (3bps, 5bps, 10bps, 25bps)
-
-**Final Results** (Option 1 - Multi-threshold):
-- **3bps**: 85 bars from 38K ticks (projected 84.4 bars/day with full data) ✅
-- **5bps**: 25 bars from 38K ticks (projected 24.8 bars/day with full data) ✅
-- **10bps**: 9 bars from 38K ticks (projected 9.0 bars/day) ⚠️
-- **Data limitation**: Only 38K ticks fetched (Dukascopy 503 errors on 72% of requests)
-
-**User Requirement Achievement**:
-- ✅ **3bps EXCEEDS** "dozens to hundreds per day" (projected 84.4/day vs 24 minimum)
-- ✅ **5bps MEETS** minimum requirement (projected 24.8/day)
-- ✅ Temporal integrity, spread statistics, threshold monotonicity validated
-
-**Recommendation**: Use **3bps threshold** for production EURUSD range bars
-
-**Outstanding Issues**:
-- 🚨 **Breach anomaly**: Bars close far from thresholds (requires investigation)
-
-**Resolved**:
-- ✅ **Network reliability**: Dukascopy 503 errors - FIXED via rate limit mitigation (100ms delay between requests)
-  - Implementation: `tests/dukascopy_eurusd_adversarial_audit.rs:411` (DUKASCOPY_RATE_LIMIT_DELAY_MS)
-  - Plan: `docs/planning/dukascopy-rate-limit-mitigation.md`
-  - Status: Awaiting validation (test run with 0 failures expected)
+   - Updated CLAUDE.md with v5.0.0 structure
+   - Migration plan complete
+   - Documentation audit (3 rounds)
 
 ---
 
@@ -126,21 +55,6 @@ rg "test_single_symbol_analysis" src/engines/batch/engine.rs -A 30
 
 ---
 
-### 3. Optional: Implement CI/CD Integration for EURUSD Audit
-
-**Status**: Template documented, ready for implementation (user discretion)
-
-**Workflow File**: `.github/workflows/eurusd-audit.yml`
-
-**Template**: See `docs/planning/dukascopy-eurusd-audit-implementation.md` Phase 4
-
-**Benefits**:
-- Automated validation on every commit
-- Daily regression detection (cron schedule)
-- PR blocking on critical test failures
-
----
-
 ### 4. Validate No Regressions
 
 **Full Test Suite**:
@@ -173,23 +87,21 @@ cargo build --release --all-features
 
 ### Short-term (This Week)
 
-1. ~~**EURUSD adversarial audit**~~ - ✅ DONE (all 4 phases complete)
-2. **Fix 4 failing tests** - batch/io test failures (NULL values in DataFrame)
-3. **Add regression detection CI** (optional) - Template ready in implementation tracker
-4. **Improve audit test** (optional) - Use volatile hour or multiple hours for bar validation
+1. **Fix 4 failing tests** - batch/io test failures (NULL values in DataFrame)
+2. **Add regression detection CI** (optional) - Template for GitHub Actions
+3. **Multi-instrument validation** - Test across crypto and forex pairs
 
 ### Medium-term (This Month)
 
-1. **Cross-validation with Binance** - Compare BTCUSD range bars (Dukascopy crypto vs Binance)
-2. **Multi-instrument validation** - Test GBPUSD, USDJPY, XAUUSD
-3. **Property-based testing** - Add proptest for Dukascopy builder
-4. **Chaos engineering** - Inject faults (missing ticks, crossed markets, duplicates)
+1. **Cross-validation with Binance** - Compare range bars across different markets
+2. **Property-based testing** - Add proptest for core algorithm
+3. **Chaos engineering** - Inject faults (missing ticks, crossed markets, duplicates)
 
 ### Long-term (This Quarter)
 
-1. **Differential testing** - Reference Python implementation for comparison
-2. **Production monitoring** - Daily EURUSD audit in CI/CD
-3. **Performance profiling** - Benchmark Dukascopy vs Binance throughput
+1. **Differential testing** - Reference implementation for comparison
+2. **Production monitoring** - Daily validation in CI/CD
+3. **Performance profiling** - Benchmark provider throughput
 
 ---
 
@@ -198,35 +110,30 @@ cargo build --release --all-features
 ### Critical (P0) - Must Fix Before Production
 
 - ✅ **Clippy warnings** - FIXED
-- ✅ **EURUSD audit tests** - COMPLETE (all 4 phases)
-- ⚠️ **4 failing tests** - Need investigation (batch/io tests, unrelated to EURUSD)
+- ⚠️ **4 failing tests** - Need investigation (batch/io tests)
 
 ### High (P1) - Fix Soon
 
-- **No cross-validation** - Need Binance BTCUSD comparison
 - **Limited edge case coverage** - Need fuzzing/property tests
-- **Single instrument focus** - Only EURUSD tested
+- **Cross-validation needed** - Compare providers across markets
 
 ### Medium (P2) - Nice to Have
 
-- **No performance benchmarks** - Dukascopy vs Binance speed
+- **No performance benchmarks** - Provider throughput comparison
 - **Manual test execution** - Need CI automation
-- **Limited multi-instrument testing** - Only EURUSD/forex
+- **Limited multi-instrument testing** - Expand coverage
 
 ---
 
 ## Questions for User
 
-1. ✅ ~~**Audit Test Priority**~~ - COMPLETE (all 4 phases finished)
-2. **Next Priority**: Investigate 4 pre-existing test failures or other focus area?
-3. **CI/CD Integration**: Implement GitHub Actions workflow for EURUSD audit?
-4. **Additional Instruments**: Beyond EURUSD, which forex pairs should be validated next?
+1. **Next Priority**: Investigate 4 pre-existing test failures or other focus area?
+2. **CI/CD Integration**: Implement GitHub Actions workflow for automated validation?
+3. **Additional Instruments**: Which symbols/pairs should be validated next?
 
 ---
 
 ## References
 
-- **Audit Plan**: `docs/planning/dukascopy-eurusd-audit-plan.md`
-- **Audit Tests**: `tests/dukascopy_eurusd_adversarial_audit.rs`
-- **Migration Doc**: `docs/planning/architecture/restructure-v2.3.0-migration.md`
+- **Migration Doc**: `docs/planning/workspace-migration-v5.0.0.md`
 - **Architecture**: CLAUDE.md - Module Structure section

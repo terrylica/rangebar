@@ -8,19 +8,11 @@ Provider-specific temporary files for performance optimization. **Never commit t
 cache/
 ├── binance/
 │   └── api_responses/     # Cached API responses
-├── dukascopy/
-│   └── decompressed/      # Decompressed .bi5 → parsed ticks
 └── metadata/
     └── symbol_info.json   # Tier-1 symbol discovery cache
 ```
 
 ## Cache Policies
-
-### Dukascopy
-- **Purpose**: Cache decompressed .bi5 files to avoid repeated LZMA decompression
-- **Location**: `cache/dukascopy/decompressed/[SYMBOL]/YYYY/MM/DD/HHh_ticks.bin`
-- **Retention**: 30 days (auto-cleanup recommended)
-- **Size**: ~4× larger than compressed (72KB → 288KB per hour)
 
 ### Binance
 - **Purpose**: Rate-limit friendly API response caching
@@ -39,10 +31,7 @@ cache/
 ### Manual
 ```bash
 # Remove all cache
-rm -rf cache/*/{binance,dukascopy,metadata}/*
-
-# Remove expired Dukascopy cache (>30 days)
-find cache/dukascopy/decompressed -type f -mtime +30 -delete
+rm -rf cache/*/{binance,metadata}/*
 ```
 
 ### Automated (Future)
@@ -52,8 +41,8 @@ cargo run --bin cache-manager -- --clear-old
 
 ## Performance Impact
 
-- **With cache**: LZMA decompression skipped (~50ms saved per hour)
-- **Without cache**: Re-decompress every run (acceptable for one-time analysis)
+- **With cache**: API responses cached, rate limits avoided
+- **Without cache**: Re-fetch on every run (slower, may hit rate limits)
 - **Recommendation**: Enable for batch processing, disable for one-off queries
 
 ## Git Policy

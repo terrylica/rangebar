@@ -8,8 +8,8 @@
 //!
 //! - **CV=8.17**: 8× higher spread variability than Standard variant
 //! - **Bimodal distribution**: 98% at 0.0 pips, 2% at 1-9 pips (stress events)
-//! - **Zero rate limiting**: 100% reliability (vs Dukascopy 77.5%)
-//! - **Simple format**: Monthly ZIP → CSV (vs hourly LZMA binary)
+//! - **Zero rate limiting**: 100% reliability
+//! - **Simple format**: Monthly ZIP → CSV
 //!
 //! ## Architecture
 //!

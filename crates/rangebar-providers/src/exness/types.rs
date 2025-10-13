@@ -226,7 +226,7 @@ pub struct ExnessRangeBar {
 
 /// Availability SLO: 100% fetch success
 ///
-/// Target: Zero rate limiting (empirical: 100% vs Dukascopy 77.5%)
+/// Target: Zero rate limiting (empirical: 100%)
 /// Measurement: HTTP request success rate
 /// Alerting: Any HTTP 503 or timeout triggers immediate failure
 pub const AVAILABILITY_SLO_TARGET: f64 = 1.0;
