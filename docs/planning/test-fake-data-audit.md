@@ -213,17 +213,21 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 - Inconsistency (different files generate different "realistic" data)
 - Violates DRY principle
 
-### Redundant Test Files
+### Redundant Test Files ✅ DELETED (Phase 0 Complete)
 
-**1. `tests/bps_conversion_tests.rs` (147 lines) - COMPLETELY REDUNDANT**
-- Tests already covered in `crates/rangebar-core/src/fixed_point.rs` unit tests
-- All 7 test functions duplicate existing unit tests
-- **Action**: DELETE entire file, update assertions in unit tests if needed
+**1. `tests/bps_conversion_tests.rs` (147 lines) - DELETED** ✅
+- **Reason**: BROKEN (tests `BASIS_POINTS_SCALE = 10_000` but actual = `100_000`)
+- **Additional**: ORPHANED (not running as part of workspace tests)
+- **Discovery**: Would FAIL if it were running (tests v2.0 semantics, not v3.0.0)
+- **Action**: ✅ DELETED on 2025-10-15
 
-**2. `tests/statistics_v2_validation.rs` (279 lines) - MISPLACED**
-- Not a test file (uses `fn main()` instead of `#[test]`)
-- Manual validation binary, should be in `examples/` or removed
-- **Action**: MOVE to `examples/manual_validation.rs` or DELETE if unused
+**2. `tests/statistics_v2_validation.rs` (279 lines) - DELETED** ✅
+- **Reason**: MISPLACED (uses `fn main()` instead of `#[test]`)
+- **Additional**: ORPHANED (not running as part of workspace tests)
+- **Should be**: In `examples/` directory or deleted
+- **Action**: ✅ DELETED on 2025-10-15
+
+**Discovery**: Both files were **ORPHANED** - workspace root `tests/` not claimed by any package, zero tests executed!
 
 **3. Large test files overlap significantly**:
 - `large_boundary_tests.rs` + `multi_month_memory_tests.rs` test similar concepts
@@ -234,19 +238,40 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 
 ## Revised Cleanup Plan (DRY-First Approach)
 
-### Phase 0: Remove Redundant Files (ZERO RISK)
+### Phase 0: Remove Redundant Files ✅ COMPLETED
 
-**DELETE**: `tests/bps_conversion_tests.rs`
-- **Reason**: 100% redundant with `fixed_point.rs` unit tests
-- **Validation**: All tests already covered in unit tests
-- **Impact**: -147 lines, -7 redundant tests
+**Status**: EXECUTED on 2025-10-15
 
-**MOVE or DELETE**: `tests/statistics_v2_validation.rs`
-- **Option A**: Move to `examples/statistics_validation.rs` (if useful for manual testing)
-- **Option B**: Delete (if not used)
-- **Impact**: -279 lines from tests/
+**Actual Findings** (worse than initially thought):
 
-**Total Phase 0 reduction**: -426 lines, cleanup tests/ directory
+1. **Tests are ORPHANED** - Not running as part of `cargo test --workspace`
+   - Files in workspace root `tests/` not claimed by any package
+   - Zero tests executed from these files
+   - Complete waste of maintenance effort
+
+2. **bps_conversion_tests.rs is BROKEN** - Tests wrong constant value
+   - Tests: `assert_eq!(BASIS_POINTS_SCALE, 10_000)`
+   - Actual: `pub const BASIS_POINTS_SCALE: u32 = 100_000`
+   - WOULD FAIL if it were running (tests v2.0 semantics, not v3.0.0)
+   - Change reason: v3.0.0 changed from 1bps to 0.1bps units
+
+3. **statistics_v2_validation.rs is MISPLACED** - Manual binary, not test
+   - Uses `fn main()` instead of `#[test]`
+   - Should be in `examples/` or deleted
+
+**Actions Taken**:
+
+**DELETED**: `tests/bps_conversion_tests.rs` (147 lines)
+- **Reason**: BROKEN (tests old v2.0.0 semantics) + ORPHANED (not running)
+- **Impact**: Remove test that would fail if it ran
+- **Justification**: Tests for `BASIS_POINTS_SCALE = 10_000` but actual = `100_000`
+
+**DELETED**: `tests/statistics_v2_validation.rs` (279 lines)
+- **Reason**: MISPLACED (manual binary using `fn main()`) + ORPHANED (not running)
+- **Impact**: Remove non-test file from tests/ directory
+- **Justification**: Should be in examples/, not tests/
+
+**Total Phase 0 reduction**: -426 lines, removed 2 broken/misplaced files
 
 ---
 
