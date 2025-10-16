@@ -6,14 +6,15 @@
 use rangebar::{
     AggTrade, FixedPoint, RangeBar, RangeBarProcessor, get_tier1_symbols, is_tier1_symbol,
 };
+use rangebar_core::test_data_loader::load_btcusdt_test_data;
 
 #[test]
 fn test_range_bar_processing_integration() {
-    // Test complete workflow from trades to range bars
-    let mut processor = RangeBarProcessor::new(80); // 0.8% threshold
+    // Test complete workflow from trades to range bars using real BTCUSDT CSV data
+    let mut processor = RangeBarProcessor::new(25); // 0.25% threshold (standard for real data)
 
-    // Create test trades that should produce deterministic range bars
-    let trades = create_test_trades().expect("Failed to create test trades");
+    // Load real BTCUSDT test data from CSV (5,000 trades)
+    let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
 
     // Process AggTrade records
     let range_bars = processor
@@ -23,19 +24,54 @@ fn test_range_bar_processing_integration() {
     // Verify results
     assert!(
         !range_bars.is_empty(),
-        "Should produce at least one range bar"
+        "Should produce at least one range bar from real data"
+    );
+
+    println!(
+        "Real data integration test: {} trades → {} range bars (threshold=0.25%)",
+        trades.len(),
+        range_bars.len()
     );
 
     // Verify each range bar has valid OHLC data
-    for bar in &range_bars {
-        assert!(bar.high >= bar.open, "High should be >= open");
-        assert!(bar.high >= bar.close, "High should be >= close");
-        assert!(bar.low <= bar.open, "Low should be <= open");
-        assert!(bar.low <= bar.close, "Low should be <= close");
-        assert!(bar.volume > FixedPoint(0), "Volume should be positive");
+    for (i, bar) in range_bars.iter().enumerate() {
+        assert!(
+            bar.high >= bar.open,
+            "Bar {}: High ({}) should be >= open ({})",
+            i,
+            bar.high,
+            bar.open
+        );
+        assert!(
+            bar.high >= bar.close,
+            "Bar {}: High ({}) should be >= close ({})",
+            i,
+            bar.high,
+            bar.close
+        );
+        assert!(
+            bar.low <= bar.open,
+            "Bar {}: Low ({}) should be <= open ({})",
+            i,
+            bar.low,
+            bar.open
+        );
+        assert!(
+            bar.low <= bar.close,
+            "Bar {}: Low ({}) should be <= close ({})",
+            i,
+            bar.low,
+            bar.close
+        );
+        assert!(
+            bar.volume > FixedPoint(0),
+            "Bar {}: Volume should be positive",
+            i
+        );
         assert!(
             bar.open_time <= bar.close_time,
-            "Open time should be <= close time"
+            "Bar {}: Open time should be <= close time",
+            i
         );
     }
 }
@@ -374,26 +410,6 @@ fn test_non_lookahead_bias_compliance() {
         bar.close.to_f64() > expected_upper_threshold,
         "Close should breach threshold computed from open"
     );
-}
-
-/// Helper function to create test trades
-fn create_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Error>> {
-    let base_price = 50000.0;
-    let base_timestamp = 1609459200000;
-    let mut trades = Vec::new();
-
-    // Create trades with varying price movements
-    let price_factors = [1.0, 1.002, 1.005, 1.009, 1.003, 0.995, 0.992];
-
-    for (i, &factor) in price_factors.iter().enumerate() {
-        trades.push(create_trade(
-            i as i64 + 1,
-            base_price * factor,
-            base_timestamp + (i as i64 * 1000),
-        ));
-    }
-
-    Ok(trades)
 }
 
 /// Helper function to create a single trade
