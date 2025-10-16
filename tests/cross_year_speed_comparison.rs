@@ -1,13 +1,15 @@
 use rangebar::fixed_point::FixedPoint;
+use rangebar::range_bars::ExportRangeBarProcessor;
+use rangebar::types::AggTrade;
+use rangebar_core::test_utils::generators::create_test_trade;
+use std::time::Instant;
+
 /// Cross-year speed comparison test: Oct 2024 - Feb 2025
 ///
 /// Comprehensive performance benchmarking of batch vs streaming rangebar construction
 /// across year boundary with detailed memory usage tracking and throughput analysis.
 ///
 /// Now includes Production Streaming V2 with bounded memory architecture.
-use rangebar::range_bars::ExportRangeBarProcessor;
-use rangebar::types::AggTrade;
-use std::time::Instant;
 
 #[cfg(feature = "streaming-v2")]
 use rangebar::engines::streaming::processor::{StreamingProcessor, StreamingProcessorConfig};
@@ -355,20 +357,6 @@ fn generate_year_boundary_data(
     }
 
     trades
-}
-
-fn create_test_trade(id: u64, price: f64, timestamp: u64) -> AggTrade {
-    let price_str = format!("{:.8}", price);
-    AggTrade {
-        agg_trade_id: id as i64,
-        price: FixedPoint::from_str(&price_str).unwrap(),
-        volume: FixedPoint::from_str("1.0").unwrap(),
-        first_trade_id: id as i64,
-        last_trade_id: id as i64,
-        timestamp: timestamp as i64,
-        is_buyer_maker: false,
-        is_best_match: None,
-    }
 }
 
 // Memory tracking function
