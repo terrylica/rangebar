@@ -1,9 +1,24 @@
-# Test Fake Data Audit
+# Test Fake Data Audit (v1 - OBSOLETE)
 
+**Status**: DEPRECATED - Replaced by test-cleanup-plan-v2-llm-friendly.md
+**Reason**: v1 plan proposed merging files (bad for LLMs), v2 keeps files separate
 **Date**: 2025-10-15
 **Auditor**: Claude Code
 **Scope**: All test files in rangebar workspace
 **Goal**: Identify unnecessary fake data usage and replace with real data where possible
+
+---
+
+## DEPRECATION NOTICE
+
+This plan is **OBSOLETE**. Use `/Users/terryli/eon/rangebar/docs/planning/test-cleanup-plan-v2-llm-friendly.md` instead.
+
+**Key change**: v1 proposed "Merge 3 files → 1 file (600 lines)" which is BAD for LLMs.
+v2 revised to "Refactor 3 files → 3 small files (60-150 lines each)" which is GOOD for LLMs.
+
+---
+
+# Original v1 Plan (Archived for Reference)
 
 ---
 
