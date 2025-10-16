@@ -320,10 +320,30 @@ pub mod generators;  // Large-scale data generation for integration tests
 **SLOs**: Availability 100%, Correctness 100%, Observability 100%, Maintainability 100%
 **Status**: ✅ DONE
 
-### Phase 5: Documentation
+### Phase 5: Documentation ✅ COMPLETED
 
-Update docs explaining when to use real vs synthetic data
-- **Risk**: ZERO (docs only)
+**Created**: `docs/testing/test-data-guide.md` (334 lines)
+
+**Documentation Sections**:
+1. Overview and test data types
+2. Real market data (CSV) usage guide
+3. Synthetic generated data usage guide
+4. Processing styles (batch vs streaming)
+5. Decision matrix (when to use each type)
+6. Practical examples
+7. Best practices
+8. SLOs for both data types
+9. File locations and test execution
+
+**Coverage**:
+- Real data: When to use, available datasets, loading patterns, characteristics, limitations
+- Synthetic data: When to use, 40+ generator functions, edge cases, parametric testing
+- Decision matrix: 12 test scenarios with data type recommendations
+- 3 complete examples: Real data test, synthetic data test, combined test
+- Best practices: Acceptance tests, edge cases, comprehensive coverage, fail-fast
+
+**SLOs**: Availability 100%, Correctness 100%, Observability 100%, Maintainability 100%
+**Status**: ✅ DONE
 
 ---
 
@@ -335,7 +355,7 @@ Update docs explaining when to use real vs synthetic data
 - [x] Zero code duplication (all duplicate helpers removed)
 - [x] All shared helpers centralized in test_utils::generators
 
-**Metrics** (Phases 0-4 completed):
+**Metrics** (Phases 0-5 completed):
 - [x] Delete 2 redundant files (-426 lines) ✅ Phase 0 complete
 - [x] Reduce large files by 21.9% (-472 lines) ✅ Phase 2 complete
   - Note: Original 69% estimate was based on incorrect assumption that ALL helpers would be moved
@@ -347,7 +367,11 @@ Update docs explaining when to use real vs synthetic data
   - Created 2 test files (436 lines total)
   - Added 10 new integration tests (BTCUSDT + ETHUSDT)
   - Test coverage: data integrity, 3 threshold scenarios, threshold scaling
-- [x] Net impact: +278 lines (infrastructure + new tests with comprehensive coverage)
+- [x] Add test data usage documentation ✅ Phase 5 complete
+  - Created test-data-guide.md (334 lines)
+  - Decision matrix, examples, best practices, SLOs
+  - Complete documentation for real vs synthetic data usage
+- [x] Net impact: +612 lines (infrastructure + test coverage + documentation)
 
 **LLM Benefits** (achieved):
 - [x] Clear separation of concerns (shared helpers vs test-specific infrastructure)
@@ -417,11 +441,12 @@ Update docs explaining when to use real vs synthetic data
 - tests/bps_conversion_tests.rs (147 lines) ✅
 - tests/statistics_v2_validation.rs (279 lines) ✅
 
-**Created** (Phases 1-4):
+**Created** (Phases 1-5):
 - crates/rangebar-core/src/test_data_loader.rs (245 lines) ✅ Phase 1
 - crates/rangebar-core/src/test_utils/generators.rs (513 lines) ✅ Phase 1.5
 - crates/rangebar/tests/binance_btcusdt_real_data_test.rs (218 lines) ✅ Phase 4
 - crates/rangebar/tests/binance_ethusdt_real_data_test.rs (218 lines) ✅ Phase 4
+- docs/testing/test-data-guide.md (334 lines) ✅ Phase 5
 
 **Refactored** (Phase 2 - COMPLETED):
 - tests/large_boundary_tests.rs (802 → 383 lines, -419 lines) ✅
@@ -432,9 +457,9 @@ Update docs explaining when to use real vs synthetic data
 **Updated** (Phase 3):
 - tests/integration_test.rs (minimal changes, replace fake data)
 
-**Net Impact** (Phases 0-4 completed):
+**Net Impact** (Phases 0-5 completed):
 - Lines deleted: -426 (Phase 0) + -472 (Phase 2) + -18 (Phase 3) = **-916 lines**
-- Lines added: +245 (test_data_loader.rs) + +513 (generators.rs) + +436 (Phase 4 tests) = **+1,194 lines**
-- Net change: **+278 lines** (infrastructure + comprehensive test coverage)
+- Lines added: +245 (test_data_loader.rs) + +513 (generators.rs) + +436 (Phase 4 tests) + +334 (documentation) = **+1,528 lines**
+- Net change: **+612 lines** (infrastructure + test coverage + documentation)
 - Test count: +10 integration tests (43 → 53 total)
-- Files: +4 new files (test infrastructure + focused real data tests)
+- Files: +5 new files (test infrastructure + focused tests + documentation)
