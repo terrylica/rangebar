@@ -47,7 +47,7 @@ jobs:
         run: cargo machete --with-metadata || true
 
       - name: Run tests
-        run: cargo nextest run
+        run: cargo nextest run --workspace --features rangebar/test-utils,rangebar/providers,rangebar/exness,rangebar/streaming
 
       - name: Run clippy
         run: cargo clippy -- -D warnings

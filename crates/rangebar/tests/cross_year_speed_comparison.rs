@@ -11,7 +11,7 @@ use std::time::Instant;
 ///
 /// Now includes Production Streaming V2 with bounded memory architecture.
 
-#[cfg(feature = "streaming-v2")]
+#[cfg(feature = "streaming")]
 use rangebar::engines::streaming::processor::{StreamingProcessor, StreamingProcessorConfig};
 use tokio::runtime::Runtime;
 
