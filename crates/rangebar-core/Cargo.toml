@@ -15,6 +15,7 @@ serde.workspace = true
 serde_json.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
+csv = { workspace = true, optional = true }
 
 # Optional dependencies for future phases
 pyo3 = { version = "0.22", optional = true }
@@ -22,6 +23,6 @@ utoipa = { version = "5.4", optional = true }
 
 [features]
 default = []
-test-utils = []
+test-utils = ["dep:csv"]  # Real data loading requires csv crate
 python = ["pyo3"]  # Python bindings via PyO3 (future phase)
 api = ["utoipa"]     # API schemas via utoipa (future phase)

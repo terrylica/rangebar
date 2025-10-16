@@ -18,6 +18,9 @@ pub mod types;
 #[cfg(any(test, feature = "test-utils"))]
 pub mod test_utils;
 
+#[cfg(any(test, feature = "test-utils"))]
+pub mod test_data_loader;
+
 // Re-export commonly used types
 pub use fixed_point::FixedPoint;
 pub use processor::{ExportRangeBarProcessor, ProcessingError, RangeBarProcessor};
