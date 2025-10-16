@@ -205,11 +205,14 @@ TOTAL                          ~730 lines
 - Deleted `tests/statistics_v2_validation.rs` (279 lines, misplaced)
 - **Status**: ✅ DONE (commit `4a663f3`)
 
-### Phase 1: Add CSV Loader (Foundation)
-**Create**: `crates/rangebar-core/src/test_data_loader.rs` (~150 lines)
-- Load BTCUSDT test data (5K trades)
-- Load ETHUSDT test data (10K trades)
-- **Risk**: LOW (additive only, no changes to existing code)
+### Phase 1: Add CSV Loader (Foundation) ✅ COMPLETED
+**Created**: `crates/rangebar-core/src/test_data_loader.rs` (245 lines)
+- load_btcusdt_test_data() → 5,000 trades with validation
+- load_ethusdt_test_data() → 10,000 trades with validation
+- Workspace-relative path resolution via CARGO_MANIFEST_DIR
+- **SLOs**: Availability 100%, Correctness 100%, Observability 100%, Maintainability 100%
+- **Tests**: 3 passing (load_btcusdt, load_ethusdt, temporal_integrity)
+- **Status**: ✅ DONE (commit `1924586`)
 
 ### Phase 1.5: Centralize All Helpers (CRITICAL FOUNDATION)
 **Create**: `crates/rangebar-core/src/test_utils/generators.rs` (~400 lines)
