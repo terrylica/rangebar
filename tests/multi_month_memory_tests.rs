@@ -1,6 +1,7 @@
 use rangebar::fixed_point::FixedPoint;
 use rangebar::range_bars::ExportRangeBarProcessor;
 use rangebar::types::{AggTrade, RangeBar};
+use rangebar_core::test_utils::generators::{create_test_trade, process_batch_style, process_streaming_style};
 use std::process;
 use std::time::Instant;
 
@@ -732,49 +733,7 @@ fn validate_year_boundary_characteristics(
     );
 }
 
-// Helper functions
-
-fn create_test_trade(id: u64, price: f64, timestamp: u64) -> AggTrade {
-    let price_str = format!("{:.8}", price);
-    AggTrade {
-        agg_trade_id: id as i64,
-        price: FixedPoint::from_str(&price_str).unwrap(),
-        volume: FixedPoint::from_str("1.0").unwrap(),
-        first_trade_id: id as i64,
-        last_trade_id: id as i64,
-        timestamp: timestamp as i64,
-        is_buyer_maker: false,
-        is_best_match: None,
-    }
-}
-
-fn process_batch_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
-    let mut processor = ExportRangeBarProcessor::new(threshold_bps);
-    processor.process_trades_continuously(trades);
-    let mut bars = processor.get_all_completed_bars();
-    if let Some(incomplete) = processor.get_incomplete_bar() {
-        bars.push(incomplete);
-    }
-    bars
-}
-
-async fn process_streaming_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
-    let mut range_processor = ExportRangeBarProcessor::new(threshold_bps);
-    let chunk_size = 50000; // Larger chunks for better performance
-    let mut all_bars = Vec::new();
-
-    for chunk in trades.chunks(chunk_size) {
-        range_processor.process_trades_continuously(chunk);
-        let chunk_bars = range_processor.get_all_completed_bars();
-        all_bars.extend(chunk_bars);
-    }
-
-    if let Some(incomplete) = range_processor.get_incomplete_bar() {
-        all_bars.push(incomplete);
-    }
-
-    all_bars
-}
+// Helper functions (formatting utility)
 
 fn format_number(n: usize) -> String {
     if n >= 1_000_000 {
