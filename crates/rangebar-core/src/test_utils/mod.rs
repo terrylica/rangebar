@@ -2,6 +2,13 @@
 //!
 //! This module provides centralized functions for creating test data structures,
 //! eliminating hardcoded values scattered throughout test files.
+//!
+//! ## Module Organization
+//!
+//! - `mod.rs`: Small-scale unit test utilities (builders, scenarios)
+//! - `generators.rs`: Large-scale integration test data generators
+
+pub mod generators; // Large-scale data generation for integration tests
 
 use crate::FixedPoint;
 use crate::types::{AggTrade, DataSource, RangeBar};
