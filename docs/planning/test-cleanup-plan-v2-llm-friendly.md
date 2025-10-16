@@ -294,12 +294,31 @@ pub mod generators;  // Large-scale data generation for integration tests
 
 **SLOs**: Availability 100%, Correctness 94% (31/33 tests passing), Observability 100%, Maintainability 100%
 
-### Phase 4: Create New Real Data Tests
+### Phase 4: Create New Real Data Tests ✅ COMPLETED
 
-**Create**: 2 new focused test files:
-- `tests/binance_btcusdt_real_data_test.rs` (~120 lines)
-- `tests/binance_ethusdt_real_data_test.rs` (~120 lines)
-- **Risk**: LOW (additive only)
+**Created**: 2 new focused test files:
+- `crates/rangebar/tests/binance_btcusdt_real_data_test.rs` (218 lines) ✅
+- `crates/rangebar/tests/binance_ethusdt_real_data_test.rs` (218 lines) ✅
+
+**Test Coverage**:
+- BTCUSDT: 5 tests (data integrity, 3 thresholds, threshold scaling)
+- ETHUSDT: 5 tests (data integrity, 3 thresholds, threshold scaling)
+- Total: 10 new integration tests
+
+**Test Scenarios**:
+1. Data integrity validation (temporal ordering, positive prices/volumes)
+2. Standard threshold (25 bps / 0.25%)
+3. Medium threshold (50 bps / 0.5%)
+4. Wide threshold (100 bps / 1.0%)
+5. Threshold scaling (verify bar count decreases with wider thresholds)
+
+**Validation Functions**:
+- `validate_ohlcv_integrity()`: OHLC relationships and positive volume
+- `validate_temporal_ordering()`: Monotonic timestamps
+
+**Test Results**: All 10 tests passing (100%)
+**SLOs**: Availability 100%, Correctness 100%, Observability 100%, Maintainability 100%
+**Status**: ✅ DONE
 
 ### Phase 5: Documentation
 
@@ -316,7 +335,7 @@ Update docs explaining when to use real vs synthetic data
 - [x] Zero code duplication (all duplicate helpers removed)
 - [x] All shared helpers centralized in test_utils::generators
 
-**Metrics** (Phases 0-3 completed):
+**Metrics** (Phases 0-4 completed):
 - [x] Delete 2 redundant files (-426 lines) ✅ Phase 0 complete
 - [x] Reduce large files by 21.9% (-472 lines) ✅ Phase 2 complete
   - Note: Original 69% estimate was based on incorrect assumption that ALL helpers would be moved
@@ -324,7 +343,11 @@ Update docs explaining when to use real vs synthetic data
 - [x] Replace fake data with real CSV data ✅ Phase 3 complete
   - integration_test.rs: Synthetic data → real BTCUSDT CSV (5,000 trades)
   - Removed create_test_trades() helper (-18 lines)
-- [x] Total reduction so far: -403 net lines (after adding generators.rs)
+- [x] Add focused real data test coverage ✅ Phase 4 complete
+  - Created 2 test files (436 lines total)
+  - Added 10 new integration tests (BTCUSDT + ETHUSDT)
+  - Test coverage: data integrity, 3 threshold scenarios, threshold scaling
+- [x] Net impact: +278 lines (infrastructure + new tests with comprehensive coverage)
 
 **LLM Benefits** (achieved):
 - [x] Clear separation of concerns (shared helpers vs test-specific infrastructure)
@@ -395,10 +418,10 @@ Update docs explaining when to use real vs synthetic data
 - tests/statistics_v2_validation.rs (279 lines) ✅
 
 **Created** (Phases 1-4):
-- crates/rangebar-core/src/test_data_loader.rs (~150 lines)
-- crates/rangebar-core/src/test_utils/generators.rs (~400 lines)
-- tests/binance_btcusdt_real_data_test.rs (~120 lines)
-- tests/binance_ethusdt_real_data_test.rs (~120 lines)
+- crates/rangebar-core/src/test_data_loader.rs (245 lines) ✅ Phase 1
+- crates/rangebar-core/src/test_utils/generators.rs (513 lines) ✅ Phase 1.5
+- crates/rangebar/tests/binance_btcusdt_real_data_test.rs (218 lines) ✅ Phase 4
+- crates/rangebar/tests/binance_ethusdt_real_data_test.rs (218 lines) ✅ Phase 4
 
 **Refactored** (Phase 2 - COMPLETED):
 - tests/large_boundary_tests.rs (802 → 383 lines, -419 lines) ✅
@@ -409,7 +432,9 @@ Update docs explaining when to use real vs synthetic data
 **Updated** (Phase 3):
 - tests/integration_test.rs (minimal changes, replace fake data)
 
-**Net Impact** (Phases 0-2 completed):
-- Lines deleted: -426 (Phase 0) + -472 (Phase 2) = **-898 lines**
-- Lines added: +513 (generators.rs) = **-385 net reduction so far**
-- Files: Same count but better organized (centralized generators, cleaner test files)
+**Net Impact** (Phases 0-4 completed):
+- Lines deleted: -426 (Phase 0) + -472 (Phase 2) + -18 (Phase 3) = **-916 lines**
+- Lines added: +245 (test_data_loader.rs) + +513 (generators.rs) + +436 (Phase 4 tests) = **+1,194 lines**
+- Net change: **+278 lines** (infrastructure + comprehensive test coverage)
+- Test count: +10 integration tests (43 → 53 total)
+- Files: +4 new files (test infrastructure + focused real data tests)
