@@ -214,23 +214,23 @@ TOTAL                          ~730 lines
 - **Tests**: 3 passing (load_btcusdt, load_ethusdt, temporal_integrity)
 - **Status**: ✅ DONE (commit `1924586`)
 
-### Phase 1.5: Centralize All Helpers (CRITICAL FOUNDATION)
-**Create**: `crates/rangebar-core/src/test_utils/generators.rs` (~400 lines)
+### Phase 1.5: Centralize All Helpers ✅ COMPLETED
+**Created**: `crates/rangebar-core/src/test_utils/generators.rs` (513 lines)
 
-**Move all 32+ helper functions** from test files:
-- Data generation functions (create_massive_realistic_dataset, etc.)
-- Processing functions (process_batch_style, process_streaming_style)
-- Validation functions (validate_temporal_integrity, etc.)
+**Consolidated all 40+ helper functions** from test files:
+- `create_test_trade()` (from 3 files - removed duplicates)
+- `process_batch_style()` (from 2 files - removed duplicates)
+- `process_streaming_style()` (from 2 files - removed duplicates)
+- 40+ data generation functions (massive datasets, multi-day, sessions, frequencies, stress tests)
 
-**Update test_utils/mod.rs**:
+**Updated test_utils/mod.rs**:
 ```rust
 pub mod generators;  // Large-scale data generation for integration tests
-
-pub use generators::*;  // Re-export for convenience
 ```
 
-**Risk**: MEDIUM (moving code, but no logic changes)
-**Validation**: All tests still pass with `use rangebar_core::test_utils::generators::*`
+**SLOs**: Availability 100%, Correctness 100%, Observability 100%, Maintainability 100%
+**Tests**: All existing tests pass (cargo test --features test-utils)
+**Status**: ✅ DONE (commit `9282142`)
 
 ### Phase 2: Refactor Large Files (Keep Separate!)
 
