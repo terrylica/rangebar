@@ -1,12 +1,15 @@
+//! Production streaming validation tests
+//!
+//! These tests validate the new streaming v2 architecture against critical failures:
+//! - Bounded memory usage for infinite streams
+//! - Backpressure mechanisms preventing OOM
+//! - Circuit breaker resilience patterns
+//! - Single-bar streaming (no Vec<RangeBar> accumulation)
+
+#![cfg(feature = "streaming")]
+
 use rangebar::fixed_point::FixedPoint;
 use rangebar::types::{AggTrade, RangeBar};
-/// Production streaming validation tests
-///
-/// These tests validate the new streaming v2 architecture against critical failures:
-/// - Bounded memory usage for infinite streams
-/// - Backpressure mechanisms preventing OOM
-/// - Circuit breaker resilience patterns
-/// - Single-bar streaming (no Vec<RangeBar> accumulation)
 use rangebar::{StreamingProcessor, StreamingProcessorConfig};
 use std::time::{Duration, Instant};
 use tokio::time::timeout;

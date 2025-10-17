@@ -123,6 +123,5 @@ pub mod types;
 pub use builder::ExnessRangeBarBuilder;
 pub use client::ExnessFetcher;
 pub use types::{
-    ConversionError, ExnessError, ExnessRangeBar, ExnessTick,
-    SpreadStats, ValidationStrictness,
+    ConversionError, ExnessError, ExnessRangeBar, ExnessTick, SpreadStats, ValidationStrictness,
 };

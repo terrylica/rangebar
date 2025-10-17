@@ -8,6 +8,8 @@
 //! - Spread dynamics
 //! - Bar duration statistics
 
+#![cfg(feature = "providers")]
+
 use rangebar::providers::exness::{
     ExnessFetcher, ExnessRangeBarBuilder, ExnessTick, ValidationStrictness,
 };
@@ -34,19 +36,25 @@ async fn test_exness_statistical_deep_dive() {
         .filter(|tick| tick.timestamp_ms >= jan_15_start_ms && tick.timestamp_ms < jan_20_start_ms)
         .collect();
 
-    println!("✅ Fetched {} ticks for Jan 15-19, 2024\n", test_ticks.len());
+    println!(
+        "✅ Fetched {} ticks for Jan 15-19, 2024\n",
+        test_ticks.len()
+    );
 
     // Test thresholds (v3.0.0 units: 1 unit = 0.1bps)
     let thresholds = vec![
-        (2, "0.2bps"),   // 0.2 basis points
-        (5, "0.5bps"),   // 0.5 basis points
-        (10, "1.0bps"),  // 1.0 basis point
+        (2, "0.2bps"),  // 0.2 basis points
+        (5, "0.5bps"),  // 0.5 basis points
+        (10, "1.0bps"), // 1.0 basis point
     ];
 
     let mut all_results = Vec::new();
 
     for (threshold_units, threshold_label) in thresholds {
-        println!("=== Testing Threshold: {} (units={}) ===\n", threshold_label, threshold_units);
+        println!(
+            "=== Testing Threshold: {} (units={}) ===\n",
+            threshold_label, threshold_units
+        );
 
         let mut builder = ExnessRangeBarBuilder::new(
             threshold_units,
@@ -83,9 +91,11 @@ async fn test_exness_statistical_deep_dive() {
 
 #[derive(Debug, Clone)]
 struct ThresholdStatistics {
+    #[allow(dead_code)]
     threshold_units: u32,
     threshold_label: String,
     threshold_bps: f64,
+    #[allow(dead_code)]
     total_ticks: usize,
     total_bars: usize,
     bars_per_day: f64,
@@ -143,8 +153,7 @@ fn compute_statistics(
         .collect();
     price_movements_pips.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
-    let price_movement_mean_pips =
-        price_movements_pips.iter().sum::<f64>() / bars.len() as f64;
+    let price_movement_mean_pips = price_movements_pips.iter().sum::<f64>() / bars.len() as f64;
     let price_movement_median_pips = price_movements_pips[price_movements_pips.len() / 2];
 
     // Spread statistics
@@ -198,7 +207,10 @@ fn compute_statistics(
 }
 
 fn print_statistics(stats: &ThresholdStatistics) {
-    println!("Threshold: {} ({} bps)", stats.threshold_label, stats.threshold_bps);
+    println!(
+        "Threshold: {} ({} bps)",
+        stats.threshold_label, stats.threshold_bps
+    );
     println!("────────────────────────────────────────");
     println!("Total bars:           {}", stats.total_bars);
     println!("Bars per day:         {:.0}", stats.bars_per_day);
@@ -210,13 +222,31 @@ fn print_statistics(stats: &ThresholdStatistics) {
     println!("  Max:                {}", stats.ticks_per_bar_max);
     println!();
     println!("Bar duration (ms):");
-    println!("  Mean:               {:.0} ms ({:.1}s)", stats.bar_duration_mean_ms, stats.bar_duration_mean_ms / 1000.0);
-    println!("  Median:             {} ms ({:.1}s)", stats.bar_duration_median_ms, stats.bar_duration_median_ms as f64 / 1000.0);
-    println!("  P95:                {} ms ({:.1}s)", stats.bar_duration_p95_ms, stats.bar_duration_p95_ms as f64 / 1000.0);
+    println!(
+        "  Mean:               {:.0} ms ({:.1}s)",
+        stats.bar_duration_mean_ms,
+        stats.bar_duration_mean_ms / 1000.0
+    );
+    println!(
+        "  Median:             {} ms ({:.1}s)",
+        stats.bar_duration_median_ms,
+        stats.bar_duration_median_ms / 1000.0
+    );
+    println!(
+        "  P95:                {} ms ({:.1}s)",
+        stats.bar_duration_p95_ms,
+        stats.bar_duration_p95_ms as f64 / 1000.0
+    );
     println!();
     println!("Price movement (pips):");
-    println!("  Mean:               {:.4}", stats.price_movement_mean_pips);
-    println!("  Median:             {:.4}", stats.price_movement_median_pips);
+    println!(
+        "  Mean:               {:.4}",
+        stats.price_movement_mean_pips
+    );
+    println!(
+        "  Median:             {:.4}",
+        stats.price_movement_median_pips
+    );
     println!();
     println!("Spread dynamics:");
     println!("  Mean:               {:.4} pips", stats.spread_mean_pips);
@@ -238,7 +268,9 @@ fn export_statistical_analysis(results: &[ThresholdStatistics], ticks: &[ExnessT
     fs::create_dir_all(output_dir).expect("Failed to create output directory");
 
     // Export summary comparison table
-    let mut summary_csv = String::from("threshold_bps,threshold_label,total_bars,bars_per_day,ticks_per_bar_mean,ticks_per_bar_median,bar_duration_mean_ms,price_movement_mean_pips,spread_mean_pips,zero_spread_bars_pct\n");
+    let mut summary_csv = String::from(
+        "threshold_bps,threshold_label,total_bars,bars_per_day,ticks_per_bar_mean,ticks_per_bar_median,bar_duration_mean_ms,price_movement_mean_pips,spread_mean_pips,zero_spread_bars_pct\n",
+    );
 
     for stats in results {
         summary_csv.push_str(&format!(

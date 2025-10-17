@@ -3,8 +3,8 @@
 //! Provides bidirectional conversion between RangeBar and Polars DataFrame
 //! with exception-only failure handling.
 
-use rangebar_core::{AggTrade, FixedPoint, RangeBar};
 use polars::prelude::*;
+use rangebar_core::{AggTrade, FixedPoint, RangeBar};
 use thiserror::Error;
 
 /// Trait for converting between Rust types and Polars DataFrames
@@ -116,10 +116,22 @@ impl DataFrameConverter<Vec<RangeBar>> for Vec<RangeBar> {
             Column::new("volume".into(), &volumes),
             Column::new("turnover".into(), &turnovers),
             Column::new("individual_trade_count".into(), &trade_counts),
-            Column::new("agg_record_count".into(), &self.iter().map(|bar| bar.agg_record_count as i64).collect::<Vec<i64>>()),
+            Column::new(
+                "agg_record_count".into(),
+                &self
+                    .iter()
+                    .map(|bar| bar.agg_record_count as i64)
+                    .collect::<Vec<i64>>(),
+            ),
             Column::new("first_trade_id".into(), &first_ids),
             Column::new("last_trade_id".into(), &last_ids),
-            Column::new("data_source".into(), &self.iter().map(|_| "BinanceFuturesUM").collect::<Vec<&str>>()),
+            Column::new(
+                "data_source".into(),
+                &self
+                    .iter()
+                    .map(|_| "BinanceFuturesUM")
+                    .collect::<Vec<&str>>(),
+            ),
             Column::new("buy_volume".into(), &buy_volumes),
             Column::new("sell_volume".into(), &sell_volumes),
             Column::new("buy_trade_count".into(), &buy_trade_counts),

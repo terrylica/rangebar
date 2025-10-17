@@ -67,10 +67,7 @@ pub enum ConversionError {
 
     /// Spread exceeds threshold (stale quote)
     #[error("Excessive spread: {spread_pct:.2}% (threshold: {threshold_pct:.2}%)")]
-    ExcessiveSpread {
-        spread_pct: f64,
-        threshold_pct: f64,
-    },
+    ExcessiveSpread { spread_pct: f64, threshold_pct: f64 },
 
     /// FixedPoint conversion error (f64 → FixedPoint)
     #[error("FixedPoint conversion failed for '{value}': {error}")]
@@ -164,8 +161,7 @@ impl SpreadStats {
         // Format with 8 decimals to match FixedPoint precision
         let spread_str = format!("{:.8}", tick.ask - tick.bid);
 
-        let spread = FixedPoint::from_str(&spread_str)
-            .unwrap_or(FixedPoint(0));
+        let spread = FixedPoint::from_str(&spread_str).unwrap_or(FixedPoint(0));
 
         // Accumulate for SMA (O(1))
         self.spread_sum = FixedPoint(self.spread_sum.0 + spread.0);

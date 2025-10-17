@@ -1,18 +1,17 @@
-use rangebar::fixed_point::FixedPoint;
+//! Cross-year speed comparison test: Oct 2024 - Feb 2025
+//!
+//! Comprehensive performance benchmarking of batch vs streaming rangebar construction
+//! across year boundary with detailed memory usage tracking and throughput analysis.
+//!
+//! Now includes Production Streaming V2 with bounded memory architecture.
+
+#![cfg(feature = "streaming")]
+
 use rangebar::range_bars::ExportRangeBarProcessor;
 use rangebar::types::AggTrade;
+use rangebar::{StreamingProcessor, StreamingProcessorConfig};
 use rangebar_core::test_utils::generators::create_test_trade;
 use std::time::Instant;
-
-/// Cross-year speed comparison test: Oct 2024 - Feb 2025
-///
-/// Comprehensive performance benchmarking of batch vs streaming rangebar construction
-/// across year boundary with detailed memory usage tracking and throughput analysis.
-///
-/// Now includes Production Streaming V2 with bounded memory architecture.
-
-#[cfg(feature = "streaming")]
-use rangebar::engines::streaming::processor::{StreamingProcessor, StreamingProcessorConfig};
 use tokio::runtime::Runtime;
 
 /// Performance metrics for cross-year comparison

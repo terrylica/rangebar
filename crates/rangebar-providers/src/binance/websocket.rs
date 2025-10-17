@@ -3,8 +3,8 @@
 //! This module provides asynchronous WebSocket connections to Binance streams
 //! for real-time aggTrade data feeding into range bar construction.
 
-use rangebar_core::{FixedPoint, normalize_timestamp, AggTrade};
 use futures_util::StreamExt;
+use rangebar_core::{AggTrade, FixedPoint, normalize_timestamp};
 use serde::{Deserialize, Serialize};
 use std::pin::Pin;
 use std::task::{Context, Poll};

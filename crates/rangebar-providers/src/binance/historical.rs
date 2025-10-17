@@ -12,7 +12,7 @@ use std::io::{Cursor, Read};
 use std::time::Duration;
 use zip::ZipArchive;
 
-use rangebar_core::{normalize_timestamp, AggTrade, FixedPoint};
+use rangebar_core::{AggTrade, FixedPoint, normalize_timestamp};
 
 #[derive(Debug, Deserialize)]
 pub struct CsvAggTrade(

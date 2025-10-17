@@ -1,7 +1,7 @@
-use rangebar::fixed_point::FixedPoint;
-use rangebar::range_bars::ExportRangeBarProcessor;
 use rangebar::types::{AggTrade, RangeBar};
-use rangebar_core::test_utils::generators::{create_test_trade, process_batch_style, process_streaming_style};
+use rangebar_core::test_utils::generators::{
+    create_test_trade, process_batch_style, process_streaming_style,
+};
 use std::process;
 use std::time::Instant;
 

@@ -40,7 +40,10 @@ fn test_btcusdt_data_integrity() {
         );
     }
 
-    println!("✅ BTCUSDT data integrity validated: {} trades", trades.len());
+    println!(
+        "✅ BTCUSDT data integrity validated: {} trades",
+        trades.len()
+    );
 }
 
 #[test]

@@ -128,10 +128,10 @@ mod tests {
     #[test]
     fn test_validate_timestamp() {
         // Valid: 2024 timestamp (crypto era)
-        assert!(validate_timestamp(1704067200_000_000)); // 2024-01-01
+        assert!(validate_timestamp(1_704_067_200_000_000)); // 2024-01-01
 
         // Valid: 2003 timestamp (Forex historical data)
-        assert!(validate_timestamp(1041379200_000_000)); // 2003-01-01
+        assert!(validate_timestamp(1_041_379_200_000_000)); // 2003-01-01
 
         // Valid: 2000 timestamp (min boundary)
         assert!(validate_timestamp(946_684_800_000_000)); // 2000-01-01

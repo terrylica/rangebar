@@ -4,12 +4,10 @@
 //! using mid-price as synthetic trade price. Preserves range bar algorithm
 //! integrity while handling semantic differences between quotes and trades.
 
+use crate::exness::types::{ConversionError, ExnessTick, ValidationStrictness};
 use rangebar_core::fixed_point::FixedPoint;
 use rangebar_core::timestamp::normalize_timestamp;
 use rangebar_core::types::AggTrade;
-use crate::exness::types::{
-    ConversionError, ExnessTick, ValidationStrictness,
-};
 
 /// Validate tick data
 ///
@@ -127,16 +125,18 @@ pub fn tick_to_synthetic_trade(
 
     Ok(AggTrade {
         agg_trade_id: id,
-        price: FixedPoint::from_str(&price_str)
-            .map_err(|e| ConversionError::FixedPointConversion {
+        price: FixedPoint::from_str(&price_str).map_err(|e| {
+            ConversionError::FixedPointConversion {
                 value: price_str.clone(),
-                error: format!("{:?}", e)
-            })?,
-        volume: FixedPoint::from_str(&volume_str)
-            .map_err(|e| ConversionError::FixedPointConversion {
+                error: format!("{:?}", e),
+            }
+        })?,
+        volume: FixedPoint::from_str(&volume_str).map_err(|e| {
+            ConversionError::FixedPointConversion {
                 value: volume_str.clone(),
-                error: format!("{:?}", e)
-            })?,
+                error: format!("{:?}", e),
+            }
+        })?,
         first_trade_id: id,
         last_trade_id: id,
         timestamp: normalize_timestamp(tick.timestamp_ms as u64),
@@ -215,13 +215,9 @@ mod tests {
             timestamp_ms: 1_600_000_000_000, // ms
         };
 
-        let trade = tick_to_synthetic_trade(
-            &tick,
-            "EURUSD_Raw_Spread",
-            1,
-            ValidationStrictness::Strict,
-        )
-        .unwrap();
+        let trade =
+            tick_to_synthetic_trade(&tick, "EURUSD_Raw_Spread", 1, ValidationStrictness::Strict)
+                .unwrap();
 
         // Mid-price = (1.0800 + 1.0820) / 2 = 1.0810
         let expected_price = 1.0810;
@@ -245,13 +241,9 @@ mod tests {
             timestamp_ms: 1_600_000_000_000,
         };
 
-        let trade = tick_to_synthetic_trade(
-            &tick,
-            "EURUSD_Raw_Spread",
-            1,
-            ValidationStrictness::Strict,
-        )
-        .unwrap();
+        let trade =
+            tick_to_synthetic_trade(&tick, "EURUSD_Raw_Spread", 1, ValidationStrictness::Strict)
+                .unwrap();
 
         // Volume should always be 0 (Exness Raw_Spread has no volume data)
         assert_eq!(trade.volume.0, 0);
@@ -265,12 +257,8 @@ mod tests {
             timestamp_ms: 1_600_000_000_000,
         };
 
-        let result = tick_to_synthetic_trade(
-            &tick,
-            "EURUSD_Raw_Spread",
-            1,
-            ValidationStrictness::Strict,
-        );
+        let result =
+            tick_to_synthetic_trade(&tick, "EURUSD_Raw_Spread", 1, ValidationStrictness::Strict);
 
         assert!(result.is_err());
         match result {
@@ -289,12 +277,8 @@ mod tests {
             timestamp_ms: 1_600_000_000_000,
         };
 
-        let result = tick_to_synthetic_trade(
-            &tick,
-            "EURUSD_Raw_Spread",
-            1,
-            ValidationStrictness::Strict,
-        );
+        let result =
+            tick_to_synthetic_trade(&tick, "EURUSD_Raw_Spread", 1, ValidationStrictness::Strict);
 
         assert!(result.is_err());
         match result {

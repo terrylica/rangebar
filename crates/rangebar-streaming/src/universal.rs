@@ -5,10 +5,10 @@
 //! consistent speed control and mode switching.
 
 use super::ReplayBuffer;
+use async_trait::async_trait;
+use rangebar_core::AggTrade;
 #[cfg(feature = "binance-integration")]
 use rangebar_providers::binance::{BinanceWebSocketStream, WebSocketError};
-use rangebar_core::AggTrade;
-use async_trait::async_trait;
 use std::sync::{
     Arc,
     atomic::{AtomicU32, Ordering},

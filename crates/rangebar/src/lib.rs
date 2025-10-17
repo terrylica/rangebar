@@ -151,7 +151,7 @@ pub use rangebar_config::Settings;
 
 #[cfg(feature = "providers")]
 pub use rangebar_providers::binance::{
-    get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol, TIER1_SYMBOLS,
+    TIER1_SYMBOLS, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol,
 };
 
 #[cfg(feature = "streaming")]

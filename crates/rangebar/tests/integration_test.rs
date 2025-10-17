@@ -3,15 +3,17 @@
 //! These tests verify the end-to-end functionality of the range bar construction
 //! algorithm and ensure proper integration between all components.
 
-use rangebar::{
-    AggTrade, FixedPoint, RangeBar, RangeBarProcessor, get_tier1_symbols, is_tier1_symbol,
-};
+use rangebar::{AggTrade, FixedPoint, RangeBar, RangeBarProcessor};
+
+#[cfg(feature = "providers")]
+use rangebar::{get_tier1_symbols, is_tier1_symbol};
+
 use rangebar_core::test_data_loader::load_btcusdt_test_data;
 
 #[test]
 fn test_range_bar_processing_integration() {
     // Test complete workflow from trades to range bars using real BTCUSDT CSV data
-    let mut processor = RangeBarProcessor::new(25); // 0.25% threshold (standard for real data)
+    let mut processor = RangeBarProcessor::new(250); // 0.25% threshold (standard for real data)
 
     // Load real BTCUSDT test data from CSV (5,000 trades)
     let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
@@ -76,6 +78,7 @@ fn test_range_bar_processing_integration() {
     }
 }
 
+#[cfg(feature = "providers")]
 #[test]
 fn test_tier1_symbol_integration() {
     // Test Tier-1 symbol functionality
@@ -101,7 +104,7 @@ fn test_tier1_symbol_integration() {
 #[test]
 fn test_zero_duration_bars_are_valid() {
     // Test that zero-duration bars are properly handled (NOTABUG verification)
-    let mut processor = RangeBarProcessor::new(10); // 0.1% threshold for easier testing
+    let mut processor = RangeBarProcessor::new(100); // 0.1% threshold for easier testing
 
     // Create trades with identical timestamps that breach threshold
     let same_timestamp = 1609459200000;
@@ -166,7 +169,7 @@ fn test_cross_mode_algorithm_consistency() {
     // Critical test: Verify unified algorithm produces identical results
     // regardless of statistics feature compilation
 
-    let mut processor = RangeBarProcessor::new(50); // 0.5% threshold
+    let mut processor = RangeBarProcessor::new(500); // 0.5% threshold
 
     // Create deterministic test data that should produce multiple range bars
     let test_trades = create_deterministic_breach_sequence();
@@ -199,86 +202,6 @@ fn test_cross_mode_algorithm_consistency() {
         assert!(bar.volume > FixedPoint(0), "Bar {} zero volume", i);
         assert!(bar.open_time <= bar.close_time, "Bar {} time inversion", i);
     }
-}
-
-#[cfg(feature = "statistics")]
-#[test]
-fn test_statistics_mode_consistency() {
-    // Test that statistics mode produces the same core range bars
-    // as non-statistics mode (metadata should be additional, not different bars)
-
-    let mut processor = RangeBarProcessor::new(50); // 0.5% threshold
-    let test_trades = create_deterministic_breach_sequence();
-
-    // Process with statistics support enabled
-    let range_bars = processor
-        .process_agg_trade_records(&test_trades)
-        .expect("Failed to process trades in statistics mode");
-
-    // Validate the same algorithm invariants
-    validate_algorithm_invariants(&range_bars, &test_trades);
-    validate_breach_consistency(&range_bars);
-
-    // Statistics mode should produce identical bar count and OHLCV data
-    // The only difference should be additional metadata generation
-    assert!(
-        !range_bars.is_empty(),
-        "Statistics mode bar count mismatch: expected >= 1, got {}",
-        range_bars.len()
-    );
-
-    // Legacy StatisticalEngine test disabled - statistics module restructured
-    // use rangebar::StatisticalEngine;
-    // let mut engine = StatisticalEngine::new();
-
-    // Verify it can compute metadata without affecting bar construction
-    // let metadata_result = engine.compute_comprehensive_metadata(
-    //     &test_trades,
-    //     &range_bars,
-    //     "BTCUSDT",
-    //     0.005, // 0.5% threshold as f64
-    //     "2021-01-01",
-    //     "2021-01-01",
-    // );
-
-    // assert!(
-    //     metadata_result.is_ok(),
-    //     "Statistics engine failed: {:?}",
-    //     metadata_result.err()
-    // );
-}
-
-#[cfg(not(feature = "statistics"))]
-#[test]
-fn test_non_statistics_mode_consistency() {
-    // Test that non-statistics mode produces the same core range bars
-    // as statistics mode (just without metadata generation)
-
-    let mut processor = RangeBarProcessor::new(50); // 0.5% threshold
-    let test_trades = create_deterministic_breach_sequence();
-
-    // Process without statistics support
-    let range_bars = processor
-        .process_agg_trade_records(&test_trades)
-        .expect("Failed to process trades in non-statistics mode");
-
-    // Validate the same algorithm invariants
-    validate_algorithm_invariants(&range_bars, &test_trades);
-    validate_breach_consistency(&range_bars);
-
-    // Non-statistics mode should produce identical bar count and OHLCV data
-    assert!(
-        range_bars.len() >= 1,
-        "Non-statistics mode bar count mismatch: expected >= 1, got {}",
-        range_bars.len()
-    );
-
-    // Verify statistics module is not available
-    // This ensures we're actually testing the non-statistics compilation path
-    assert!(
-        true, // Just verify this branch compiles and runs
-        "Non-statistics mode validation complete"
-    );
 }
 
 /// Creates a deterministic sequence that produces multiple range bars with breaches
@@ -320,18 +243,31 @@ fn validate_algorithm_invariants(range_bars: &[RangeBar], test_trades: &[AggTrad
         );
     }
 
-    // Volume conservation: Total bar volume should equal total trade volume
-    // Note: Temporarily disabled due to range bar processor implementation details
-    // This focuses the test on cross-mode consistency rather than processor completeness
-    let total_bar_volume: i64 = range_bars.iter().map(|bar| bar.volume.0).sum();
+    // Volume conservation: ALL trades must have volume counted SOMEWHERE
+    // Algorithm invariant: no volume should be lost or duplicated
+    //
+    // NOTE: We use process_agg_trade_records_with_incomplete() to include ALL bars
+    // (completed + incomplete) for this check. Production uses process_agg_trade_records()
+    // which excludes incomplete bars - this is separate from algorithm correctness.
+    let mut processor_for_volume_check = RangeBarProcessor::new(500); // Same threshold as test
+    let all_bars = processor_for_volume_check
+        .process_agg_trade_records_with_incomplete(test_trades)
+        .expect("Failed to process trades with incomplete for volume check");
+
+    let total_bar_volume: i64 = all_bars.iter().map(|bar| bar.volume.0).sum();
     let total_trade_volume: i64 = test_trades.iter().map(|trade| trade.volume.0).sum();
-    println!(
-        "Volume check: bars={}, trades={}",
-        total_bar_volume, total_trade_volume
+
+    assert_eq!(
+        total_bar_volume,
+        total_trade_volume,
+        "Volume conservation violation: bars={} (from {} bars), trades={} (from {} trades), discrepancy={}. \
+         Algorithm must account for ALL trade volume across all bars (completed + incomplete).",
+        total_bar_volume,
+        all_bars.len(),
+        total_trade_volume,
+        test_trades.len(),
+        total_trade_volume - total_bar_volume
     );
-    // TODO: Re-enable when range bar processor handles all trades correctly
-    // assert_eq!(total_bar_volume, total_trade_volume,
-    //     "Volume conservation violation: bars={}, trades={}", total_bar_volume, total_trade_volume);
 
     // Temporal ordering: Bar timestamps should be monotonically increasing
     for i in 1..range_bars.len() {
@@ -385,7 +321,7 @@ fn validate_breach_consistency(range_bars: &[RangeBar]) {
 #[test]
 fn test_non_lookahead_bias_compliance() {
     // Test that thresholds are computed from bar open only (non-lookahead)
-    let mut processor = RangeBarProcessor::new(50); // 0.5% threshold
+    let mut processor = RangeBarProcessor::new(500); // 0.5% threshold
 
     let base_price = 50000.0;
     let trades = vec![
@@ -406,9 +342,12 @@ fn test_non_lookahead_bias_compliance() {
 
     // Verify the threshold was based on the open price (non-lookahead)
     let expected_upper_threshold = base_price * 1.005; // +0.5% from open
+
     assert!(
         bar.close.to_f64() > expected_upper_threshold,
-        "Close should breach threshold computed from open"
+        "Close should breach threshold computed from open: close={}, threshold={}",
+        bar.close.to_f64(),
+        expected_upper_threshold
     );
 }
 

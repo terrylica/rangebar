@@ -44,8 +44,8 @@
 //! - T: Timestamp (milliseconds, integer)
 //! - m: Is buyer maker ("True"/"False" string)
 
-use crate::types::AggTrade;
 use crate::FixedPoint;
+use crate::types::AggTrade;
 use std::path::Path;
 use thiserror::Error;
 
@@ -157,9 +157,9 @@ pub fn load_ethusdt_test_data() -> Result<Vec<AggTrade>, LoaderError> {
 fn workspace_test_data_path(relative_path: &str) -> std::path::PathBuf {
     let manifest_dir = env!("CARGO_MANIFEST_DIR");
     let workspace_root = std::path::Path::new(manifest_dir)
-        .parent()  // crates/
+        .parent() // crates/
         .unwrap()
-        .parent()  // workspace root
+        .parent() // workspace root
         .unwrap();
 
     workspace_root.join("test_data").join(relative_path)
@@ -179,11 +179,10 @@ fn load_test_data<P: AsRef<Path>>(
     let path_str = path.as_ref().to_string_lossy().to_string();
 
     // SLO: Availability - Propagate I/O errors with context
-    let file =
-        std::fs::File::open(&path).map_err(|e| LoaderError::Io {
-            path: path_str.clone(),
-            source: e,
-        })?;
+    let file = std::fs::File::open(&path).map_err(|e| LoaderError::Io {
+        path: path_str.clone(),
+        source: e,
+    })?;
 
     // SLO: Maintainability - Use csv crate (off-the-shelf)
     let mut reader = csv::ReaderBuilder::new()
@@ -201,11 +200,13 @@ fn load_test_data<P: AsRef<Path>>(
             source: e,
         })?;
 
-        let trade = record.into_agg_trade().map_err(|e| LoaderError::FixedPoint {
-            path: path_str.clone(),
-            line,
-            source: e,
-        })?;
+        let trade = record
+            .into_agg_trade()
+            .map_err(|e| LoaderError::FixedPoint {
+                path: path_str.clone(),
+                line,
+                source: e,
+            })?;
 
         trades.push(trade);
         line += 1;
@@ -247,7 +248,7 @@ mod tests {
         assert_eq!(first.first_trade_id, 1);
         assert_eq!(first.last_trade_id, 1);
         assert_eq!(first.timestamp, 1756710002083);
-        assert_eq!(first.is_buyer_maker, false);
+        assert!(!first.is_buyer_maker);
     }
 
     #[test]

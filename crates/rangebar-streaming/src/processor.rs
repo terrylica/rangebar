@@ -1,3 +1,4 @@
+use futures::Stream;
 /// Production-ready streaming architecture with bounded memory and backpressure
 ///
 /// This module implements true infinite streaming capabilities addressing critical failures:
@@ -7,7 +8,6 @@
 /// - Maintains temporal integrity for financial data
 use rangebar_core::processor::ExportRangeBarProcessor;
 use rangebar_core::{AggTrade, RangeBar};
-use futures::Stream;
 use std::pin::Pin;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};

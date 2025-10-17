@@ -137,7 +137,9 @@ impl ExnessFetcher {
                     std::io::ErrorKind::InvalidData,
                     format!(
                         "Temporal integrity violation: tick {} timestamp {} < previous {}",
-                        i, ticks[i].timestamp_ms, ticks[i - 1].timestamp_ms
+                        i,
+                        ticks[i].timestamp_ms,
+                        ticks[i - 1].timestamp_ms
                     ),
                 )));
             }
@@ -195,7 +197,8 @@ impl ExnessTick {
         } else {
             // Format: "2024-01-15 00:00:00.032" (assume UTC)
             let naive = NaiveDateTime::parse_from_str(&record.timestamp, "%Y-%m-%d %H:%M:%S%.f")?;
-            DateTime::<chrono::Utc>::from_naive_utc_and_offset(naive, chrono::Utc).timestamp_millis()
+            DateTime::<chrono::Utc>::from_naive_utc_and_offset(naive, chrono::Utc)
+                .timestamp_millis()
         };
 
         Ok(Self {

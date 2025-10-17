@@ -1,6 +1,4 @@
-use rangebar::fixed_point::FixedPoint;
-use rangebar::range_bars::ExportRangeBarProcessor;
-use rangebar::types::{AggTrade, RangeBar};
+use rangebar::types::RangeBar;
 use rangebar_core::test_utils::generators::*;
 use std::time::Instant;
 

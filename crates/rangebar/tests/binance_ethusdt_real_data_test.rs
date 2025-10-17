@@ -40,7 +40,10 @@ fn test_ethusdt_data_integrity() {
         );
     }
 
-    println!("✅ ETHUSDT data integrity validated: {} trades", trades.len());
+    println!(
+        "✅ ETHUSDT data integrity validated: {} trades",
+        trades.len()
+    );
 }
 
 #[test]

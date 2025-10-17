@@ -7,6 +7,8 @@
 //! 4. Audit outputs against empirical expectations
 //! 5. Export results for manual inspection
 
+#![cfg(feature = "providers")]
+
 use rangebar::providers::exness::{
     ExnessFetcher, ExnessRangeBarBuilder, ExnessTick, ValidationStrictness,
 };
@@ -71,8 +73,7 @@ async fn test_exness_eurusd_raw_spread_end_to_end() {
     );
 
     assert!(
-        ticks_per_day >= EXPECTED_TICKS_PER_DAY_MIN
-            && ticks_per_day <= EXPECTED_TICKS_PER_DAY_MAX,
+        (EXPECTED_TICKS_PER_DAY_MIN..=EXPECTED_TICKS_PER_DAY_MAX).contains(&ticks_per_day),
         "Expected {}-{} ticks/day, got {}",
         EXPECTED_TICKS_PER_DAY_MIN,
         EXPECTED_TICKS_PER_DAY_MAX,
@@ -139,8 +140,7 @@ async fn test_exness_eurusd_raw_spread_end_to_end() {
     println!("  Bars per day: {}", bars_per_day);
 
     assert!(
-        bars_per_day >= EXPECTED_BARS_PER_DAY_MIN_01BPS
-            && bars_per_day <= EXPECTED_BARS_PER_DAY_MAX_01BPS,
+        (EXPECTED_BARS_PER_DAY_MIN_01BPS..=EXPECTED_BARS_PER_DAY_MAX_01BPS).contains(&bars_per_day),
         "Expected {}-{} bars/day at 0.1bps, got {}",
         EXPECTED_BARS_PER_DAY_MIN_01BPS,
         EXPECTED_BARS_PER_DAY_MAX_01BPS,
@@ -164,7 +164,10 @@ async fn test_exness_eurusd_raw_spread_end_to_end() {
     println!("Total bars: {}", bars.len());
     println!("Bars per day: {}", bars_per_day);
     println!("Ticks per day: {}", ticks_per_day);
-    println!("Ticks per bar: {:.1}", test_ticks.len() as f64 / bars.len() as f64);
+    println!(
+        "Ticks per bar: {:.1}",
+        test_ticks.len() as f64 / bars.len() as f64
+    );
 }
 
 /// Validate temporal integrity (monotonic timestamps, no duplicates)
@@ -274,7 +277,11 @@ fn validate_bar_integrity(bars: &[rangebar::providers::exness::ExnessRangeBar]) 
         );
 
         // Volume should be 0 (Exness has no volume data)
-        assert_eq!(b.volume.0, 0, "Bar {}: expected volume=0, got {}", i, b.volume.0);
+        assert_eq!(
+            b.volume.0, 0,
+            "Bar {}: expected volume=0, got {}",
+            i, b.volume.0
+        );
         assert_eq!(b.buy_volume.0, 0);
         assert_eq!(b.sell_volume.0, 0);
 
@@ -288,10 +295,7 @@ fn validate_bar_integrity(bars: &[rangebar::providers::exness::ExnessRangeBar]) 
 }
 
 /// Export results for manual audit
-fn export_results(
-    ticks: &[ExnessTick],
-    bars: &[rangebar::providers::exness::ExnessRangeBar],
-) {
+fn export_results(ticks: &[ExnessTick], bars: &[rangebar::providers::exness::ExnessRangeBar]) {
     let output_dir = Path::new("output/exness_test");
     fs::create_dir_all(output_dir).expect("Failed to create output directory");
 
@@ -314,7 +318,9 @@ fn export_results(
     .expect("Failed to write summary.json");
 
     // Export bar sample (first 100 bars) as CSV
-    let mut csv_content = String::from("bar_num,timestamp,open,high,low,close,tick_count,avg_spread,min_spread,max_spread\n");
+    let mut csv_content = String::from(
+        "bar_num,timestamp,open,high,low,close,tick_count,avg_spread,min_spread,max_spread\n",
+    );
 
     for (i, bar) in bars.iter().take(100).enumerate() {
         csv_content.push_str(&format!(

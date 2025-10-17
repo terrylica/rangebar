@@ -254,8 +254,8 @@ impl Stream for ReplayStream {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rangebar_core::FixedPoint;
     use futures::StreamExt;
+    use rangebar_core::FixedPoint;
 
     fn create_test_trade(id: i64, timestamp: i64, price: f64) -> AggTrade {
         AggTrade {
@@ -274,7 +274,7 @@ mod tests {
     fn test_replay_buffer_capacity() {
         let buffer = ReplayBuffer::new(Duration::from_secs(60)); // 1 minute capacity
 
-        let base_time = 1704067200_000_000i64; // 2024-01-01 00:00:00 in microseconds
+        let base_time = 1_704_067_200_000_000_i64; // 2024-01-01 00:00:00 in microseconds
 
         // Add trades spanning 2 minutes (1 trade per second in microseconds)
         for i in 0..120 {
@@ -299,7 +299,7 @@ mod tests {
         let buffer = ReplayBuffer::new(Duration::from_secs(300)); // 5 minutes
 
         // Use a more realistic timestamp (approximately 2024-01-01 in microseconds)
-        let base_time = 1704067200_000_000i64; // 2024-01-01 00:00:00 in microseconds
+        let base_time = 1_704_067_200_000_000_i64; // 2024-01-01 00:00:00 in microseconds
 
         // Add a few trades over 1 minute (using microseconds)
         buffer.push(create_test_trade(1, base_time, 50000.0));
@@ -313,7 +313,7 @@ mod tests {
     #[tokio::test]
     async fn test_replay_stream() {
         // Use a more realistic timestamp (approximately 2024-01-01 in microseconds)
-        let base_time = 1704067200_000_000i64; // 2024-01-01 00:00:00 in microseconds
+        let base_time = 1_704_067_200_000_000_i64; // 2024-01-01 00:00:00 in microseconds
         let trades = vec![
             create_test_trade(1, base_time, 50000.0),
             create_test_trade(2, base_time + 1_000_000, 50100.0), // 1s later in microseconds

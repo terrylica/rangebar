@@ -3,9 +3,9 @@
 //! High-performance export capabilities using Polars for efficient
 //! file format conversion and streaming operations.
 
-use rangebar_core::RangeBar;
 use crate::formats::{ConversionError, DataFrameConverter};
 use polars::prelude::*;
+use rangebar_core::RangeBar;
 use std::path::Path;
 use thiserror::Error;
 

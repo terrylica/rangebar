@@ -3,10 +3,10 @@
 //! High-performance batch processing for historical analysis,
 //! backtesting, and research with exception-only failure handling.
 
-use rangebar_core::RangeBar;
-use rangebar_io::formats::{ConversionError, DataFrameConverter};
 use polars::frame::row::Row;
 use polars::prelude::*;
+use rangebar_core::RangeBar;
+use rangebar_io::formats::{ConversionError, DataFrameConverter};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use thiserror::Error;
@@ -449,8 +449,9 @@ impl BatchAnalysisEngine {
             .lazy()
             .with_columns([
                 // AggTrade intensity
-                (col("individual_trade_count") / ((col("close_time") - col("open_time")) / lit(1000.0)))
-                    .alias("aggtrades_per_second"),
+                (col("individual_trade_count")
+                    / ((col("close_time") - col("open_time")) / lit(1000.0)))
+                .alias("aggtrades_per_second"),
                 // Order flow imbalance
                 ((col("buy_volume") - col("sell_volume")) / col("volume"))
                     .alias("order_flow_imbalance"),

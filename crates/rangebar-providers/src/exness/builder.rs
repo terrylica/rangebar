@@ -3,12 +3,12 @@
 //! Adapter pattern wraps RangeBarProcessor with zero core changes.
 //! Maintains SpreadStats across ticks, resets on bar close.
 
-use rangebar_core::fixed_point::FixedPoint;
-use rangebar_core::processor::RangeBarProcessor;
 use crate::exness::conversion::tick_to_synthetic_trade;
 use crate::exness::types::{
     ExnessError, ExnessRangeBar, ExnessTick, SpreadStats, ValidationStrictness,
 };
+use rangebar_core::fixed_point::FixedPoint;
+use rangebar_core::processor::RangeBarProcessor;
 
 /// Streaming range bar builder for Exness tick data
 ///
@@ -210,11 +210,8 @@ mod tests {
 
     #[test]
     fn test_spread_stats_reset_on_bar_close() {
-        let mut builder = ExnessRangeBarBuilder::new(
-            250,
-            "EURUSD_Raw_Spread",
-            ValidationStrictness::Strict,
-        );
+        let mut builder =
+            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict);
 
         // First tick at 1.0800 mid
         let tick1 = ExnessTick {
@@ -255,11 +252,8 @@ mod tests {
 
     #[test]
     fn test_validation_error_propagation() {
-        let mut builder = ExnessRangeBarBuilder::new(
-            250,
-            "EURUSD_Raw_Spread",
-            ValidationStrictness::Strict,
-        );
+        let mut builder =
+            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict);
 
         // Crossed market tick
         let bad_tick = ExnessTick {
@@ -274,11 +268,8 @@ mod tests {
 
     #[test]
     fn test_zero_volume_semantics() {
-        let mut builder = ExnessRangeBarBuilder::new(
-            250,
-            "EURUSD_Raw_Spread",
-            ValidationStrictness::Strict,
-        );
+        let mut builder =
+            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict);
 
         let tick1 = ExnessTick {
             bid: 1.0800,
