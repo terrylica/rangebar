@@ -119,6 +119,12 @@ pub mod tier1 {
     pub use rangebar_providers::binance::symbols::*;
 }
 
+#[cfg(feature = "providers")]
+pub mod data {
+    //! Historical data loading (legacy compatibility)
+    pub use rangebar_providers::binance::HistoricalDataLoader;
+}
+
 #[cfg(feature = "config")]
 pub mod infrastructure {
     //! Infrastructure modules (legacy compatibility)
@@ -224,5 +230,16 @@ mod tests {
         // Test that Settings type is accessible
         let settings = Settings::default();
         assert!(!settings.app.name.is_empty());
+    }
+
+    #[cfg(feature = "providers")]
+    #[test]
+    fn test_data_module_export() {
+        // Test backward compatibility via legacy data module path
+        // This verifies that `use rangebar::data::HistoricalDataLoader` works
+        use data::HistoricalDataLoader;
+
+        // Just verify the type is accessible
+        let _loader = HistoricalDataLoader::new("BTCUSDT");
     }
 }
