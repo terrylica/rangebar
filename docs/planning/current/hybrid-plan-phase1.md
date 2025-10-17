@@ -206,57 +206,21 @@ assert_eq!(
 
 ---
 
-### Action 4: Benchmark CSV Consolidation
+### Action 4: Benchmark CSV Consolidation ❌ REJECTED
 
-**Intent**: Validate performance claims (5-10x improvement with polars native CSV)
+**Original Intent**: Validate performance claims (5-10x improvement with polars native CSV)
 
-**Create**: `crates/rangebar-io/src/csv_polars.rs`
+**Rejection Rationale** (2025-10-16):
+- **CSV is NOT a production format** - Only Parquet/Arrow matter for output
+- **CSV is testing/debugging only** - Human-readable inspection, not performance-critical
+- **No evidence of bottleneck** - Speculative optimization without profiling data
+- **Weak ROI**: 2-3 days for unknown benefit on non-critical path
+- **Premature optimization** - Classic "measure first, optimize later" violation
 
-**Benchmark Scenarios**:
-1. Parse BTCUSDT test data (5,000 trades)
-2. Parse ETHUSDT test data (10,000 trades)
-3. Measure: parse time, memory usage, API ergonomics
+**Decision**: SKIP - Focus on Action 5 (valuable documentation) instead
 
-**Comparison Matrix**:
-
-| Metric | Current (csv crate) | Target (polars native) | Improvement |
-|--------|---------------------|------------------------|-------------|
-| Parse time (5K trades) | ? ms | ? ms | ?x |
-| Parse time (10K trades) | ? ms | ? ms | ?x |
-| Memory usage | ? MB | ? MB | ?% reduction |
-| API lines of code | ? | ? | ?% reduction |
-
-**Implementation**:
-```rust
-// crates/rangebar-io/src/csv_polars.rs
-use polars::prelude::*;
-use std::path::Path;
-
-/// Load aggTrades from CSV using polars native codec
-pub fn load_agg_trades_polars(path: impl AsRef<Path>) -> Result<DataFrame, PolarsError> {
-    CsvReader::from_path(path)?
-        .has_header(true)
-        .with_dtypes(Some(agg_trade_schema()))
-        .finish()
-}
-
-fn agg_trade_schema() -> Schema {
-    Schema::from_iter(vec![
-        Field::new("agg_trade_id", DataType::Int64),
-        Field::new("price", DataType::Utf8),  // Parse to FixedPoint later
-        Field::new("volume", DataType::Utf8),
-        Field::new("first_trade_id", DataType::Int64),
-        Field::new("last_trade_id", DataType::Int64),
-        Field::new("timestamp", DataType::Int64),
-        Field::new("is_buyer_maker", DataType::Boolean),
-    ])
-}
-```
-
-**Benchmark Binary**: `crates/rangebar-cli/src/bin/csv_benchmark.rs`
-
-**Status**: pending
-**Estimated**: 2-3 days
+**Status**: rejected ❌
+**Time Saved**: 2-3 days → redirect to valuable work
 
 ---
 
@@ -346,14 +310,14 @@ Adopt modular workspace with 8 crates:
 | 1. Re-enable volume conservation | completed ✅ | 0.1 | 0.1 | None |
 | 2. Fix processor volume tracking | completed ✅ | 0.5 | 2-3 | None |
 | 3. Archive src-archived/ | completed ✅ | 0.4 | 1 | None |
-| 4. Benchmark CSV | pending | 0 | 2-3 | None |
+| 4. Benchmark CSV | rejected ❌ | 0 | 2-3 | Premature optimization |
 | 5. Document ADR-001 | pending | 0 | 1 | None |
 
-**Total Estimated**: 6-7 days
+**Total Estimated**: 4-5 days (revised from 6-7 after rejecting Action 4)
 **Total Spent So Far**: 1.0 days
-**Remaining**: 3-4 days
+**Remaining**: 1 day (Action 5 only)
 **Phase 1 Target**: 7 days (Week 1)
-**Status**: On track ✅
+**Status**: Ahead of schedule ✅ (3+ days saved by rejecting unnecessary work)
 
 ---
 
@@ -383,6 +347,26 @@ Adopt modular workspace with 8 crates:
 - Fix: `RangeBarProcessor::new(500)` = 50bps = 0.5% ✅
 
 **Time Efficiency**: Completed 3 actions in 1.0 days vs 2.1-3.1 days estimated (3x faster)
+
+### 2025-10-16: Action 4 Rejected (Critical Learning)
+- **Rejected**: CSV benchmarking (Action 4)
+- **Reason**: Speculative optimization without evidence
+- **Root cause**: Strategic plan incorrectly labeled CSV as "HIGH PRIORITY"
+- **Reality**: CSV is testing-only format, NOT production (Parquet/Arrow are production)
+- **Time saved**: 2-3 days → redirect to valuable work
+
+**Key Learning: Optimization Validation Checklist**
+Before benchmarking/optimizing, require:
+1. ✅ **Evidence**: Profiling data showing actual bottleneck
+2. ✅ **Impact**: On critical path (production output, not testing utilities)
+3. ✅ **ROI**: Clear benefit > cost
+4. ✅ **User need**: Solves real user problem, not theoretical
+
+**CSV Role Clarified**:
+- ❌ NOT production output (use Parquet/Arrow)
+- ✅ Testing/debugging only (human inspection)
+- ✅ Already exists (polars_benchmark.rs line 84 uses `csv` crate)
+- ✅ Performance is adequate for testing needs
 
 *(This section updated as implementation progresses)*
 
