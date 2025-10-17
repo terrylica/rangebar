@@ -1,6 +1,7 @@
 # Exness EURUSD Variant Analysis: Spread Variability as Market Signal
 
 **Date**: 2025-10-03
+**Status**: completed
 **Analysis Period**: Sept 2020 (COVID volatility) vs Sept 2024 (post-COVID normal)
 **Objective**: Identify EURUSD variant with highest spread variability for market stress forecasting
 

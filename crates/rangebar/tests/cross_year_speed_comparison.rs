@@ -197,7 +197,8 @@ fn benchmark_batch_processing(trades: &[AggTrade], threshold_bps: u32) -> Proces
     let initial_memory = get_memory_usage_kb();
 
     let start_time = Instant::now();
-    let mut processor = ExportRangeBarProcessor::new(threshold_bps);
+    let mut processor = ExportRangeBarProcessor::new(threshold_bps)
+        .expect("Failed to create processor with valid threshold");
     processor.process_trades_continuously(trades);
     let mut bars = processor.get_all_completed_bars();
 
@@ -234,7 +235,8 @@ fn benchmark_streaming_v2_processing(trades: &[AggTrade], threshold_bps: u32) ->
             ..Default::default()
         };
 
-        let mut processor = StreamingProcessor::with_config(threshold_bps, config);
+        let mut processor = StreamingProcessor::with_config(threshold_bps, config)
+            .expect("Failed to create processor");
 
         // Get channels for streaming
         let trade_sender = processor.trade_sender().expect("Should have trade sender");

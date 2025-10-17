@@ -1,6 +1,7 @@
 # Dukascopy Cleanup Plan
 
 **Date**: 2025-10-11
+**Status**: completed
 **Reason**: Dukascopy provider removed in Round 1 (commit `00dee3b`), extensive orphaned files remain
 **Goal**: Remove all Dukascopy-related files except historical CHANGELOG references
 

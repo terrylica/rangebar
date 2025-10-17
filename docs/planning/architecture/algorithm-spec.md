@@ -1,5 +1,10 @@
 # Range Bar Algorithm Specification
 
+**Version**: 1.0.0
+**Created**: 2024-01-15
+**Status**: archived
+**Supersedes**: N/A
+
 ## Executive Summary
 
 This specification defines a **non-lookahead bias** range bar construction algorithm for Binance UM Futures aggTrades data. Range bars close when price moves ±0.8% from the bar's **OPEN** price, ensuring no future information influences historical decisions.

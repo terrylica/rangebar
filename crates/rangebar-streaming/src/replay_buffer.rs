@@ -87,12 +87,11 @@ impl ReplayBuffer {
     pub fn get_trades_from(&self, minutes_ago: u32) -> Vec<AggTrade> {
         let inner = self.inner.lock().unwrap();
 
-        if inner.trades.is_empty() {
-            return Vec::new();
-        }
-
         // Calculate cutoff timestamp
-        let latest_timestamp = inner.trades.back().unwrap().timestamp;
+        let latest_timestamp = match inner.trades.back() {
+            Some(trade) => trade.timestamp,
+            None => return Vec::new(),
+        };
         let cutoff_timestamp = latest_timestamp - (minutes_ago as i64 * 60 * 1000);
 
         inner
@@ -329,5 +328,12 @@ mod tests {
         let first = StreamExt::next(&mut stream).await;
         assert!(first.is_some());
         assert_eq!(first.unwrap().agg_trade_id, 1);
+    }
+
+    #[test]
+    fn test_get_trades_from_empty_buffer() {
+        let buffer = ReplayBuffer::new(Duration::from_secs(60));
+        let trades = buffer.get_trades_from(1);
+        assert_eq!(trades.len(), 0); // Should not panic
     }
 }

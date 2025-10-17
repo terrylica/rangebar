@@ -26,7 +26,8 @@ async fn test_bounded_memory_infinite_stream() {
         ..Default::default()
     };
 
-    let mut processor = StreamingProcessor::with_config(25, config);
+    let mut processor =
+        StreamingProcessor::with_config(25, config).expect("Failed to create processor");
 
     // Get channels for infinite streaming
     let trade_sender = processor.trade_sender().expect("Should have trade sender");
@@ -93,7 +94,8 @@ async fn test_backpressure_prevents_oom() {
         ..Default::default()
     };
 
-    let mut processor = StreamingProcessor::with_config(25, config);
+    let mut processor =
+        StreamingProcessor::with_config(25, config).expect("Failed to create processor");
     let trade_sender = processor.trade_sender().expect("Should have trade sender");
     let bar_receiver = processor.bar_receiver().expect("Should have bar receiver");
 
@@ -171,7 +173,8 @@ async fn test_memory_comparison_old_vs_new() {
     let start_memory = get_current_memory_kb();
 
     let config = StreamingProcessorConfig::default();
-    let mut processor = StreamingProcessor::with_config(25, config);
+    let mut processor =
+        StreamingProcessor::with_config(25, config).expect("Failed to create processor");
 
     let trade_sender = processor.trade_sender().unwrap();
     let mut bar_receiver = processor.bar_receiver().unwrap();
@@ -241,7 +244,8 @@ async fn test_circuit_breaker_protection() {
         ..Default::default()
     };
 
-    let processor = StreamingProcessor::with_config(25, config);
+    let processor =
+        StreamingProcessor::with_config(25, config).expect("Failed to create processor");
     let initial_metrics = processor.metrics().summary();
 
     println!("  📊 Initial circuit breaker state: Closed");
@@ -385,7 +389,7 @@ async fn test_architecture_fixes_critical_failures() {
     println!("   - New: Exponential backoff and graceful degradation");
 
     // Create production streaming processor
-    let mut processor = StreamingProcessor::new(25);
+    let mut processor = StreamingProcessor::new(25).expect("Failed to create processor");
     let initial_metrics = processor.metrics().summary();
 
     println!("\n📊 Production V2 Architecture Initialized:");

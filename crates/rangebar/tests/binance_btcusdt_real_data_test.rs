@@ -49,7 +49,8 @@ fn test_btcusdt_data_integrity() {
 #[test]
 fn test_btcusdt_standard_threshold() {
     // Test standard 25 bps (0.25%) threshold for real market data
-    let mut processor = RangeBarProcessor::new(25);
+    let mut processor =
+        RangeBarProcessor::new(25).expect("Failed to create processor with valid threshold");
     let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
 
     let range_bars = processor
@@ -74,7 +75,8 @@ fn test_btcusdt_standard_threshold() {
 #[test]
 fn test_btcusdt_medium_threshold() {
     // Test medium 50 bps (0.5%) threshold
-    let mut processor = RangeBarProcessor::new(50);
+    let mut processor =
+        RangeBarProcessor::new(50).expect("Failed to create processor with valid threshold");
     let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
 
     let range_bars = processor
@@ -99,7 +101,8 @@ fn test_btcusdt_medium_threshold() {
 #[test]
 fn test_btcusdt_wide_threshold() {
     // Test wide 100 bps (1.0%) threshold
-    let mut processor = RangeBarProcessor::new(100);
+    let mut processor =
+        RangeBarProcessor::new(100).expect("Failed to create processor with valid threshold");
     let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
 
     let range_bars = processor
@@ -127,14 +130,17 @@ fn test_btcusdt_threshold_scaling() {
     let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
 
     let bars_25 = RangeBarProcessor::new(25)
+        .expect("Failed to create processor")
         .process_agg_trade_records(&trades)
         .expect("Failed to process trades");
 
     let bars_50 = RangeBarProcessor::new(50)
+        .expect("Failed to create processor")
         .process_agg_trade_records(&trades)
         .expect("Failed to process trades");
 
     let bars_100 = RangeBarProcessor::new(100)
+        .expect("Failed to create processor")
         .process_agg_trade_records(&trades)
         .expect("Failed to process trades");
 

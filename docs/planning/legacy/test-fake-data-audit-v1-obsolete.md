@@ -1,6 +1,10 @@
 # Test Fake Data Audit (v1 - OBSOLETE)
 
-**Status**: DEPRECATED - Replaced by test-cleanup-plan-v2-llm-friendly.md
+**Version**: 1.0.0
+**Created**: 2025-10-14
+**Status**: archived
+**Supersedes**: N/A
+**Superseded By**: test-cleanup-plan-v2-llm-friendly.md
 **Reason**: v1 plan proposed merging files (bad for LLMs), v2 keeps files separate
 **Date**: 2025-10-15
 **Auditor**: Claude Code

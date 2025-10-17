@@ -13,7 +13,7 @@ use rangebar_core::test_data_loader::load_btcusdt_test_data;
 #[test]
 fn test_range_bar_processing_integration() {
     // Test complete workflow from trades to range bars using real BTCUSDT CSV data
-    let mut processor = RangeBarProcessor::new(250); // 0.25% threshold (standard for real data)
+    let mut processor = RangeBarProcessor::new(250).expect("Failed to create processor"); // 0.25% threshold (standard for real data)
 
     // Load real BTCUSDT test data from CSV (5,000 trades)
     let trades = load_btcusdt_test_data().expect("Failed to load BTCUSDT test data");
@@ -104,7 +104,7 @@ fn test_tier1_symbol_integration() {
 #[test]
 fn test_zero_duration_bars_are_valid() {
     // Test that zero-duration bars are properly handled (NOTABUG verification)
-    let mut processor = RangeBarProcessor::new(100); // 0.1% threshold for easier testing
+    let mut processor = RangeBarProcessor::new(100).expect("Failed to create processor"); // 0.1% threshold for easier testing
 
     // Create trades with identical timestamps that breach threshold
     let same_timestamp = 1609459200000;
@@ -169,7 +169,7 @@ fn test_cross_mode_algorithm_consistency() {
     // Critical test: Verify unified algorithm produces identical results
     // regardless of statistics feature compilation
 
-    let mut processor = RangeBarProcessor::new(500); // 0.5% threshold
+    let mut processor = RangeBarProcessor::new(500).expect("Failed to create processor"); // 0.5% threshold
 
     // Create deterministic test data that should produce multiple range bars
     let test_trades = create_deterministic_breach_sequence();
@@ -249,7 +249,8 @@ fn validate_algorithm_invariants(range_bars: &[RangeBar], test_trades: &[AggTrad
     // NOTE: We use process_agg_trade_records_with_incomplete() to include ALL bars
     // (completed + incomplete) for this check. Production uses process_agg_trade_records()
     // which excludes incomplete bars - this is separate from algorithm correctness.
-    let mut processor_for_volume_check = RangeBarProcessor::new(500); // Same threshold as test
+    let mut processor_for_volume_check =
+        RangeBarProcessor::new(500).expect("Failed to create processor"); // Same threshold as test
     let all_bars = processor_for_volume_check
         .process_agg_trade_records_with_incomplete(test_trades)
         .expect("Failed to process trades with incomplete for volume check");
@@ -321,7 +322,7 @@ fn validate_breach_consistency(range_bars: &[RangeBar]) {
 #[test]
 fn test_non_lookahead_bias_compliance() {
     // Test that thresholds are computed from bar open only (non-lookahead)
-    let mut processor = RangeBarProcessor::new(500); // 0.5% threshold
+    let mut processor = RangeBarProcessor::new(500).expect("Failed to create processor"); // 0.5% threshold
 
     let base_price = 50000.0;
     let trades = vec![

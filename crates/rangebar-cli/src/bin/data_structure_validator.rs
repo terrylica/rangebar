@@ -338,7 +338,7 @@ impl DataStructureValidator {
         date: NaiveDate,
     ) -> Result<ValidationResult, Box<dyn std::error::Error + Send + Sync>> {
         let date_str = date.format("%Y-%m-%d").to_string();
-        let url = self.build_download_url(market, symbol, &date_str);
+        let url = self.build_download_url(market, symbol, &date_str)?;
 
         println!("🔍 Validating {}/{}/{}", symbol, market, date_str);
 
@@ -380,18 +380,27 @@ impl DataStructureValidator {
     }
 
     /// Build download URL based on market type
-    fn build_download_url(&self, market: &str, symbol: &str, date: &str) -> String {
+    fn build_download_url(
+        &self,
+        market: &str,
+        symbol: &str,
+        date: &str,
+    ) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
         let market_path = match market {
             "spot" => "spot",
             "um" => "futures/um",
             "cm" => "futures/cm",
-            _ => panic!("Invalid market type: {}", market), // Exception-only failure
+            _ => {
+                return Err(
+                    format!("Invalid market type: '{}'. Valid: spot, um, cm", market).into(),
+                );
+            }
         };
 
-        format!(
+        Ok(format!(
             "https://data.binance.vision/data/{}/daily/aggTrades/{}/{}-aggTrades-{}.zip",
             market_path, symbol, symbol, date
-        )
+        ))
     }
 
     /// Verify file checksum
@@ -404,7 +413,10 @@ impl DataStructureValidator {
     ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         use sha2::{Digest, Sha256};
 
-        let checksum_url = format!("{}.CHECKSUM", self.build_download_url(market, symbol, date));
+        let checksum_url = format!(
+            "{}.CHECKSUM",
+            self.build_download_url(market, symbol, date)?
+        );
 
         let response = timeout(
             Duration::from_secs(10),

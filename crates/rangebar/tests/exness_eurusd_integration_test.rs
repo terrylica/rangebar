@@ -93,7 +93,8 @@ async fn test_exness_eurusd_raw_spread_end_to_end() {
         1, // 1 unit = 0.1bps in v3.0.0
         "EURUSD_Raw_Spread",
         ValidationStrictness::Strict,
-    );
+    )
+    .expect("Failed to create ExnessRangeBarBuilder with valid threshold");
 
     let mut bars = Vec::new();
     let mut errors = Vec::new();

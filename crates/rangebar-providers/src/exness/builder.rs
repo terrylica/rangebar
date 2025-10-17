@@ -75,14 +75,14 @@ impl ExnessRangeBarBuilder {
         threshold_bps: u32,
         instrument: impl Into<String>,
         validation_strictness: ValidationStrictness,
-    ) -> Self {
-        Self {
-            processor: RangeBarProcessor::new(threshold_bps),
+    ) -> Result<Self, rangebar_core::processor::ProcessingError> {
+        Ok(Self {
+            processor: RangeBarProcessor::new(threshold_bps)?,
             tick_counter: 0,
             instrument: instrument.into(),
             validation_strictness,
             current_spread_stats: SpreadStats::new(),
-        }
+        })
     }
 
     /// Process single tick, returning completed bar if threshold breached
@@ -189,7 +189,8 @@ mod tests {
             250, // 25bps in v3.0.0 units
             "EURUSD_Raw_Spread",
             ValidationStrictness::Strict,
-        );
+        )
+        .unwrap();
 
         // First tick - initializes bar
         let tick1 = ExnessTick {
@@ -211,7 +212,8 @@ mod tests {
     #[test]
     fn test_spread_stats_reset_on_bar_close() {
         let mut builder =
-            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict);
+            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict)
+                .unwrap();
 
         // First tick at 1.0800 mid
         let tick1 = ExnessTick {
@@ -253,7 +255,8 @@ mod tests {
     #[test]
     fn test_validation_error_propagation() {
         let mut builder =
-            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict);
+            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict)
+                .unwrap();
 
         // Crossed market tick
         let bad_tick = ExnessTick {
@@ -269,7 +272,8 @@ mod tests {
     #[test]
     fn test_zero_volume_semantics() {
         let mut builder =
-            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict);
+            ExnessRangeBarBuilder::new(250, "EURUSD_Raw_Spread", ValidationStrictness::Strict)
+                .unwrap();
 
         let tick1 = ExnessTick {
             bid: 1.0800,

@@ -60,7 +60,8 @@ async fn test_exness_statistical_deep_dive() {
             threshold_units,
             "EURUSD_Raw_Spread",
             ValidationStrictness::Strict,
-        );
+        )
+        .expect("Failed to create ExnessRangeBarBuilder");
 
         let mut bars = Vec::new();
         for tick in &test_ticks {

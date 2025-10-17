@@ -103,20 +103,23 @@ pub struct StreamingMetrics {
 
 impl StreamingProcessor {
     /// Create new production streaming processor
-    pub fn new(threshold_bps: u32) -> Self {
+    pub fn new(threshold_bps: u32) -> Result<Self, rangebar_core::processor::ProcessingError> {
         Self::with_config(threshold_bps, StreamingProcessorConfig::default())
     }
 
     /// Create with custom configuration
-    pub fn with_config(threshold_bps: u32, config: StreamingProcessorConfig) -> Self {
+    pub fn with_config(
+        threshold_bps: u32,
+        config: StreamingProcessorConfig,
+    ) -> Result<Self, rangebar_core::processor::ProcessingError> {
         let (trade_sender, trade_receiver) = mpsc::channel(config.trade_channel_capacity);
         let (bar_sender, bar_receiver) = mpsc::channel(config.bar_channel_capacity);
 
         let circuit_breaker_threshold = config.circuit_breaker_threshold;
         let circuit_breaker_timeout = config.circuit_breaker_timeout;
 
-        Self {
-            processor: ExportRangeBarProcessor::new(threshold_bps),
+        Ok(Self {
+            processor: ExportRangeBarProcessor::new(threshold_bps)?,
             threshold_bps,
             trade_sender: Some(trade_sender),
             trade_receiver,
@@ -128,7 +131,7 @@ impl StreamingProcessor {
                 circuit_breaker_threshold,
                 circuit_breaker_timeout,
             ),
-        }
+        })
     }
 
     /// Get trade sender for external components
@@ -442,7 +445,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_bounded_memory_streaming() {
-        let mut processor = StreamingProcessor::new(25); // 0.25% threshold
+        let mut processor = StreamingProcessor::new(25).unwrap(); // 0.25% threshold
 
         // Test that memory remains bounded
         let initial_metrics = processor.metrics().summary();

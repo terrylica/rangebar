@@ -296,7 +296,8 @@ fn create_test_trade(id: u64, price: f64, timestamp: u64) -> AggTrade {
 }
 
 fn process_batch_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
-    let mut processor = ExportRangeBarProcessor::new(threshold_bps);
+    let mut processor = ExportRangeBarProcessor::new(threshold_bps)
+        .expect("Failed to create processor with valid threshold");
 
     // Process all trades continuously (simulating boundary-safe mode)
     processor.process_trades_continuously(trades);
@@ -321,7 +322,8 @@ async fn process_streaming_style(trades: &[AggTrade], threshold_bps: u32) -> Vec
     write_trades_to_csv(&test_file, trades).expect("Failed to write test data");
 
     // Use the corrected streaming approach that matches our fix
-    let mut range_processor = ExportRangeBarProcessor::new(threshold_bps);
+    let mut range_processor = ExportRangeBarProcessor::new(threshold_bps)
+        .expect("Failed to create processor with valid threshold");
 
     // Simulate the corrected streaming behavior:
     // Process in chunks and accumulate results (like our csv_streaming.rs fix)

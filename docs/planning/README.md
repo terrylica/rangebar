@@ -1,5 +1,10 @@
 # Planning Documentation Structure
 
+**Version**: 1.0.0
+**Created**: 2025-10-11
+**Status**: reference
+**Purpose**: Directory index and navigation guide for planning documents
+
 This directory contains all planning, architectural, and research documentation organized by category and relevance.
 
 ## 📁 Directory Structure

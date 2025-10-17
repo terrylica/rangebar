@@ -33,11 +33,21 @@ impl RangeBarProcessor {
     ///
     /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
     /// **Migration**: Multiply all threshold values by 10.
-    pub fn new(threshold_bps: u32) -> Self {
-        Self {
+    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
+        // Validation bounds (v3.0.0: 0.1bps units)
+        // Min: 1 × 0.1bps = 0.1bps = 0.001%
+        // Max: 100,000 × 0.1bps = 10,000bps = 100%
+        if threshold_bps < 1 {
+            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        }
+        if threshold_bps > 100_000 {
+            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        }
+
+        Ok(Self {
             threshold_bps,
             current_bar_state: None,
-        }
+        })
     }
 
     /// Process a single trade and return completed bar if any
@@ -307,7 +317,9 @@ pub enum ProcessingError {
     #[error("Empty trade data")]
     EmptyData,
 
-    #[error("Invalid threshold: {threshold_bps} basis points")]
+    #[error(
+        "Invalid threshold: {threshold_bps} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)"
+    )]
     InvalidThreshold { threshold_bps: u32 },
 }
 
@@ -330,7 +342,7 @@ impl From<ProcessingError> for PyErr {
             }
             ProcessingError::InvalidThreshold { threshold_bps } => {
                 pyo3::exceptions::PyValueError::new_err(format!(
-                    "Invalid threshold: {} basis points",
+                    "Invalid threshold: {} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)",
                     threshold_bps
                 ))
             }
@@ -345,7 +357,7 @@ mod tests {
 
     #[test]
     fn test_single_bar_no_breach() {
-        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
+        let mut processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps
 
         // Create trades that stay within 25 bps threshold
         let trades = scenarios::no_breach_sequence(250);
@@ -377,7 +389,7 @@ mod tests {
 
     #[test]
     fn test_exact_breach_upward() {
-        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
+        let mut processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps
 
         let trades = scenarios::exact_breach_upward(250);
 
@@ -415,7 +427,7 @@ mod tests {
 
     #[test]
     fn test_exact_breach_downward() {
-        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps = 0.25%
 
         let trades = scenarios::exact_breach_downward(250);
 
@@ -432,7 +444,7 @@ mod tests {
 
     #[test]
     fn test_large_gap_single_bar() {
-        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps = 0.25%
 
         let trades = scenarios::large_gap_sequence();
 
@@ -450,7 +462,7 @@ mod tests {
 
     #[test]
     fn test_unsorted_trades_error() {
-        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
+        let mut processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps
 
         let trades = scenarios::unsorted_sequence();
 
@@ -467,7 +479,7 @@ mod tests {
 
     #[test]
     fn test_threshold_calculation() {
-        let processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps = 0.25%
+        let processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps = 0.25%
 
         let trade = test_utils::create_test_agg_trade(1, "50000.0", "1.0", 1000);
         let bar_state = RangeBarState::new(&trade, processor.threshold_bps);
@@ -479,7 +491,7 @@ mod tests {
 
     #[test]
     fn test_empty_trades() {
-        let mut processor = RangeBarProcessor::new(250); // 250 × 0.1bps = 25bps
+        let mut processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps
         let trades = scenarios::empty_sequence();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
         assert_eq!(bars.len(), 0);
@@ -487,7 +499,7 @@ mod tests {
 
     #[test]
     fn test_debug_streaming_data() {
-        let mut processor = RangeBarProcessor::new(100); // 100 × 0.1bps = 10bps = 0.1%
+        let mut processor = RangeBarProcessor::new(100).unwrap(); // 100 × 0.1bps = 10bps = 0.1%
 
         // Create trades similar to our test data
         let trades = vec![
@@ -521,10 +533,36 @@ mod tests {
     }
 
     #[test]
+    fn test_threshold_validation() {
+        // Valid threshold
+        assert!(RangeBarProcessor::new(250).is_ok());
+
+        // Invalid: too low (0 × 0.1bps = 0%)
+        assert!(matches!(
+            RangeBarProcessor::new(0),
+            Err(ProcessingError::InvalidThreshold { threshold_bps: 0 })
+        ));
+
+        // Invalid: too high (150,000 × 0.1bps = 15,000bps = 150%)
+        assert!(matches!(
+            RangeBarProcessor::new(150_000),
+            Err(ProcessingError::InvalidThreshold {
+                threshold_bps: 150_000
+            })
+        ));
+
+        // Valid boundary: minimum (1 × 0.1bps = 0.1bps = 0.001%)
+        assert!(RangeBarProcessor::new(1).is_ok());
+
+        // Valid boundary: maximum (100,000 × 0.1bps = 10,000bps = 100%)
+        assert!(RangeBarProcessor::new(100_000).is_ok());
+    }
+
+    #[test]
     fn test_export_processor_with_manual_trades() {
         println!("Testing ExportRangeBarProcessor with same trade data...");
 
-        let mut export_processor = ExportRangeBarProcessor::new(100); // 100 × 0.1bps = 10bps = 0.1%
+        let mut export_processor = ExportRangeBarProcessor::new(100).unwrap(); // 100 × 0.1bps = 10bps = 0.1%
 
         // Use same trades as the working basic test
         let trades = vec![
@@ -619,12 +657,22 @@ impl ExportRangeBarProcessor {
     ///
     /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
     /// **Migration**: Multiply all threshold values by 10.
-    pub fn new(threshold_bps: u32) -> Self {
-        Self {
+    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
+        // Validation bounds (v3.0.0: 0.1bps units)
+        // Min: 1 × 0.1bps = 0.1bps = 0.001%
+        // Max: 100,000 × 0.1bps = 10,000bps = 100%
+        if threshold_bps < 1 {
+            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        }
+        if threshold_bps > 100_000 {
+            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        }
+
+        Ok(Self {
             threshold_bps,
             current_bar: None,
             completed_bars: Vec::new(),
-        }
+        })
     }
 
     /// Process trades continuously using proven fixed-point algorithm

@@ -1,7 +1,8 @@
 # Dukascopy → Exness Migration Plan
 
+**Version**: 1.0.0
 **Date**: 2025-10-03
-**Status**: PLANNING (not yet executed)
+**Status**: completed
 **Context**: Replace Dukascopy provider with Exness Raw_Spread due to rate limiting issues
 
 ---
