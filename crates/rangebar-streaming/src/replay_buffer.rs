@@ -37,7 +37,10 @@ impl ReplayBuffer {
 
     /// Add a new trade to the buffer
     pub fn push(&self, trade: AggTrade) {
-        let mut inner = self.inner.lock().unwrap();
+        let mut inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
 
         // Set start time on first trade
         if inner.start_time.is_none() {
@@ -60,17 +63,28 @@ impl ReplayBuffer {
 
     /// Get the number of trades currently in the buffer
     pub fn len(&self) -> usize {
-        self.inner.lock().unwrap().trades.len()
+        self.inner
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .trades
+            .len()
     }
 
     /// Check if the buffer is empty
     pub fn is_empty(&self) -> bool {
-        self.inner.lock().unwrap().trades.is_empty()
+        self.inner
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .trades
+            .is_empty()
     }
 
     /// Get the time span of trades in the buffer
     pub fn time_span(&self) -> Option<Duration> {
-        let inner = self.inner.lock().unwrap();
+        let inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         if let (Some(first), Some(last)) = (inner.trades.front(), inner.trades.back()) {
             let span_microseconds = last.timestamp - first.timestamp;
             if span_microseconds > 0 {
@@ -85,7 +99,10 @@ impl ReplayBuffer {
 
     /// Get trades from the buffer starting from N minutes ago
     pub fn get_trades_from(&self, minutes_ago: u32) -> Vec<AggTrade> {
-        let inner = self.inner.lock().unwrap();
+        let inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
 
         // Calculate cutoff timestamp
         let latest_timestamp = match inner.trades.back() {
@@ -110,7 +127,10 @@ impl ReplayBuffer {
 
     /// Get statistics about the buffer
     pub fn stats(&self) -> ReplayBufferStats {
-        let inner = self.inner.lock().unwrap();
+        let inner = self
+            .inner
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
 
         let (first_timestamp, last_timestamp) =
             if let (Some(first), Some(last)) = (inner.trades.front(), inner.trades.back()) {
