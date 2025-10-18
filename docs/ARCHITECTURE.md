@@ -67,8 +67,8 @@ The workspace consists of 8 specialized crates:
 ### Tools & Compatibility
 
 **rangebar-cli** - Command-line tools
-- All binaries consolidated in `src/bin/`
-- Tools: `tier1-symbol-discovery`, `rangebar-analyze`, `rangebar-export`, `data-structure-validator`, `polars-benchmark`, `temporal-integrity-validator`, `rangebar-api`
+- All binaries consolidated in `src/bin/` (6 total)
+- Tools: `tier1-symbol-discovery`, `parallel-tier1-analysis`, `spot-tier1-processor`, `data-structure-validator`, `polars-benchmark`, `temporal-integrity-test-only`
 
 **rangebar** - Meta-crate
 - Backward compatibility with v4.0.0 API
