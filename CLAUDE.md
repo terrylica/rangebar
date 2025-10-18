@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Non-lookahead bias range bar construction from tick data (crypto: Binance aggTrades, forex: Exness EURUSD Standard).
+Non-lookahead bias range bar construction from tick data (crypto: Binance aggTrades, forex: Exness EURUSD Raw_Spread).
 
 **Core Algorithm**: See authoritative specification → [`docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md)
 
@@ -39,7 +39,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Deploy**: `doppler run -- shuttle deploy`
 
-**Data Ops**: `tier1-symbol-discovery --format comprehensive`, `parallel-tier1-analysis`, `spot-tier1-processor`, `data-structure-validator`
+**Data Ops**: `tier1-symbol-discovery --format comprehensive`, `parallel-tier1-analysis`, `spot-tier1-processor`, `data-structure-validator --features data-integrity`
 
 ## Data Structure Validation
 
@@ -60,7 +60,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 3. **Data Fetching**: `binance_historical_data` → Raw CSV/ZIP files with validated schemas
 4. **Preprocessing**: CSV → Parquet with schema validation
 5. **Computation**: Pure Rust processes Parquet → Range bars
-6. **Analysis**: `parallel-tier1-analysis` → Parallel Tier-1 analysis
+6. **Analysis**: `parallel-tier1-analysis` → Parallel multi-symbol batch analysis
 7. **Output**: Structured bar data (OHLCV format)
 
 **Performance**: Pure Rust, Rayon parallelism, fixed-point arithmetic
@@ -80,13 +80,13 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 - **Usage**: Specify market type via command line arguments or use spot by default
 
 #### Exness (Primary - Forex)
-- **Variant**: `EURUSD` (Standard) - 1.26M ticks/month (2019-2025), SNR=1.90, 0.69 pips baseline, 18-53% more ticks than alternatives pre-2024
-- **Rejected**: Standard_Plus (fewer historical ticks, 2× cost), Raw_Spread (98% zero-spread, poor events), Cent (unnecessary)
-- **API**: `https://ticks.ex2archive.com/ticks/EURUSD/{year}/{month}/Exness_EURUSD_{year}_{month}.zip`
-- **Format**: ZIP→CSV (Bid/Ask/Timestamp), ~1.6M ticks/month, 2019+ validated (7 periods tested)
-- **Avoid**: Hour 22 UTC (rollover), Sunday (gap risk); **Best**: Hours 0-12, 14-17 UTC
-- **Event Detection**: Spread >1.4 pips = exit; use ±15min windows
-- **Thresholds**: 0.2bps (HFT), 0.5bps (intraday), 1.0bps (swing)
+- **Variant**: `EURUSD_Raw_Spread` - **CHOSEN** for 8× higher spread variability (CV=8.17) encoding broker risk perception
+- **Why Raw_Spread**: Bimodal distribution (98% at 0.0 pips + 2% stress events 1-9 pips) = maximum signal-to-noise for market stress forecasting
+- **Rejected Alternatives**: Standard (CV=0.46, too constant), Standard_Plus (higher cost, lower CV), Cent/Mini (unnecessary contract sizes)
+- **API**: `https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/{year}/{month}/Exness_EURUSD_Raw_Spread_{year}_{month}.zip`
+- **Format**: ZIP→CSV (Bid/Ask/Timestamp), ~925K-1.18M ticks/month, validated 2019-2025
+- **Data Characteristics**: No volume data (mid-price used for range bars), commission-based pricing model
+- **Thresholds**: 0.1bps (minimum), 0.2bps (HFT), 0.5bps (intraday), 1.0bps (swing)
 
 ### Tier-1 Instruments Definition
 **Tier-1 instruments** are crypto assets that Binance respects highly enough to list across **ALL THREE** futures markets:

@@ -21,7 +21,7 @@ rangebar = "5.0"
 use rangebar::{RangeBarProcessor, AggTrade, FixedPoint};
 
 // Create processor with 25 basis points (0.25%) threshold
-let mut processor = RangeBarProcessor::new(250);
+let mut processor = RangeBarProcessor::new(250).unwrap();
 
 // Create sample aggTrade
 let trade = AggTrade {
