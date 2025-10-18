@@ -35,9 +35,57 @@
 //! 3. **Stateless where possible**: Cache externally, not in provider
 //! 4. **Documented edge cases**: Timezone handling, decimal factors, etc.
 //! 5. **Out-of-box dependencies**: Use standard crates (zip, csv, chrono)
+//!
+//! ## Quick Start
+//!
+//! Top-level re-exports allow shorter import paths:
+//!
+//! ```rust,no_run
+//! // Top-level imports (recommended)
+//! use rangebar_providers::{
+//!     HistoricalDataLoader,
+//!     get_tier1_symbols,
+//!     ExnessFetcher,
+//! };
+//! ```
+//!
+//! Or use submodule paths directly:
+//!
+//! ```rust,no_run
+//! // Submodule imports (also supported)
+//! use rangebar_providers::binance::HistoricalDataLoader;
+//! use rangebar_providers::exness::ExnessFetcher;
+//! ```
 
 #[cfg(feature = "binance")]
 pub mod binance;
 
 #[cfg(feature = "exness")]
 pub mod exness;
+
+// ============================================================================
+// Public API Re-exports
+// ============================================================================
+//
+// Commonly used types re-exported at the top level for convenience.
+// Users can import from either:
+//   - Top level: `use rangebar_providers::HistoricalDataLoader;`
+//   - Submodule: `use rangebar_providers::binance::HistoricalDataLoader;`
+//
+// Both paths are supported and equivalent.
+
+// Binance provider re-exports (alphabetically sorted)
+// Includes: historical data loading, Tier-1 symbol discovery, WebSocket streaming
+#[cfg(feature = "binance")]
+pub use binance::{
+    BinanceWebSocketStream, CsvAggTrade, HistoricalDataLoader, TIER1_SYMBOLS, WebSocketError,
+    detect_csv_headers, get_tier1_symbols, get_tier1_usdt_pairs, is_tier1_symbol, python_bool,
+};
+
+// Exness provider re-exports (alphabetically sorted)
+// Includes: client, builder, types, and errors
+#[cfg(feature = "exness")]
+pub use exness::{
+    ConversionError, ExnessError, ExnessFetcher, ExnessRangeBar, ExnessRangeBarBuilder, ExnessTick,
+    SpreadStats, ValidationStrictness,
+};

@@ -31,7 +31,7 @@
 //!     250,                          // 25bps threshold (v3.0.0: 0.1bps units)
 //!     "EURUSD_Raw_Spread",          // Exness Raw_Spread variant
 //!     ValidationStrictness::Strict  // Default validation
-//! );
+//! ).expect("valid threshold");
 //!
 //! // Process tick stream
 //! # let tick_stream: Vec<ExnessTick> = vec![];
