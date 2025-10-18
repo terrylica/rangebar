@@ -16,7 +16,7 @@ Comprehensive architectural overview of the rangebar workspace.
 
 Rangebar is a modular Rust workspace implementing non-lookahead range bar construction from tick data. The architecture prioritizes:
 
-- **Zero-dependency core**: Algorithm isolation with no external dependencies
+- **Minimal-dependency core**: Algorithm isolation with only 4 essential dependencies (chrono, serde, serde_json, thiserror)
 - **Provider pattern**: Unified interface for multiple data sources (Binance, Exness)
 - **Dual-mode processing**: Streaming (bounded memory) vs. Batch (high throughput)
 - **Feature-gated compilation**: Selective compilation via Cargo features
@@ -30,7 +30,7 @@ The workspace consists of 8 specialized crates:
 ### Core Crates
 
 **rangebar-core** - Core algorithm and types
-- Zero external dependencies
+- Minimal dependencies: chrono (timestamps), serde/serde_json (serialization), thiserror (errors)
 - Fixed-point arithmetic (8-decimal precision)
 - Non-lookahead threshold breach detection
 - Public types: `AggTrade`, `RangeBar`, `FixedPoint`, `RangeBarProcessor`
@@ -79,7 +79,7 @@ The workspace consists of 8 specialized crates:
 
 ```
 rangebar (meta-crate)
-├── rangebar-core (zero dependencies)
+├── rangebar-core (4 deps: chrono, serde, serde_json, thiserror)
 ├── rangebar-providers
 │   └── rangebar-core
 ├── rangebar-config
@@ -103,7 +103,7 @@ rangebar-cli (standalone)
 ```
 
 **Key Characteristics**:
-- `rangebar-core` has zero dependencies (pure algorithm)
+- `rangebar-core` has minimal external dependencies (4 essential libs: chrono for timestamps, serde/serde_json for serialization, thiserror for error handling)
 - All other crates depend on `rangebar-core`
 - `rangebar-streaming` depends on `rangebar-providers` (data fetching)
 - `rangebar-batch` depends on `rangebar-io` (Polars integration)
@@ -296,21 +296,29 @@ pub struct AnalysisReport {
 
 ## Design Patterns
 
-### 1. Zero-Dependency Core
+### 1. Minimal-Dependency Core
 
-**Pattern**: Algorithm isolation with no external dependencies
+**Pattern**: Algorithm isolation with minimal essential dependencies
 
 **Implementation**:
 ```toml
 # rangebar-core/Cargo.toml
 [dependencies]
-# ZERO external dependencies - core algorithm is self-contained
+chrono = "0.4"           # Timestamp handling
+serde = "1.0"            # Serialization support
+serde_json = "1.0"       # JSON serialization
+thiserror = "2.0"        # Ergonomic error handling
 ```
 
+**Rationale**:
+- **chrono**: Required for timestamp operations and conversions
+- **serde/serde_json**: Enables serialization of core types (AggTrade, RangeBar)
+- **thiserror**: Provides ergonomic error handling without boilerplate
+
 **Benefits**:
-- No transitive dependency conflicts
-- Stable core algorithm across versions
-- Easy to audit and verify
+- Minimal transitive dependency surface area (4 well-audited crates)
+- Stable core algorithm with battle-tested dependencies
+- Easy to audit and verify (all deps are Rust ecosystem standards)
 
 ### 2. Provider Pattern
 
