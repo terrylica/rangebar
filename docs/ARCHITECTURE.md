@@ -550,9 +550,9 @@ assert!(bar[i].close_time ≤ bar[i+1].open_time);
 
 ### Known Limitations
 
-1. **Examples**: 11/14 examples disabled (require feature flags in Cargo.toml)
+1. **Examples**: 14 examples exist in `examples/` but are not declared in any Cargo.toml (lost during v5.0.0 workspace restructuring - needs migration to rangebar meta-crate)
 2. **Documentation**: API docs incomplete for some modules
-3. **Migration Docs**: Multiple migration docs need consolidation
+3. **Migration Docs**: Rust migration guide complete (`MIGRATION-v4-to-v5.md`), Python guide archived (bindings deprecated)
 
 ## References
 
