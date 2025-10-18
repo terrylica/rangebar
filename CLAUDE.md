@@ -39,7 +39,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Deploy**: `doppler run -- shuttle deploy`
 
-**Data Ops**: `tier1-symbol-discovery --format comprehensive`, `rangebar-analyze`, `rangebar-export [SYMBOL] [dates] [threshold] [output] [um]`, `data-structure-validator --features data-integrity`
+**Data Ops**: `tier1-symbol-discovery --format comprehensive`, `parallel-tier1-analysis`, `spot-tier1-processor`, `data-structure-validator`
 
 ## Data Structure Validation
 
@@ -60,7 +60,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 3. **Data Fetching**: `binance_historical_data` → Raw CSV/ZIP files with validated schemas
 4. **Preprocessing**: CSV → Parquet with schema validation
 5. **Computation**: Pure Rust processes Parquet → Range bars
-6. **Analysis**: `rangebar-analyze` → Parallel Tier-1 analysis
+6. **Analysis**: `parallel-tier1-analysis` → Parallel Tier-1 analysis
 7. **Output**: Structured bar data (OHLCV format)
 
 **Performance**: Pure Rust, Rayon parallelism, fixed-point arithmetic
@@ -106,9 +106,9 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 ## Rust Binaries
 
-**Location**: All command-line tools consolidated in `crates/rangebar-cli/src/bin/`
+**Location**: All command-line tools consolidated in `crates/rangebar-cli/src/bin/` (6 binaries)
 
-**Tools**: `tier1-symbol-discovery --format [comprehensive|minimal]`, `rangebar-analyze`, `rangebar-export`, `data-structure-validator`, `polars-benchmark`, `temporal-integrity-validator`, `rangebar-api`
+**Tools**: `tier1-symbol-discovery --format [comprehensive|minimal]`, `parallel-tier1-analysis`, `spot-tier1-processor`, `data-structure-validator`, `polars-benchmark`, `temporal-integrity-test-only`
 
 **Testing**: `cargo test`, `cargo bench` - validates non-lookahead, performance <100ms/1M ticks
 
