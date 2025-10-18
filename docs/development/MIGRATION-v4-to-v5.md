@@ -565,7 +565,7 @@ error: cyclic package dependency
 
 - **Documentation**: See individual crate README files in `crates/*/README.md `
 - **Architecture**: See `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
-- **Issues**: Report at https://github.com/Eon-Labs/rangebar/issues
+- **Issues**: Report at https://github.com/terrylica/rangebar/issues
 - **Examples**: See `/Users/terryli/eon/rangebar/examples/ `
 
 ---

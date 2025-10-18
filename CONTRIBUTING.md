@@ -17,7 +17,7 @@ Rangebar is a pure Rust implementation of non-lookahead bias range bar construct
 
 ```bash
 # Clone the repository
-git clone https://github.com/Eon-Labs/rangebar.git
+git clone https://github.com/terrylica/rangebar.git
 cd rangebar
 
 # Build the project

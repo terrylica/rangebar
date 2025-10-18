@@ -17,11 +17,11 @@ authors = ["Terry Li <terry@eonlabs.com>"]
 categories = ["algorithms", "data-structures", "finance"]
 documentation = "https://docs.rs/rangebar"
 edition = "2024"
-homepage = "https://github.com/Eon-Labs/rangebar"
+homepage = "https://github.com/terrylica/rangebar"
 keywords = ["finance", "trading", "range-bars", "cryptocurrency", "binance"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/Eon-Labs/rangebar"
+repository = "https://github.com/terrylica/rangebar"
 rust-version = "1.90"
 
 [workspace.dependencies]
