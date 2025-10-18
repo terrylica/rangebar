@@ -83,7 +83,31 @@ struct OutputSummary {
 }
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(
+    name = "spot-tier1-processor",
+    about = "Batch processor for Tier-1 symbol range bars across Binance spot markets",
+    long_about = "
+Parallel batch processor for generating range bars across all 18 Binance Tier-1 symbols.
+Executes rangebar-export for each symbol in parallel using Rayon thread pool.
+
+Features:
+- Processes all Tier-1 symbols simultaneously (BTC, ETH, SOL, etc.)
+- Configurable parallelism (default: 8 workers)
+- Comprehensive execution statistics and performance metrics
+- Automatic JSON metadata generation with symbol rankings
+- Continuous date range support
+
+Output:
+- CSV range bar files: spot_{SYMBOL}_rangebar_{START}_{END}_{BBPS}bps.csv
+- JSON metadata: spot_batch_summary.json with execution statistics
+
+Examples:
+  spot-tier1-processor --start-date 2024-07-01 --end-date 2024-10-31 --threshold-bps 25
+  spot-tier1-processor --threshold-bps 50 --workers 16
+  spot-tier1-processor --output-dir ./output/custom_batch
+",
+    version
+)]
 struct Args {
     /// Start date (YYYY-MM-DD)
     #[arg(long, default_value = "2024-07-01")]

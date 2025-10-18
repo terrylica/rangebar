@@ -23,9 +23,39 @@ use rangebar_providers::binance::get_tier1_symbols;
 
 /// Data Structure Validator CLI
 #[derive(Parser)]
-#[command(name = "data-structure-validator")]
-#[command(version = "1.0.0")]
-#[command(about = "Validates Binance aggTrades data structure across Tier-1 symbols")]
+#[command(
+    name = "data-structure-validator",
+    version = "1.0.0",
+    about = "Validates Binance aggTrades data structure across Tier-1 symbols and markets",
+    long_about = "
+Comprehensive data structure validator for Binance aggTrades across spot and futures markets.
+Validates schema consistency, timestamp formats, and data integrity for Tier-1 cryptocurrency symbols.
+
+Features:
+- Cross-market validation (spot, UM futures, CM futures)
+- Quarterly sampling across 2022-2025 timeframe
+- Schema detection (headers, columns, timestamp precision)
+- SHA256 checksum verification (optional)
+- Parallel processing with configurable workers
+- Detailed structure profiles and validation manifests
+
+Key Differences Detected:
+- Spot: No headers, short columns (a,p,q,f,l,T,m), 16-digit μs timestamps
+- UM Futures: Headers, descriptive columns, 13-digit ms timestamps
+- Auto-detects and normalizes format variations
+
+Output:
+- validation_results.json: Complete validation details
+- structure_analysis/: Per-symbol structure profiles
+- index.json: Execution manifest with statistics
+
+Examples:
+  data-structure-validator
+  data-structure-validator --markets spot,um --workers 16
+  data-structure-validator --start-date 2024-01-01 --end-date 2024-12-31
+  data-structure-validator --skip-checksum --symbols BTCUSDT,ETHUSDT
+"
+)]
 struct Cli {
     /// Output directory for validation results
     #[arg(short, long, default_value = "output/data_structure_validation")]

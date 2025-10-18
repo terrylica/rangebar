@@ -5,7 +5,7 @@
 //! - 10x-20x faster Python loading (Arrow format)
 //! - 2x-5x faster export operations
 
-use clap::{Arg, Command};
+use clap::Parser;
 use csv::ReaderBuilder;
 use rangebar_core::FixedPoint;
 use rangebar_core::types::RangeBar;
@@ -15,29 +15,61 @@ use std::time::Instant;
 #[cfg(feature = "polars-io")]
 use rangebar_io::{ArrowExporter, ParquetExporter, PolarsExporter, StreamingCsvExporter};
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let matches = Command::new("polars-benchmark")
-        .about("Benchmark Polars integration performance")
-        .arg(
-            Arg::new("input")
-                .short('i')
-                .long("input")
-                .value_name("FILE")
-                .help("Input CSV file with range bar data")
-                .required(true),
-        )
-        .arg(
-            Arg::new("output-dir")
-                .short('o')
-                .long("output-dir")
-                .value_name("DIR")
-                .help("Output directory for benchmark files")
-                .default_value("./benchmark_output"),
-        )
-        .get_matches();
+/// Polars Integration Performance Benchmark
+#[derive(Parser)]
+#[command(
+    name = "polars-benchmark",
+    about = "Benchmark Polars integration export performance across multiple formats",
+    long_about = "
+Performance benchmarking tool for validating Polars integration claims.
+Tests export performance, file size reduction, and Python integration capabilities.
 
-    let input_file = matches.get_one::<String>("input").unwrap();
-    let output_dir = matches.get_one::<String>("output-dir").unwrap();
+Performance Targets:
+- 70%+ file size reduction (Parquet vs CSV)
+- 10x-20x faster Python loading (Arrow zero-copy)
+- 2x-5x faster export operations (streaming)
+
+Benchmark Tests:
+1. Parquet Export: Compression efficiency and file size reduction
+2. Arrow IPC Export: Zero-copy Python transfer capability
+3. Streaming CSV: Memory-bounded CSV export performance
+4. General Polars: Multi-format export performance
+
+Output Metrics:
+- Export time (milliseconds)
+- File size (MB)
+- Compression ratio (% reduction)
+- Speedup vs baseline
+
+Examples:
+  polars-benchmark --input ./data/BTCUSDT_bars.csv
+  polars-benchmark -i ./data/ETHUSDT_bars.csv -o ./benchmark_results
+  polars-benchmark --input ./data/large_dataset.csv --output-dir ./performance_tests
+
+Note: Requires 'polars-io' feature to be enabled
+",
+    version
+)]
+struct Args {
+    /// Input CSV file with range bar data
+    #[arg(short = 'i', long, value_name = "FILE")]
+    input: String,
+
+    /// Output directory for benchmark files
+    #[arg(
+        short = 'o',
+        long,
+        value_name = "DIR",
+        default_value = "./benchmark_output"
+    )]
+    output_dir: String,
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let args = Args::parse();
+
+    let input_file = &args.input;
+    let output_dir = &args.output_dir;
 
     // Create output directory
     fs::create_dir_all(output_dir)?;
