@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Non-lookahead bias range bar construction from tick data (crypto: Binance aggTrades, forex: Exness EURUSD Raw_Spread).
 
-**Core Algorithm**: See authoritative specification → [`docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md)
+**Core Algorithm**: See authoritative specification → [`docs/specifications/algorithm-spec.md`](docs/specifications/algorithm-spec.md)
 
 **Architecture**: Pure Rust implementation for performance and reliability (processes 1B+ ticks). All components native Rust: symbol discovery, data processing, and analysis.
 
@@ -67,7 +67,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 ## Critical Algorithm Invariants
 
-**Specification**: [`docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) (authoritative)
+**Specification**: [`docs/specifications/algorithm-spec.md`](docs/specifications/algorithm-spec.md) (authoritative)
 **Breach Consistency**: `(high_breach → close_breach) AND (low_breach → close_breach)`
 
 ### Data Source Requirements

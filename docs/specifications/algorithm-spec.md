@@ -390,21 +390,21 @@ pub enum ProcessingError {
 ## References
 
 **Source Code**:
-- Core Algorithm: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/processor.rs`
-- Fixed-Point: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/fixed_point.rs`
-- Types: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/types.rs`
-- Binance Provider: `/Users/terryli/eon/rangebar/crates/rangebar-providers/src/binance/mod.rs`
-- Exness Provider: `/Users/terryli/eon/rangebar/crates/rangebar-providers/src/exness/mod.rs`
+- Core Algorithm: [`../../crates/rangebar-core/src/processor.rs`](../../crates/rangebar-core/src/processor.rs)
+- Fixed-Point: [`../../crates/rangebar-core/src/fixed_point.rs`](../../crates/rangebar-core/src/fixed_point.rs)
+- Types: [`../../crates/rangebar-core/src/types.rs`](../../crates/rangebar-core/src/types.rs)
+- Binance Provider: [`../../crates/rangebar-providers/src/binance/mod.rs`](../../crates/rangebar-providers/src/binance/mod.rs)
+- Exness Provider: [`../../crates/rangebar-providers/src/exness/mod.rs`](../../crates/rangebar-providers/src/exness/mod.rs)
 
 **Migration Guides**:
-- v4→v5 Workspace: `/Users/terryli/eon/rangebar/docs/development/MIGRATION-v4-to-v5.md`
-- v3.0.0 Precision: `/Users/terryli/eon/rangebar/docs/planning/v3.0.0-precision-migration-plan.md`
+- v4→v5 Workspace: [`../development/MIGRATION-v4-to-v5.md`](../development/MIGRATION-v4-to-v5.md)
+- v3.0.0 Precision: [`../planning/v3.0.0-precision-migration-plan.md`](../planning/v3.0.0-precision-migration-plan.md)
 
 **Architecture**:
-- Overview: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md`
+- Overview: [`../ARCHITECTURE.md`](../ARCHITECTURE.md)
 
 **Superseded Documents**:
-- `/Users/terryli/eon/rangebar/docs/planning/architecture/algorithm-spec.md` (v1.0.0, archived)
+- [`../planning/architecture/algorithm-spec.md`](../planning/architecture/algorithm-spec.md) (v1.0.0, archived)
 
 ---
 

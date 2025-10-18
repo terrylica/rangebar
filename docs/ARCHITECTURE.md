@@ -476,7 +476,7 @@ println!("Mean price: {}", report.price_statistics.mean);
 
 ### Algorithm Correctness
 
-**Specification**: [`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) (authoritative)
+**Specification**: [`specifications/algorithm-spec.md`](specifications/algorithm-spec.md) (authoritative)
 
 **Validation**:
 ```rust

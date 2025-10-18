@@ -575,4 +575,4 @@ Before deploying to production, verify:
 - **Rust Performance Book**: https://nnethercote.github.io/perf-book/
 - **Criterion Documentation**: https://bheisler.github.io/criterion.rs/book/
 - **Flamegraph Tutorial**: https://www.brendangregg.com/flamegraphs.html
-- **Common Workflows**: `/Users/terryli/eon/rangebar/docs/guides/common-workflows.md `
+- **Common Workflows**: [`common-workflows.md`](common-workflows.md)

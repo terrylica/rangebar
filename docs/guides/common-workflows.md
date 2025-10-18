@@ -648,7 +648,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Further Reading
 
-- **Algorithm Details**: `/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md `
-- **Error Recovery**: `/Users/terryli/eon/rangebar/docs/guides/error-recovery.md `
-- **API Documentation**: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
-- **Integration Tests**: `/Users/terryli/eon/rangebar/crates/rangebar/tests/algorithm_invariants.rs `
+- **Algorithm Details**: [`../specifications/algorithm-spec.md`](../specifications/algorithm-spec.md)
+- **Error Recovery**: [`error-recovery.md`](error-recovery.md)
+- **API Documentation**: [`../ARCHITECTURE.md`](../ARCHITECTURE.md)
+- **Integration Tests**: [`../../crates/rangebar/tests/algorithm_invariants.rs`](../../crates/rangebar/tests/algorithm_invariants.rs)
