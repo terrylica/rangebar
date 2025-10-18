@@ -1,9 +1,27 @@
-# Range Bar Algorithm Specification
+# Range Bar Algorithm Specification (ARCHIVED)
 
 **Version**: 1.0.0
 **Created**: 2024-01-15
 **Status**: archived
-**Supersedes**: N/A
+**Superseded By**: `/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md` (v5.0.0, authoritative)
+
+---
+
+**⚠️ THIS DOCUMENT IS OUTDATED AND ARCHIVED**
+
+Please refer to the authoritative specification:
+**`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`**
+
+This file is retained for historical reference only. Do not use for implementation guidance.
+
+**Key Differences from Current (v5.0.0)**:
+1. Threshold units: 1bps (old) → 0.1bps (current)
+2. Data sources: UM Futures only (old) → Spot/UM/CM Futures + Exness (current)
+3. Basis points scale: 10,000 (old) → 100,000 (current)
+
+---
+
+## Original Content (Archived)
 
 ## Executive Summary
 
