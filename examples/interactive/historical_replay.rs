@@ -298,7 +298,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize components
     let mut playback = PlaybackEngine::new(agg_trades, 10000.0); // 10000x acceleration
-    let mut processor = ExportRangeBarProcessor::new(25); // 25 BPS threshold
+    let mut processor = ExportRangeBarProcessor::new(250); // 250 units × 0.1 BPS = 25 BPS = 0.25%
     let mut display = TerminalDisplay::new();
 
     println!(

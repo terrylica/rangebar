@@ -59,7 +59,7 @@ async fn analyze_symbol_market(
     stats.agg_trades = trades.len();
 
     // Process through range bar processor (25 BPS threshold)
-    let mut processor = ExportRangeBarProcessor::new(25);
+    let mut processor = ExportRangeBarProcessor::new(250); // 250 units × 0.1 BPS = 25 BPS = 0.25%
     processor.process_trades_continuously(&trades);
 
     // Get the generated range bars
@@ -81,7 +81,7 @@ async fn analyze_symbol_market(
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📊 Range Bar Generation Comparison: Spot vs UM Futures");
     println!("=======================================================");
-    println!("🎯 Testing 25 BPS threshold on recent day data");
+    println!("🎯 Testing 25 BPS (0.25%) threshold on recent day data");
     println!();
 
     let symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "DOGEUSDT"];

@@ -32,7 +32,7 @@ impl ThresholdValidation {
         low: f64,
         threshold_bps: u32,
     ) -> Self {
-        let threshold_pct = threshold_bps as f64 / 10_000.0; // Convert BPS to decimal
+        let threshold_pct = threshold_bps as f64 / 100_000.0; // Convert 0.1 BPS units to decimal percentage (e.g., 250 → 0.0025 = 0.25%)
         let expected_upper = open * (1.0 + threshold_pct);
         let expected_lower = open * (1.0 - threshold_pct);
 
@@ -225,11 +225,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let symbol = std::env::args()
         .nth(1)
         .unwrap_or_else(|| "BTCUSDT".to_string());
-    let threshold_bps = 25u32; // 25 BPS = 0.25%
+    let threshold_bps = 250u32; // 250 units × 0.1 BPS = 25 BPS = 0.25%
 
     println!("🔬 25 BPS Threshold Validation for {}", symbol);
     println!("====================================");
-    println!("Expected threshold: ±{} BPS (±0.25%)", threshold_bps);
+    println!("Expected threshold: ±{} BPS (±0.25%)", threshold_bps / 10); // Convert 0.1 BPS units to BPS
     println!();
 
     // Load recent day of data
@@ -247,7 +247,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if bars.is_empty() {
         println!(
             "⚠️ No range bars generated - market too stable for {} BPS threshold",
-            threshold_bps
+            threshold_bps / 10
         );
         return Ok(());
     }
@@ -320,7 +320,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!(
             "\n✅ SUCCESS: All {} range bars correctly breach ±{} BPS threshold!",
             bars.len(),
-            threshold_bps
+            threshold_bps / 10
         );
     }
 

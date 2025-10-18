@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let loader = HistoricalDataLoader::new_with_market(symbol, market_type);
     let trades = loader.load_recent_day().await?;
-    let mut processor = ExportRangeBarProcessor::new(25); // 25 BPS
+    let mut processor = ExportRangeBarProcessor::new(250); // 250 units × 0.1 BPS = 25 BPS = 0.25%
     let mut acceleration = 1000.0; // Start at 1000x
     let mut paused = false;
     let mut trade_index = 0;
