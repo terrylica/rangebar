@@ -731,6 +731,7 @@ impl ExportRangeBarProcessor {
         }
 
         // Process existing bar - work with reference
+        // SAFETY: current_bar guaranteed Some - early return above if None
         let bar = self.current_bar.as_mut().unwrap();
         let trade_turnover = (trade.price.to_f64() * trade.volume.to_f64()) as i128;
 
@@ -773,6 +774,7 @@ impl ExportRangeBarProcessor {
         // CRITICAL: Fixed-point threshold breach detection (matches proven 100% compliance algorithm)
         if price_val >= upper_threshold || price_val <= lower_threshold {
             // Close current bar and move to completed
+            // SAFETY: current_bar guaranteed Some - checked at line 688/734
             let completed_bar = self.current_bar.take().unwrap();
 
             // Convert to export format (this is from an old internal structure)
