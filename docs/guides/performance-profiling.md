@@ -63,8 +63,8 @@ cargo install flamegraph
 
 **Usage**:
 ```bash
-# Profile your binary
-cargo flamegraph --bin rangebar-export -- BTCUSDT 2024-01-01 2024-01-07 250 output/btc.parquet
+# Profile your binary (example: tier1-symbol-discovery)
+cargo flamegraph --bin tier1_symbol_discovery -- --format comprehensive
 
 # Opens flamegraph.svg in browser
 open flamegraph.svg
@@ -143,10 +143,10 @@ sudo apt-get install linux-tools-common linux-tools-generic
 **Record Profile**:
 ```bash
 # Build with debug symbols
-cargo build --release --bin rangebar-export
+cargo build --release --bin tier1_symbol_discovery
 
 # Record CPU profile
-perf record --call-graph=dwarf ./target/release/rangebar-export BTCUSDT 2024-01-01 2024-01-07 250 output/btc.parquet
+perf record --call-graph=dwarf ./target/release/tier1_symbol_discovery --format comprehensive
 
 # Analyze
 perf report
@@ -165,8 +165,8 @@ perf report
 # Open Xcode Instruments
 open -a Instruments
 
-# Or from command line
-xcrun xctrace record --template "Time Profiler" --launch target/release/rangebar-export BTCUSDT 2024-01-01 2024-01-07 250 output/btc.parquet
+# Or from command line (replace with your binary and args)
+xcrun xctrace record --template "Time Profiler" --launch target/release/YOUR_BINARY [ARGS]
 ```
 
 **Templates**:
@@ -185,8 +185,8 @@ xcrun xctrace record --template "Time Profiler" --launch target/release/rangebar
 
 **Diagnosis**:
 ```bash
-# Time data loading separately
-time cargo run --release --bin rangebar-export -- --load-only BTCUSDT 2024-01-01 2024-01-07
+# Time data loading separately (example with hypothetical --load-only flag)
+time cargo run --release --bin YOUR_BINARY -- [YOUR_ARGS]
 ```
 
 **Solutions**:
@@ -233,10 +233,10 @@ for chunk in data_loader.iter_chunks(chunk_size) {
 **Diagnosis**:
 ```bash
 # macOS: Allocations instrument
-xcrun xctrace record --template Allocations --launch target/release/rangebar-export ...
+xcrun xctrace record --template Allocations --launch target/release/YOUR_BINARY ...
 
 # Linux: Valgrind massif
-valgrind --tool=massif --massif-out-file=massif.out ./target/release/rangebar-export ...
+valgrind --tool=massif --massif-out-file=massif.out ./target/release/YOUR_BINARY ...
 ms_print massif.out
 ```
 
@@ -476,7 +476,7 @@ DAYS=30
 echo "Threshold,Trades,Bars,Time(ms),Throughput(trades/s)"
 
 for THRESHOLD in 10 25 50 100 250 500 1000; do
-    OUTPUT=$(cargo run --release --bin rangebar-export -- \
+    OUTPUT=$(cargo run --release --bin YOUR_BINARY -- \
         --benchmark \
         --symbol $SYMBOL \
         --days $DAYS \
@@ -507,7 +507,7 @@ cargo build --release
 # Profile memory
 valgrind --tool=massif \
     --massif-out-file=massif.out \
-    ./target/release/rangebar-export BTCUSDT 2024-01-01 2024-01-07 250 output/btc.parquet
+    ./target/release/YOUR_BINARY [YOUR_ARGS]
 
 # Visualize
 ms_print massif.out | less
@@ -523,7 +523,7 @@ massif-visualizer massif.out
 xcrun xctrace record \
     --template Allocations \
     --output allocations.trace \
-    --launch ./target/release/rangebar-export BTCUSDT 2024-01-01 2024-01-07 250 output/btc.parquet
+    --launch ./target/release/YOUR_BINARY [YOUR_ARGS]
 
 # Open in Instruments
 open allocations.trace
@@ -540,7 +540,7 @@ open allocations.trace
 cargo install cargo-stack-sizes
 
 # Analyze stack usage
-cargo stack-sizes --release --bin rangebar-export | head -20
+cargo stack-sizes --release --bin YOUR_BINARY | head -20
 ```
 
 **Watch For**:
