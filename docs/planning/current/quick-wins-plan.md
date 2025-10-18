@@ -2,7 +2,8 @@
 
 **Version**: 1.0.0
 **Started**: 2025-10-16
-**Status**: in_progress
+**Completed**: 2025-10-17
+**Status**: ✅ completed
 **Parent Plan**: `/Users/terryli/eon/rangebar/docs/planning/PRODUCTION_HARDENING_ROADMAP.md`
 **Supersedes**: N/A (first iteration)
 
@@ -365,14 +366,14 @@ fn test_threshold_validation() {
 
 ## Progress Tracking
 
-| Fix | Status | Estimated | Actual | Blockers |
-|-----|--------|-----------|--------|----------|
-| 1. Validator panic | pending | 1h | - | None |
-| 2. Buffer unwrap | pending | 0.5h | - | None |
-| 3. Threshold validation | pending | 4h | - | None |
+| Fix | Status | Estimated | Actual | Blockers | Commit |
+|-----|--------|-----------|--------|----------|--------|
+| 1. Validator panic | ⏭️ deferred | 1h | - | Deprioritized | N/A |
+| 2. Buffer unwrap | ✅ completed | 0.5h | 0.5h | None | cf70d80 |
+| 3. Threshold validation | ✅ completed | 4h | 2h | None | Multiple commits |
 
 **Total Estimated**: 5.5 hours
-**Total Actual**: TBD
+**Total Actual**: 2.5 hours (Fix 2 + Fix 3 completed, Fix 1 deferred)
 
 ---
 
