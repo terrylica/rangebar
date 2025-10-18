@@ -46,11 +46,9 @@ for bar in bars {
 
 ## Algorithm
 
-Range bars close when price moves ±threshold basis points from the bar's **opening price**:
+See authoritative specification: [`docs/specifications/algorithm-spec.md`](docs/specifications/algorithm-spec.md)
 
-1. **Non-lookahead bias**: Thresholds computed only from bar open price
-2. **Breach inclusion**: Breaching aggTrade included in closing bar
-3. **Fixed thresholds**: Never recalculated during bar lifetime
+Key properties: non-lookahead bias, fixed thresholds from bar open, breach inclusion.
 
 ## Features
 

@@ -476,10 +476,7 @@ println!("Mean price: {}", report.price_statistics.mean);
 
 ### Algorithm Correctness
 
-**Threshold Breach Detection**:
-- Range bars close when price moves ±threshold basis points from bar's **OPEN** price
-- Breach tick becomes bar's close
-- Next bar opens at breach tick's price
+**Specification**: [`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) (authoritative)
 
 **Validation**:
 ```rust

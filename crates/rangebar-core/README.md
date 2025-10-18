@@ -4,7 +4,9 @@ Core algorithm and types for non-lookahead range bar construction from tick data
 
 ## Overview
 
-`rangebar-core` provides the fundamental algorithm for constructing range bars - a time-independent charting technique where bars close when price moves ±threshold basis points from the bar's open price. This implementation guarantees no lookahead bias, making it suitable for backtesting and live trading systems.
+`rangebar-core` provides the fundamental algorithm for constructing range bars - a time-independent charting technique with non-lookahead bias guarantees.
+
+**Algorithm Specification**: [`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) (authoritative)
 
 ## Key Features
 
@@ -78,17 +80,11 @@ let bars = processor.process_agg_trade_records(&trades)?;
 
 ### Algorithm Invariants
 
-Range bars close when price moves ±threshold BPS from the bar's OPEN price:
+See [`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) for complete specification.
 
+**Breach Consistency Invariant**:
 ```rust
-// Every bar satisfies:
-assert!(high_breach → close_breach);
-assert!(low_breach → close_breach);
-
-// Where:
-// high_breach = (high - open) ≥ threshold
-// low_breach = (open - low) ≥ threshold
-// close_breach = (close == high) || (close == low)
+(high_breach → close_breach) AND (low_breach → close_breach)
 ```
 
 ## Dependencies

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Non-lookahead bias range bar construction from tick data (crypto: Binance aggTrades, forex: Exness EURUSD Standard).
 
-**Core Algorithm**: Range bars close when price moves ±threshold basis points from the bar's OPEN price (not from high/low range).
+**Core Algorithm**: See authoritative specification → [`docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md)
 
 **Architecture**: Pure Rust implementation for performance and reliability (processes 1B+ ticks). All components native Rust: symbol discovery, data processing, and analysis.
 
@@ -67,8 +67,8 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 ## Critical Algorithm Invariants
 
-**Algorithm**: Fixed thresholds from bar OPEN (`±threshold_bps`), breach tick closes bar
-**Validation**: `(high_breach → close_breach) AND (low_breach → close_breach)`
+**Specification**: [`docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) (authoritative)
+**Breach Consistency**: `(high_breach → close_breach) AND (low_breach → close_breach)`
 
 ### Data Source Requirements
 
