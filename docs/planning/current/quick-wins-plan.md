@@ -4,7 +4,7 @@
 **Started**: 2025-10-16
 **Completed**: 2025-10-17
 **Status**: ✅ completed
-**Parent Plan**: `/Users/terryli/eon/rangebar/docs/planning/PRODUCTION_HARDENING_ROADMAP.md`
+**Parent Plan**: `PRODUCTION_HARDENING_ROADMAP.md`
 **Supersedes**: N/A (first iteration)
 
 ---
@@ -42,7 +42,7 @@ let value = risky_operation()?;                     // Propagate error
 
 ## Fix 1: Replace Panic with Error Propagation (data_structure_validator)
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-cli/src/bin/data_structure_validator.rs:388`
+**File**: `../../crates/rangebar-cli/src/bin/data_structure_validator.rs:388`
 
 **Current State** (v5.0.0):
 ```rust
@@ -90,7 +90,7 @@ cargo run --bin data_structure_validator -- --market invalid-market
 
 ## Fix 2: Eliminate Race Condition Unwrap (replay_buffer)
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-streaming/src/replay_buffer.rs:95`
+**File**: `../../crates/rangebar-streaming/src/replay_buffer.rs:95`
 
 **Current State** (v5.0.0):
 ```rust
@@ -160,7 +160,7 @@ fn test_get_trades_from_empty_buffer() {
 
 ## Fix 3: Enforce Threshold Validation at Construction
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/processor.rs:36`
+**File**: `../../crates/rangebar-core/src/processor.rs:36`
 
 **Current State** (v5.0.0):
 ```rust
@@ -385,8 +385,8 @@ fn test_threshold_validation() {
 
 ## References
 
-- **Parent Roadmap**: `/Users/terryli/eon/rangebar/docs/planning/PRODUCTION_HARDENING_ROADMAP.md`
-- **Phase 1 Complete**: `/Users/terryli/eon/rangebar/docs/planning/current/hybrid-plan-phase1.md`
+- **Parent Roadmap**: `PRODUCTION_HARDENING_ROADMAP.md`
+- **Phase 1 Complete**: `current/hybrid-plan-phase1.md`
 - **Current Tests**: 144 passing (baseline)
 - **Survey Date**: 2025-10-16
 

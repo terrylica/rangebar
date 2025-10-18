@@ -3,14 +3,14 @@
 **Version**: 1.0.0
 **Created**: 2024-01-15
 **Status**: archived
-**Superseded By**: `/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md` (v5.0.0, authoritative)
+**Superseded By**: `../../specifications/algorithm-spec.md` (v5.0.0, authoritative)
 
 ---
 
 **⚠️ THIS DOCUMENT IS OUTDATED AND ARCHIVED**
 
 Please refer to the authoritative specification:
-**`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`**
+**`../../specifications/algorithm-spec.md`**
 
 This file is retained for historical reference only. Do not use for implementation guidance.
 

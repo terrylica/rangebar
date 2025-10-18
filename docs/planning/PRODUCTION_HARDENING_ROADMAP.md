@@ -29,7 +29,7 @@
 
 ### P0-1: Mutex Poisoning Risk in ReplayBuffer
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-streaming/src/replay_buffer.rs`
+**File**: `../../crates/rangebar-streaming/src/replay_buffer.rs`
 
 **Issue**: All `.lock().unwrap()` calls (lines 40, 63, 68, 73, 88, 95, 114) will panic if mutex becomes poisoned
 
@@ -67,7 +67,7 @@ pub fn push(&self, trade: AggTrade) -> Result<(), ReplayBufferError> {
 
 ### P0-2: Missing Threshold Validation in RangeBarProcessor
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/processor.rs:36`
+**File**: `../../crates/rangebar-core/src/processor.rs:36`
 
 **Issue**: `RangeBarProcessor::new()` accepts ANY u32 threshold without validation
 
@@ -163,7 +163,7 @@ pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
 
 ### P0-4: Panic in Production Binary (data_structure_validator)
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-cli/src/bin/data_structure_validator.rs:388`
+**File**: `../../crates/rangebar-cli/src/bin/data_structure_validator.rs:388`
 
 **Issue**: `panic!("Invalid market type: {}", market)` in production code
 
@@ -204,7 +204,7 @@ let market_path = match market.as_str() {
 
 ### P1-1: Unwrap on Potentially Empty Buffer
 
-**File**: `/Users/terryli/eon/rangebar/crates/rangebar-streaming/src/replay_buffer.rs:95`
+**File**: `../../crates/rangebar-streaming/src/replay_buffer.rs:95`
 
 **Issue**: `.back().unwrap()` assumes buffer is non-empty after checking, but race condition possible
 
@@ -725,8 +725,8 @@ cargo-fuzz = "0.11"
 
 ## References
 
-- **Codebase Survey**: `/Users/terryli/eon/rangebar/CODEBASE_SURVEY.md`
-- **Architecture**: `/Users/terryli/eon/rangebar/docs/architecture/ADR-001-modular-workspace.md`
+- **Codebase Survey**: `../../CODEBASE_SURVEY.md`
+- **Architecture**: `../architecture/ADR-001-modular-workspace.md`
 - **Current Tests**: 144 passing (5 integration, 139 unit)
 - **Survey Date**: 2025-10-16
 - **Survey Method**: Automated grep (unwrap: 150, panic: 8, unsafe: 0) + manual review

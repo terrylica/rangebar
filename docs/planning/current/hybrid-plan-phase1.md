@@ -5,7 +5,7 @@
 **Completed**: 2025-10-16
 **Status**: COMPLETE ✅
 **Phase Duration**: 1.1 days (Target: 7 days - 83% faster!)
-**Parent Plan**: /Users/terryli/eon/rangebar/STRATEGIC_PLAN.md (Hybrid Path)
+**Parent Plan**: ../../STRATEGIC_PLAN.md (Hybrid Path)
 
 ---
 
@@ -435,7 +435,7 @@ Before benchmarking/optimizing, require:
 
 ## References
 
-- Parent Plan: `/Users/terryli/eon/rangebar/STRATEGIC_PLAN.md` (Hybrid Path)
-- Survey: `/Users/terryli/eon/rangebar/CODEBASE_SURVEY.md`
-- Quick Ref: `/Users/terryli/eon/rangebar/SURVEY_QUICK_REFERENCE.md`
-- Summary: `/Users/terryli/eon/rangebar/STRATEGIC_PLAN_SUMMARY.md`
+- Parent Plan: `../../STRATEGIC_PLAN.md` (Hybrid Path)
+- Survey: `../../CODEBASE_SURVEY.md`
+- Quick Ref: `../../SURVEY_QUICK_REFERENCE.md`
+- Summary: `../../STRATEGIC_PLAN_SUMMARY.md`
