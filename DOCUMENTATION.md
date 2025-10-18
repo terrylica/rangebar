@@ -6,6 +6,7 @@ Complete documentation hub for the rangebar project - organized from beginner to
 
 - [Getting Started](#getting-started) - New users start here
 - [Core Concepts](#core-concepts) - Understanding the algorithm
+- [Business Logic Diagrams](#business-logic-diagrams) - Visual workflow representations
 - [Practical Guides](#practical-guides) - Hands-on workflows
 - [Deep Dive](#deep-dive) - Crate-specific details
 - [Advanced Topics](#advanced-topics) - Testing and optimization
@@ -33,6 +34,28 @@ Understanding the algorithm is fundamental to using this library effectively.
 
 ### [docs/specifications/algorithm-spec.md](docs/specifications/algorithm-spec.md)
 **Authoritative algorithm specification** - mathematical formulation, breach consistency invariant, non-lookahead bias guarantees, edge cases, and implementation requirements. This is the single source of truth.
+
+---
+
+## Business Logic Diagrams
+
+Visual representations of business workflows using Mermaid diagrams. These diagrams focus on **business logic** (not technical implementation) to help you understand data flow, decision points, and value creation.
+
+### [docs/diagrams/INDEX.md](docs/diagrams/INDEX.md)
+**Complete diagram catalog** - 9 business logic diagrams organized by complexity and focus area. Includes viewing instructions for GitHub, VS Code, and terminal.
+
+### [docs/diagrams/01-high-level-business-flow.md](docs/diagrams/01-high-level-business-flow.md)
+**End-to-end business journey** - 7 major stages from raw market data to actionable trading insights. Shows data transformation chain, business decision points (Need Statistics?), processing modes (Streaming vs Batch), and business guarantees (non-lookahead, deterministic, temporal integrity, precision).
+
+**Additional diagrams** (placeholders - coming soon):
+- Business Use Cases by User Type (Researchers, Live Traders, Portfolio Managers)
+- Data Acquisition Decision Tree (Crypto vs Forex, market selection)
+- Processing Mode Decision Logic (Streaming vs Batch based on use case, memory, size)
+- Threshold Selection Guide (HFT, Intraday, Swing, Position trading)
+- Complete Business Workflow (detailed decision points and error handling)
+- Error Recovery Business Logic (failure modes and recovery strategies)
+- Cross-Market Comparison Workflow (parallel Spot/UM/CM analysis)
+- Algorithm Business Rules (state machine and core guarantees)
 
 ---
 
@@ -98,9 +121,10 @@ For researchers and contributors working on testing, validation, and optimizatio
 ### For New Users (First Time)
 
 1. [README.md](README.md) - Get the big picture
-2. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Understand the structure
-3. [docs/specifications/algorithm-spec.md](docs/specifications/algorithm-spec.md) - Learn the algorithm
-4. [docs/guides/common-workflows.md](docs/guides/common-workflows.md) - Try the examples
+2. [docs/diagrams/01-high-level-business-flow.md](docs/diagrams/01-high-level-business-flow.md) - Visualize the complete journey
+3. [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - Understand the structure
+4. [docs/specifications/algorithm-spec.md](docs/specifications/algorithm-spec.md) - Learn the algorithm
+5. [docs/guides/common-workflows.md](docs/guides/common-workflows.md) - Try the examples
 
 ### For Researchers (Data Analysis)
 
@@ -121,6 +145,10 @@ For researchers and contributors working on testing, validation, and optimizatio
 ---
 
 ## Quick Links by Topic
+
+### Visual Diagrams
+- [Diagram Index](docs/diagrams/INDEX.md)
+- [High-Level Business Flow](docs/diagrams/01-high-level-business-flow.md)
 
 ### Algorithm & Theory
 - [Algorithm Specification](docs/specifications/algorithm-spec.md)
