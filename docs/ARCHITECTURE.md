@@ -553,7 +553,7 @@ assert!(bar[i].close_time ≤ bar[i+1].open_time);
 
 ## References
 
-- **Algorithm Details**: `/Users/terryli/eon/rangebar/docs/planning/v3.0.0-precision-migration-plan.md`
-- **Provider Specifications**: `/Users/terryli/eon/rangebar/docs/planning/exness-eurusd-standard-final-decision.md`
-- **Migration Guides**: `/Users/terryli/eon/rangebar/docs/planning/` (multiple files)
-- **Development Setup**: `/Users/terryli/eon/rangebar/.editorconfig`, `/Users/terryli/eon/rangebar/.rust-analyzer.toml`
+- **Algorithm Details**: `planning/v3.0.0-precision-migration-plan.md`
+- **Provider Specifications**: `planning/exness-eurusd-standard-final-decision.md`
+- **Migration Guides**: `planning/` (multiple files)
+- **Development Setup**: `../.editorconfig`, `../.rust-analyzer.toml`

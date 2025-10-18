@@ -281,4 +281,4 @@ else:
 **Total Analysis**: 17,075 LOC crates + 4,091 LOC tests
 **Quality Assessment**: HIGH - Well-structured, comprehensive testing, excellent documentation
 
-For questions, refer to the full survey at `/Users/terryli/eon/rangebar/CODEBASE_SURVEY.md`
+For questions, refer to the full survey at `CODEBASE_SURVEY.md`

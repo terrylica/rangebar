@@ -121,7 +121,7 @@ use rangebar_core::RangeBarProcessor;
 use rangebar_providers::binance::HistoricalDataLoader;
 ```
 
-**Migration Guide**: See `/Users/terryli/eon/rangebar/docs/planning/ ` for detailed migration instructions.
+**Migration Guide**: See `../../docs/planning/` for detailed migration instructions.
 
 ## Version
 
@@ -173,8 +173,8 @@ let reports = engine.analyze_multiple_symbols(multi_symbol_data)?;
 
 ## Documentation
 
-- **Architecture**: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
-- **Examples**: `/Users/terryli/eon/rangebar/examples/ `
+- **Architecture**: `../../docs/ARCHITECTURE.md`
+- **Examples**: `../../examples/`
 - **CLI Tools**: See `rangebar-cli` crate
 - **Individual Crates**: Each crate has its own README.md
 

@@ -153,8 +153,8 @@ Current version: **5.0.0** (modular crate architecture)
 
 - Tier-1 symbols: Use `tier1-symbol-discovery` binary
 - Data validation: Use `data-structure-validator` binary
-- Architecture: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
-- Exness decision: `/Users/terryli/eon/rangebar/docs/planning/exness-eurusd-standard-final-decision.md `
+- Architecture: `../../docs/ARCHITECTURE.md`
+- Exness decision: `../../docs/planning/exness-eurusd-standard-final-decision.md`
 
 ## License
 

@@ -163,8 +163,8 @@ Current version: **5.0.0** (modular crate architecture)
 
 ## Documentation
 
-- Architecture: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
-- Examples: `/Users/terryli/eon/rangebar/examples/ `
+- Architecture: `../../docs/ARCHITECTURE.md`
+- Examples: `../../examples/`
 - Each tool has comprehensive `--help` documentation
 
 ## License

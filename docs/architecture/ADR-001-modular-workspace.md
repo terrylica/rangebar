@@ -473,11 +473,11 @@ rangebar/
 
 ## References
 
-- **Parent Plan**: `/Users/terryli/eon/rangebar/STRATEGIC_PLAN.md` (Hybrid Path)
-- **Codebase Survey**: `/Users/terryli/eon/rangebar/CODEBASE_SURVEY.md`
-- **Quick Reference**: `/Users/terryli/eon/rangebar/SURVEY_QUICK_REFERENCE.md`
+- **Parent Plan**: `../../STRATEGIC_PLAN.md` (Hybrid Path)
+- **Codebase Survey**: `../../CODEBASE_SURVEY.md`
+- **Quick Reference**: `../../SURVEY_QUICK_REFERENCE.md`
 - **v4.0.0 Archive**: Git tag `v4.0.0-archive` (59 files preserved)
-- **Migration Guide**: `/Users/terryli/eon/rangebar/docs/development/` (TBD)
+- **Migration Guide**: `../development/` (TBD)
 
 ---
 

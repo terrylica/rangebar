@@ -126,8 +126,7 @@ uv tool list
 
 ### Update Hook Configs
 ```bash
-# In project directory
-cd /Users/terryli/eon/rangebar
+# From project root:
 pre-commit autoupdate
 
 # Manually trigger GitHub Action
@@ -190,4 +189,4 @@ uv tool install pre-commit
 - uv documentation: https://docs.astral.sh/uv/
 - pre-commit documentation: https://pre-commit.com/
 - Homebrew autoupdate script: `/Users/terryli/scripts/homebrew-autoupdate/brew_autoupdate.sh`
-- Pre-commit config: `/Users/terryli/eon/rangebar/.pre-commit-config.yaml:0`
+- Pre-commit config: `../../.pre-commit-config.yaml`

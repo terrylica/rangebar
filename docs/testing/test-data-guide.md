@@ -11,7 +11,7 @@ This guide explains when to use real CSV data vs synthetic generated data in int
 
 ### Real Market Data (CSV)
 
-**Location**: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/test_data_loader.rs`
+**Location**: `../../crates/rangebar-core/src/test_data_loader.rs`
 
 **Purpose**: Validation of range bar construction against real market behavior
 
@@ -56,7 +56,7 @@ fn test_with_real_ethusdt_data() {
 
 ### Synthetic Generated Data
 
-**Location**: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/test_utils/generators.rs`
+**Location**: `../../crates/rangebar-core/src/test_utils/generators.rs`
 
 **Purpose**: Controlled testing of specific scenarios and edge cases
 
@@ -328,7 +328,7 @@ cargo nextest run --workspace --features rangebar/test-utils,rangebar/providers,
 
 ## References
 
-- Real data loader: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/test_data_loader.rs:0`
-- Synthetic generators: `/Users/terryli/eon/rangebar/crates/rangebar-core/src/test_utils/generators.rs:0`
-- Real data tests: `/Users/terryli/eon/rangebar/crates/rangebar/tests/binance_btcusdt_real_data_test.rs:0`
-- Test cleanup plan: `/Users/terryli/eon/rangebar/docs/planning/test-cleanup-plan-v2-llm-friendly.md:0`
+- Real data loader: `../../crates/rangebar-core/src/test_data_loader.rs`
+- Synthetic generators: `../../crates/rangebar-core/src/test_utils/generators.rs`
+- Real data tests: `../../crates/rangebar/tests/binance_btcusdt_real_data_test.rs`
+- Test cleanup plan: `../planning/test-cleanup-plan-v2-llm-friendly.md`

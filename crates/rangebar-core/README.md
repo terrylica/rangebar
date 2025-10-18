@@ -6,7 +6,7 @@ Core algorithm and types for non-lookahead range bar construction from tick data
 
 `rangebar-core` provides the fundamental algorithm for constructing range bars - a time-independent charting technique with non-lookahead bias guarantees.
 
-**Algorithm Specification**: [`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) (authoritative)
+**Algorithm Specification**: [`../../docs/specifications/algorithm-spec.md`](../../docs/specifications/algorithm-spec.md) (authoritative)
 
 ## Key Features
 
@@ -80,7 +80,7 @@ let bars = processor.process_agg_trade_records(&trades)?;
 
 ### Algorithm Invariants
 
-See [`/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md`](/Users/terryli/eon/rangebar/docs/specifications/algorithm-spec.md) for complete specification.
+See [`../../docs/specifications/algorithm-spec.md`](../../docs/specifications/algorithm-spec.md) for complete specification.
 
 **Breach Consistency Invariant**:
 ```rust
@@ -119,9 +119,9 @@ All timestamps are in microseconds (16-digit). Different data sources require no
 
 ## Documentation
 
-- Comprehensive architecture: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
-- Migration guides: `/Users/terryli/eon/rangebar/docs/planning/ `
-- API examples: `/Users/terryli/eon/rangebar/examples/ `
+- Comprehensive architecture: `../../docs/ARCHITECTURE.md`
+- Migration guides: `../../docs/planning/`
+- API examples: `../../examples/`
 
 ## License
 

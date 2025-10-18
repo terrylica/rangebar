@@ -2,7 +2,7 @@
 
 **Survey Complete**: 17,075 LOC analyzed, 43 integration tests reviewed
 **Current State**: Test Cleanup Phases 0-5 ✅ Complete, v5.0.0 modular architecture
-**Documentation**: `/Users/terryli/eon/rangebar/STRATEGIC_PLAN.md` (full analysis)
+**Documentation**: `STRATEGIC_PLAN.md` (full analysis)
 
 ---
 
@@ -263,7 +263,7 @@ rm -rf src-archived/
 
 ## 💬 NEXT STEP: Choose Your Path
 
-1. **Review full analysis**: `/Users/terryli/eon/rangebar/STRATEGIC_PLAN.md`
+1. **Review full analysis**: `STRATEGIC_PLAN.md`
 2. **Choose path**: A, B, C, D, or HYBRID
 3. **Clarify questions**: Any section need deeper dive?
 4. **Confirm approach**: I'll create detailed implementation plan
@@ -278,8 +278,8 @@ QUESTIONS: [Any clarifications needed]
 ---
 
 **Survey Documents Generated**:
-- `/Users/terryli/eon/rangebar/CODEBASE_SURVEY.md` (495 lines, full technical analysis)
-- `/Users/terryli/eon/rangebar/SURVEY_QUICK_REFERENCE.md` (174 lines, quick lookup)
-- `/Users/terryli/eon/rangebar/SURVEY_INDEX.md` (284 lines, navigation)
-- `/Users/terryli/eon/rangebar/STRATEGIC_PLAN.md` (1,100+ lines, complete strategy)
-- `/Users/terryli/eon/rangebar/STRATEGIC_PLAN_SUMMARY.md` (this document)
+- `CODEBASE_SURVEY.md` (495 lines, full technical analysis)
+- `SURVEY_QUICK_REFERENCE.md` (174 lines, quick lookup)
+- `SURVEY_INDEX.md` (284 lines, navigation)
+- `STRATEGIC_PLAN.md` (1,100+ lines, complete strategy)
+- `STRATEGIC_PLAN_SUMMARY.md` (this document)

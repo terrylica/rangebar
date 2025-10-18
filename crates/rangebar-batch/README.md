@@ -145,7 +145,7 @@ Current version: **5.0.0** (modular crate architecture)
 
 ## Documentation
 
-- Architecture: `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
+- Architecture: `../../docs/ARCHITECTURE.md`
 - CLI tool: Run `rangebar-analyze` binary
 
 ## License

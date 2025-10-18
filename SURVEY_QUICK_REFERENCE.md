@@ -171,4 +171,4 @@ Quality Score:    HIGH
 ---
 
 **Last Updated**: October 16, 2025
-**Survey**: `/Users/terryli/eon/rangebar/CODEBASE_SURVEY.md` (full report)
+**Survey**: `CODEBASE_SURVEY.md` (full report)

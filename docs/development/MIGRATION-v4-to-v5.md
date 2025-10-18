@@ -563,10 +563,10 @@ error: cyclic package dependency
 
 ## Support
 
-- **Documentation**: See individual crate README files in `crates/*/README.md `
-- **Architecture**: See `/Users/terryli/eon/rangebar/docs/ARCHITECTURE.md `
+- **Documentation**: See individual crate README files in `crates/*/README.md`
+- **Architecture**: See `../ARCHITECTURE.md`
 - **Issues**: Report at https://github.com/terrylica/rangebar/issues
-- **Examples**: See `/Users/terryli/eon/rangebar/examples/ `
+- **Examples**: See `../../examples/`
 
 ---
 

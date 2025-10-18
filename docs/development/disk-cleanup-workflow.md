@@ -10,8 +10,7 @@ Run these commands when you notice disk space running low (typically every few w
 ### Quick Cleanup (Current Project Only)
 
 ```bash
-# Clean current project's build artifacts
-cd /Users/terryli/eon/rangebar
+# Clean current project's build artifacts (from project root)
 cargo clean
 ```
 
@@ -35,21 +34,20 @@ cargo clean-all --min-size 5GB  # Only projects with target/ > 5GB
 ### Check Current Disk Usage
 
 ```bash
-# Check rangebar project size
-du -sh /Users/terryli/eon/rangebar
+# Check rangebar project size (from project root)
+du -sh .
 
 # Check target/ size specifically
-du -sh /Users/terryli/eon/rangebar/target
+du -sh target
 
 # Check all directories breakdown
-du -h -d 1 /Users/terryli/eon/rangebar | sort -hr | head -10
+du -h -d 1 . | sort -hr | head -10
 ```
 
 ### Additional Cleanup (Optional)
 
 ```bash
-# Clean old test outputs (2.1GB currently)
-cd /Users/terryli/eon/rangebar
+# Clean old test outputs (2.1GB currently, from project root)
 rm -rf output/bps_validation_*
 rm -rf output/data_structure_validation/*
 rm -rf output/nohup_*
@@ -115,4 +113,4 @@ cargo clean
 ## References
 
 - cargo-clean-all: https://github.com/dnlmlr/cargo-clean-all
-- Pre-commit config: `/Users/terryli/eon/rangebar/.pre-commit-config.yaml:0`
+- Pre-commit config: `../../.pre-commit-config.yaml`

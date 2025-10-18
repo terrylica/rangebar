@@ -69,7 +69,7 @@
 
 ## References
 
-- Original plan: `/Users/terryli/eon/rangebar/STRATEGIC_PLAN.md`
-- Corrected implementation: `/Users/terryli/eon/rangebar/docs/planning/current/hybrid-plan-phase1.md`
+- Original plan: `STRATEGIC_PLAN.md`
+- Corrected implementation: `docs/planning/current/hybrid-plan-phase1.md`
 - Action 4 rejection: hybrid-plan-phase1.md lines 209-223
 - Learnings: hybrid-plan-phase1.md lines 351-370
