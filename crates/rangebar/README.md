@@ -90,16 +90,19 @@ rangebar = { version = "5.0.0", features = ["full"] }
 The rangebar workspace consists of 8 specialized crates:
 
 ### Core Crates
+
 - **rangebar-core**: Algorithm, types, fixed-point arithmetic
 - **rangebar-providers**: Binance, Exness data providers
 - **rangebar-config**: Configuration management
 - **rangebar-io**: Export formats, Polars integration
 
 ### Engine Crates
+
 - **rangebar-streaming**: Real-time streaming processor
 - **rangebar-batch**: Batch analytics engine
 
 ### Tools & Compatibility
+
 - **rangebar-cli**: Command-line tools
 - **rangebar**: This meta-crate (unified interface)
 
@@ -108,6 +111,7 @@ The rangebar workspace consists of 8 specialized crates:
 The v5.0.0 release introduced a modular crate architecture. Your existing code should continue to work due to backward compatibility shims, but consider migrating to direct crate imports:
 
 ### Before (v4.0.0)
+
 ```rust
 use rangebar::fixed_point::FixedPoint;
 use rangebar::range_bars::ExportRangeBarProcessor;
@@ -115,6 +119,7 @@ use rangebar::data::HistoricalDataLoader;
 ```
 
 ### After (v5.0.0)
+
 ```rust
 use rangebar_core::FixedPoint;
 use rangebar_core::RangeBarProcessor;
@@ -128,6 +133,7 @@ use rangebar_providers::binance::HistoricalDataLoader;
 Current version: **5.0.0** (modular crate architecture)
 
 **Breaking Changes in v3.0.0**:
+
 - Threshold values changed from 1 BPS to 0.1 BPS units (multiply by 10)
 - Example: 25 BPS now requires `new(250)` instead of `new(25)`
 
