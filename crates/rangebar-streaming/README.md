@@ -102,14 +102,14 @@ if metrics.circuit_breaker_active {
 
 ## Comparison: Streaming vs Batch
 
-| Feature | Streaming | Batch |
-|---------|-----------|-------|
-| Memory Usage | Bounded | Unbounded |
-| Throughput | Moderate | High |
-| Parallelism | Single-threaded | Multi-threaded (Rayon) |
-| Real-time | Yes | No |
-| Use Case | Live trading | Historical analysis |
-| Circuit Breaker | Yes | No |
+| Feature         | Streaming       | Batch                  |
+| --------------- | --------------- | ---------------------- |
+| Memory Usage    | Bounded         | Unbounded              |
+| Throughput      | Moderate        | High                   |
+| Parallelism     | Single-threaded | Multi-threaded (Rayon) |
+| Real-time       | Yes             | No                     |
+| Use Case        | Live trading    | Historical analysis    |
+| Circuit Breaker | Yes             | No                     |
 
 ## Dependencies
 

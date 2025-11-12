@@ -133,6 +133,7 @@ cargo run --bin polars-benchmark --features polars-io -- \
 ```
 
 **Expected Performance**:
+
 - 70%+ file size reduction (Parquet vs CSV)
 - 10x-20x faster Python loading (Arrow zero-copy)
 - 2x-5x faster export operations (streaming)

@@ -112,13 +112,13 @@ pub struct BatchConfig {
 
 ## Comparison: Batch vs Streaming
 
-| Feature | Batch | Streaming |
-|---------|-------|-----------|
-| Memory Usage | Unbounded | Bounded |
-| Throughput | High | Moderate |
-| Parallelism | Multi-threaded (Rayon) | Single-threaded |
-| Real-time | No | Yes |
-| Use Case | Historical analysis | Live trading |
+| Feature      | Batch                  | Streaming       |
+| ------------ | ---------------------- | --------------- |
+| Memory Usage | Unbounded              | Bounded         |
+| Throughput   | High                   | Moderate        |
+| Parallelism  | Multi-threaded (Rayon) | Single-threaded |
+| Real-time    | No                     | Yes             |
+| Use Case     | Historical analysis    | Live trading    |
 
 ## Integration with Polars
 

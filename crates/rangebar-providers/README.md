@@ -104,6 +104,7 @@ pub struct AggTrade {
 ```
 
 This enables:
+
 - Unified processing pipeline across all data sources
 - Easy addition of new providers (Deribit, Kraken, etc.)
 - Temporal integrity via timestamp normalization
@@ -119,6 +120,7 @@ cargo run --bin data-structure-validator
 ```
 
 **Key Differences Detected**:
+
 - **Spot**: No headers, short columns (`a,p,q,f,l,T,m`), 16-digit μs timestamps
 - **UM Futures**: Headers, descriptive columns, 13-digit ms timestamps
 - **Auto-normalization**: Parser detects format and normalizes to microseconds
@@ -126,13 +128,16 @@ cargo run --bin data-structure-validator
 ### Exness Data Quality
 
 **Validated Periods** (2019-2025):
+
 - 2019-04, 2021-01, 2022-07
 - 2023-04, 2024-10, 2025-01, 2025-02
 
 **Best Trading Hours** (UTC):
+
 - Hours 0-12, 14-17 (avoid hour 22 rollover, Sunday gaps)
 
 **Event Detection**:
+
 - Spread >1.4 pips = exit signal
 - Use ±15min windows for event boundaries
 

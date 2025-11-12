@@ -39,6 +39,7 @@ cargo run --bin data-structure-validator -- \
 ```
 
 **Features**:
+
 - Cross-market schema detection (spot vs futures differences)
 - Timestamp precision validation (16-digit μs vs 13-digit ms)
 - SHA256 checksum verification (optional)
@@ -76,6 +77,7 @@ cargo run --bin spot-tier1-processor -- --workers 16
 ```
 
 **Features**:
+
 - Parallel execution using Rayon (default: 8 workers)
 - Comprehensive execution statistics
 - JSON metadata with symbol performance rankings
@@ -92,6 +94,7 @@ cargo run --bin polars-benchmark --features polars-io -- \
 ```
 
 **Tests**:
+
 - Parquet export (70%+ compression target)
 - Arrow IPC export (zero-copy Python)
 - Streaming CSV export (2x-5x speedup target)
@@ -107,6 +110,7 @@ cargo run --bin temporal-integrity-test-only --features polars-io -- \
 ```
 
 **Validates**:
+
 - Monotonic timestamp ordering
 - DataFrame operation safety
 - Export readiness without round-trip conversion
@@ -122,18 +126,22 @@ cargo run --bin rangebar-api --release
 ## Tool Categories
 
 ### Discovery & Validation
+
 - `tier1-symbol-discovery` - Symbol discovery
 - `data-structure-validator` - Data validation
 
 ### Processing & Export
+
 - `rangebar-export` - Single symbol export
 - `spot-tier1-processor` - Batch Tier-1 processing
 
 ### Testing & Benchmarking
+
 - `polars-benchmark` - Performance benchmarks
 - `temporal-integrity-test-only` - Temporal validation
 
 ### Services
+
 - `rangebar-api` - REST API server
 
 ## Common Flags
