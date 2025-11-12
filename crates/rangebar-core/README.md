@@ -83,6 +83,7 @@ let bars = processor.process_agg_trade_records(&trades)?;
 See [`../../docs/specifications/algorithm-spec.md`](../../docs/specifications/algorithm-spec.md) for complete specification.
 
 **Breach Consistency Invariant**:
+
 ```rust
 (high_breach → close_breach) AND (low_breach → close_breach)
 ```
