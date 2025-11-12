@@ -15,20 +15,24 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 **Modular Crate Architecture**: 8 specialized crates organized as Cargo workspace
 
 **Core Crates**:
+
 - `crates/rangebar-core/` - Core algorithm, fixed-point arithmetic, types
 - `crates/rangebar-providers/` - Data providers (Binance, Exness)
 - `crates/rangebar-config/` - Configuration management
 - `crates/rangebar-io/` - I/O operations and Polars integration
 
 **Engine Crates**:
+
 - `crates/rangebar-streaming/` - Real-time streaming processor
 - `crates/rangebar-batch/` - Batch analytics engine
 
 **Tools & Compatibility**:
+
 - `crates/rangebar-cli/` - Command-line tools (all binaries)
 - `crates/rangebar/` - Meta-crate for v4.0.0 backward compatibility
 
 **Legacy**:
+
 - `src-archived/` - v4.0.0 monolithic structure (archived, git tracked)
 
 ## Key Commands
@@ -46,15 +50,16 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 **Tool**: `data-structure-validator` validates Binance aggTrades across spot/futures markets
 
 **Key Differences**:
+
 - **Spot**: No headers, short columns (`a,p,q,f,l,T,m`), 16-digit μs timestamps
 - **UM Futures**: Headers, descriptive columns, 13-digit ms timestamps
 - **Parser**: Auto-detects format, normalizes timestamps to microseconds
 - **Critical**: Use `aggTrades` nomenclature (not `trades`) - affects all naming
 
-
 ## Architecture
 
 ### Data Pipeline
+
 1. **Symbol Discovery**: `tier1-symbol-discovery` → Multi-market symbol analysis
 2. **Data Structure Validation**: `data-structure-validator` → Cross-market format verification
 3. **Data Fetching**: `binance_historical_data` → Raw CSV/ZIP files with validated schemas
@@ -73,6 +78,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 ### Data Source Requirements
 
 #### Binance (Primary - Crypto)
+
 - **Source**: https://github.com/stas-prokopiev/binance_historical_data
 - **Primary Asset Class**: `"spot"` (Default) for standard spot trading pairs
 - **Optional Markets**: `"um"` (USD-M Futures) for USDT/USDC perpetuals, `"cm"` (Coin-M Futures)
@@ -80,6 +86,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 - **Usage**: Specify market type via command line arguments or use spot by default
 
 #### Exness (Primary - Forex)
+
 - **Variant**: `EURUSD_Raw_Spread` - **CHOSEN** for 8× higher spread variability (CV=8.17) encoding broker risk perception
 - **Why Raw_Spread**: Bimodal distribution (98% at 0.0 pips + 2% stress events 1-9 pips) = maximum signal-to-noise for market stress forecasting
 - **Rejected Alternatives**: Standard (CV=0.46, too constant), Standard_Plus (higher cost, lower CV), Cent/Mini (unnecessary contract sizes)
@@ -89,7 +96,9 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 - **Thresholds**: 0.1bps (minimum), 0.2bps (HFT), 0.5bps (intraday), 1.0bps (swing)
 
 ### Tier-1 Instruments Definition
+
 **Tier-1 instruments** are crypto assets that Binance respects highly enough to list across **ALL THREE** futures markets:
+
 1. **UM Futures (USDT-margined)**: e.g., BTCUSDT, ETHUSDT
 2. **UM Futures (USDC-margined)**: e.g., BTCUSDC, ETHUSDC
 3. **CM Futures (Coin-margined)**: e.g., BTCUSD_PERP, ETHUSD_PERP
@@ -112,7 +121,11 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Testing**: `cargo test`, `cargo bench` - validates non-lookahead, performance <100ms/1M ticks
 
-**Publishing**: GitHub Actions OIDC on git tags, manual: `cargo publish -p <crate-name>`
+**Publishing**: See [`docs/guides/publishing.md`](docs/guides/publishing.md) for complete workflow
+
+- **Credentials**: Doppler secret `CRATES_IO_CLAUDE_CODE` in `claude-config/dev`
+- **Command**: `export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain) && cargo publish -p <crate-name>`
+- **Order**: Publish in dependency order (core → providers/io → streaming/batch → cli → meta-crate)
 
 ## Dependency Management
 
@@ -123,6 +136,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 **Automation**: git-cliff + Commitizen for automated release management
 
 **Process**: `./scripts/release.sh` executes:
+
 1. Version bump (Commitizen with SemVer)
 2. CHANGELOG.md generation (git-cliff with detailed commit history)
 3. RELEASE_NOTES.md generation (git-cliff with user-friendly format)
@@ -130,11 +144,13 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 5. GitHub release creation
 
 **Configuration**:
+
 - `.cz.toml` - Commitizen config (version tracking, conventional commits)
 - `cliff.toml` - Detailed changelog template (developer-focused)
 - `cliff-release-notes.toml` - Release notes template (user-focused)
 
 **Manual Commands**:
+
 - `uvx --from commitizen cz bump --yes` - Version bump only
 - `git-cliff --config cliff.toml --output CHANGELOG.md` - Generate changelog
 - `git-cliff --config cliff-release-notes.toml --latest --output RELEASE_NOTES.md` - Generate release notes
