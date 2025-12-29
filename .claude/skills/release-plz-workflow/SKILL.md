@@ -1,6 +1,6 @@
 ---
 name: release-plz-workflow
-description: Release automation for rangebar Rust workspace. TRIGGERS - release, publish, version bump, changelog, crates.io, GitHub release.
+description: Automates semantic versioning and release publishing for rangebar Rust workspace using release-plz. TRIGGERS - release, publish, changelog, version bump, crates.io, GitHub release. (project)
 allowed-tools: Bash(cargo:*), Bash(git:*), Bash(release-plz:*), Bash(gh:*), Bash(doppler:*), Read, Grep, Glob
 ---
 
@@ -14,22 +14,19 @@ This skill guides the release-plz workflow for the rangebar 8-crate Rust workspa
 
 ## Quick Reference
 
-```bash
-/usr/bin/env bash << 'RELEASE_EOF'
+```shell
 # Dry run - preview what will happen
 release-plz release --dry-run --git-token "$(gh auth token)"
 
 # Full release
 release-plz release --git-token "$(gh auth token)"
-RELEASE_EOF
 ```
 
 ## Workflow Phases
 
 ### Phase 1: Preflight Validation
 
-```bash
-/usr/bin/env bash << 'PREFLIGHT_EOF'
+```shell
 # 1. Verify clean working directory
 git status --porcelain  # Should be empty
 
@@ -39,25 +36,21 @@ git branch --show-current  # Should be 'main'
 # 3. Verify credentials
 gh auth status  # Should show terrylica account
 doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain | head -c 10  # Should show token prefix
-PREFLIGHT_EOF
 ```
 
 ### Phase 2: Release Execution
 
-```bash
-/usr/bin/env bash << 'EXECUTE_EOF'
+```shell
 # Export crates.io token
 export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain)
 
 # Run release-plz with GitHub token
 release-plz release --git-token "$(gh auth token)"
-EXECUTE_EOF
 ```
 
 ### Phase 3: Verification
 
-```bash
-/usr/bin/env bash << 'VERIFY_EOF'
+```shell
 # Verify tag was created
 git tag -l --sort=-version:refname | head -3
 
@@ -66,7 +59,6 @@ gh release view $(git describe --tags --abbrev=0)
 
 # Verify crates.io
 cargo search rangebar
-VERIFY_EOF
 ```
 
 ## Crate Publication Order
@@ -115,5 +107,5 @@ release-plz analyzes commits since last tag:
 ## Links
 
 - [release-plz docs](https://release-plz.ieni.dev/)
-- [Publishing Guide](https://github.com/terrylica/rangebar/blob/main/docs/guides/publishing.md)
-- [Algorithm Spec](https://github.com/terrylica/rangebar/blob/main/docs/specifications/algorithm-spec.md)
+- [Publishing Guide](/docs/guides/publishing.md)
+- [Algorithm Spec](/docs/specifications/algorithm-spec.md)
