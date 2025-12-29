@@ -20,7 +20,7 @@ Caused by:
 
 **Solution**:
 
-```shell
+```bash
 rm -rf ~/.cargo/registry/index/github.com-1ecc6299db9ec823
 ```
 
@@ -36,15 +36,19 @@ rm -rf ~/.cargo/registry/index/github.com-1ecc6299db9ec823
 
 **Solution**:
 
-```shell
+```bash
+/usr/bin/env bash << 'FIX2_EOF'
 release-plz release --git-token "$(gh auth token)"
+FIX2_EOF
 ```
 
 **Alternative** (environment variable):
 
-```shell
+```bash
+/usr/bin/env bash << 'FIX2_ALT_EOF'
 export GITHUB_TOKEN=$(gh auth token)
 release-plz release
+FIX2_ALT_EOF
 ```
 
 ---
@@ -85,7 +89,7 @@ INFO rangebar-providers 5.0.0: already published
 
 **Solution**: Manually create the tag and GitHub release:
 
-```shell
+```bash
 # Create annotated tag
 git tag -a v5.0.0 -m "Release v5.0.0"
 
@@ -106,12 +110,14 @@ gh release create v5.0.0 --title "RangeBar v5.0.0" --generate-notes
 
 **Solution**:
 
-```shell
+```bash
+/usr/bin/env bash << 'FIX5_EOF'
 # Verify Doppler access
 doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain
 
 # If it works, export it
 export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain)
+FIX5_EOF
 ```
 
 **If Doppler fails**: Re-authenticate with `doppler login`.
@@ -126,7 +132,7 @@ export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --projec
 
 **Solution**:
 
-```shell
+```bash
 # Check current account
 gh auth status
 
@@ -184,7 +190,8 @@ Before running `release-plz release`:
 
 ## Useful Commands
 
-```shell
+```bash
+/usr/bin/env bash << 'USEFUL_EOF'
 # Preview release without making changes
 release-plz release --dry-run --git-token "$(gh auth token)"
 
@@ -199,4 +206,5 @@ gh release list --limit 5
 
 # Check crates.io versions
 cargo search rangebar
+USEFUL_EOF
 ```

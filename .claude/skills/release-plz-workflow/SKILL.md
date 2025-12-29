@@ -14,19 +14,21 @@ This skill guides the release-plz workflow for the rangebar 8-crate Rust workspa
 
 ## Quick Reference
 
-```shell
+```bash
+/usr/bin/env bash << 'RELEASE_EOF'
 # Dry run - preview what will happen
 release-plz release --dry-run --git-token "$(gh auth token)"
 
 # Full release
 release-plz release --git-token "$(gh auth token)"
+RELEASE_EOF
 ```
 
 ## Workflow Phases
 
 ### Phase 1: Preflight Validation
 
-```shell
+```bash
 # 1. Verify clean working directory
 git status --porcelain  # Should be empty
 
@@ -40,17 +42,20 @@ doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev -
 
 ### Phase 2: Release Execution
 
-```shell
+```bash
+/usr/bin/env bash << 'EXECUTE_EOF'
 # Export crates.io token
 export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain)
 
 # Run release-plz with GitHub token
 release-plz release --git-token "$(gh auth token)"
+EXECUTE_EOF
 ```
 
 ### Phase 3: Verification
 
-```shell
+```bash
+/usr/bin/env bash << 'VERIFY_EOF'
 # Verify tag was created
 git tag -l --sort=-version:refname | head -3
 
@@ -59,6 +64,7 @@ gh release view $(git describe --tags --abbrev=0)
 
 # Verify crates.io
 cargo search rangebar
+VERIFY_EOF
 ```
 
 ## Crate Publication Order
