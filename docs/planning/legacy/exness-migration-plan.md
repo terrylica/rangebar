@@ -18,6 +18,7 @@
 **Your proposal is SENSIBLE with modifications.**
 
 **Why copy-and-modify works:**
+
 - ✅ Both provide Forex tick data (Bid/Ask quotes)
 - ✅ Both use mid-price for range bars
 - ✅ Both require validation and error handling
@@ -25,6 +26,7 @@
 - ✅ Test structure is identical (synthetic, real-world, edge cases)
 
 **Critical differences requiring modification:**
+
 - ⚠️ **Data format**: LZMA binary (.bi5) → ZIP CSV
 - ⚠️ **Volume data**: 4 fields (bid/ask/volumes) → 2 fields (bid/ask only)
 - ⚠️ **Granularity**: Hourly files → Monthly files
@@ -79,24 +81,24 @@ HTTP GET (.bi5)
 ### Critical Features
 
 1. **Instrument Config** (`client.rs`):
-   - Embedded TOML with 1,607 instruments
-   - Decimal factors for binary→float conversion
-   - Type inference (Forex/Crypto/Commodity/Equity)
+    - Embedded TOML with 1,607 instruments
+    - Decimal factors for binary→float conversion
+    - Type inference (Forex/Crypto/Commodity/Equity)
 
 2. **Spread Stats** (`types.rs`):
-   - Per-bar SMA: avg spread, min/max spread
-   - Bid/Ask liquidity tracking
-   - Tick count
+    - Per-bar SMA: avg spread, min/max spread
+    - Bid/Ask liquidity tracking
+    - Tick count
 
 3. **Validation Strictness** (`types.rs`):
-   - Permissive: Basic checks only
-   - Strict: Spread < 10% (default)
-   - Paranoid: Spread < 1%
+    - Permissive: Basic checks only
+    - Strict: Spread < 10% (default)
+    - Paranoid: Spread < 1%
 
 4. **Error Handling** (`types.rs`):
-   - Fatal: UnsupportedInstrument, InvalidDecimalFactor
-   - Skip: CrossedMarket, ExcessiveSpread
-   - Abort: >10% error rate (SystemicDataQualityIssue)
+    - Fatal: UnsupportedInstrument, InvalidDecimalFactor
+    - Skip: CrossedMarket, ExcessiveSpread
+    - Abort: >10% error rate (SystemicDataQualityIssue)
 
 ### Test Coverage
 
@@ -123,17 +125,17 @@ tests/dukascopy_*.rs (6 files)
 
 **Key Differences from Dukascopy**:
 
-| Aspect | Dukascopy | Exness |
-|--------|-----------|--------|
-| **Container** | LZMA (.bi5) | ZIP (.zip) |
-| **Format** | Binary (20 bytes/tick) | CSV (text) |
-| **Fields** | Bid, Ask, BidVol, AskVol, Time | Bid, Ask, Timestamp |
-| **Volumes** | ✅ Available | ❌ Missing |
-| **Timestamp** | ms offset from hour start | ISO 8601 UTC string |
-| **Decimal Encoding** | Integer × decimal_factor | Float64 direct |
-| **Granularity** | Hourly files | Monthly files |
-| **File Size** | ~50KB/hour compressed | ~9MB/month compressed |
-| **Download** | 120 requests/5 days | 1 request/month |
+| Aspect               | Dukascopy                      | Exness                |
+| -------------------- | ------------------------------ | --------------------- |
+| **Container**        | LZMA (.bi5)                    | ZIP (.zip)            |
+| **Format**           | Binary (20 bytes/tick)         | CSV (text)            |
+| **Fields**           | Bid, Ask, BidVol, AskVol, Time | Bid, Ask, Timestamp   |
+| **Volumes**          | ✅ Available                   | ❌ Missing            |
+| **Timestamp**        | ms offset from hour start      | ISO 8601 UTC string   |
+| **Decimal Encoding** | Integer × decimal_factor       | Float64 direct        |
+| **Granularity**      | Hourly files                   | Monthly files         |
+| **File Size**        | ~50KB/hour compressed          | ~9MB/month compressed |
+| **Download**         | 120 requests/5 days            | 1 request/month       |
 
 ### API Pattern
 
@@ -159,6 +161,7 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 #### ✅ `builder.rs` - ALMOST UNCHANGED
 
 **Reusable logic**:
+
 - DukascopyRangeBarBuilder → ExnessRangeBarBuilder (rename only)
 - Mid-price calculation: `(bid + ask) / 2`
 - SpreadStats accumulation (sum, min, max, count)
@@ -166,6 +169,7 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 - get_incomplete_bar() → get_incomplete_bar()
 
 **Changes needed**:
+
 - Remove volume handling (ExnessTick has no volumes)
 - Update struct names (Dukascopy → Exness)
 - Update documentation references
@@ -175,18 +179,21 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 #### ✅ `types.rs` - SIMPLIFY
 
 **Reusable structures**:
+
 - SpreadStats (avg, min, max, count)
 - ValidationStrictness (Permissive/Strict/Paranoid)
 - ConversionError variants (most of them)
 - ExnessRangeBar { base: RangeBar, spread_stats: SpreadStats }
 
 **Remove entirely**:
+
 - InstrumentType enum (no complex instrument config needed)
 - UnsupportedInstrument error (symbol validation simpler)
 - InvalidDecimalFactor error (no binary encoding)
 - bid_liquidity_sum, ask_liquidity_sum fields (no volumes)
 
 **Add**:
+
 - Simple symbol validation (EURUSD_Raw_Spread pattern)
 
 **Estimated effort**: 30 minutes (deletion + simplification)
@@ -194,17 +201,20 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 #### ✅ `conversion.rs` - SIMPLIFY
 
 **Reusable validation logic**:
+
 - validate_tick() structure
 - validate_price() checks
 - CrossedMarket detection
 - ExcessiveSpread calculation
 
 **Remove entirely**:
+
 - Decimal factor conversion (binary → float)
 - Instrument config lookups
 - Price range validation (InstrumentType-specific)
 
 **Change**:
+
 - tick_to_synthetic_trade() → simpler (no volume fields)
 
 **Estimated effort**: 20 minutes (deletion + simplification)
@@ -214,6 +224,7 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 #### ❌ `client.rs` - COMPLETE REWRITE
 
 **Dukascopy version** (10.9 KB):
+
 ```rust
 - Embedded TOML config (1,607 instruments)
 - get_instrument_info() → (decimal_factor, InstrumentType)
@@ -223,6 +234,7 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 ```
 
 **Exness version** (estimated 5 KB):
+
 ```rust
 - Simple symbol validation (EURUSD_Raw_Spread pattern)
 - HTTP GET → ZIP extract → CSV parse
@@ -232,6 +244,7 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 ```
 
 **Key simplifications**:
+
 - ✅ No LZMA decompression (use `zip` crate)
 - ✅ No binary parsing (use `csv` crate)
 - ✅ No decimal factors (float64 direct)
@@ -239,6 +252,7 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_S
 - ✅ No complex timeout logic (Exness reliable)
 
 **Dependencies change**:
+
 ```toml
 # Remove:
 lzma-rs = "0.3"
@@ -276,6 +290,7 @@ sed -i '' 's/dukascopy/exness/g' *.rs
 **Changes**:
 
 1. Remove volume fields from SpreadStats:
+
 ```rust
 // DELETE:
 bid_liquidity_sum: FixedPoint,
@@ -289,6 +304,7 @@ tick_count: u32,
 ```
 
 2. Update ExnessTick structure:
+
 ```rust
 pub struct ExnessTick {
     pub bid: f64,
@@ -301,6 +317,7 @@ pub struct ExnessTick {
 3. Remove InstrumentType enum (entire section)
 
 4. Remove instrument-specific errors:
+
 ```rust
 // DELETE:
 UnsupportedInstrument { instrument: String },
@@ -309,6 +326,7 @@ InvalidPriceRange { ... },
 ```
 
 5. Simplify ExnessError:
+
 ```rust
 pub enum ExnessError {
     Conversion(#[from] ConversionError),
@@ -432,6 +450,7 @@ impl ExnessTick {
 ```
 
 **Key simplifications**:
+
 - No LZMA decompression
 - No binary parsing
 - No decimal factors
@@ -443,6 +462,7 @@ impl ExnessTick {
 **Changes**:
 
 1. Rename struct:
+
 ```rust
 pub struct ExnessRangeBarBuilder {
     processor: RangeBarProcessor,
@@ -453,6 +473,7 @@ pub struct ExnessRangeBarBuilder {
 ```
 
 2. Remove volume handling in process_tick():
+
 ```rust
 // DELETE volume accumulation:
 self.spread_stats.bid_liquidity_sum += ...;
@@ -475,6 +496,7 @@ self.spread_stats.tick_count += 1;
 1. Remove decimal factor conversion
 
 2. Simplify validate_tick():
+
 ```rust
 pub fn validate_tick(
     tick: &ExnessTick,
@@ -564,15 +586,15 @@ cp tests/dukascopy_eurusd_adversarial_audit.rs tests/exness_eurusd_ultra_low_thr
 **Update test data**:
 
 1. `exness_integration_test.rs`:
-   - Change fetcher: `ExnessFetcher::new("EURUSD_Raw_Spread")`
-   - Change method: `fetch_month(2024, 1)` (vs fetch_hour)
-   - Update expected tick count: ~60K/day (vs ~84K/day)
+    - Change fetcher: `ExnessFetcher::new("EURUSD_Raw_Spread")`
+    - Change method: `fetch_month(2024, 1)` (vs fetch_hour)
+    - Update expected tick count: ~60K/day (vs ~84K/day)
 
 2. `exness_eurusd_ultra_low_threshold.rs`:
-   - Same Jan 15-19, 2024 period
-   - Expected: 300,425 ticks (validated empirically)
-   - Threshold: 1 (0.1bps in v3.0.0 units)
-   - Target: ~480 bars/day
+    - Same Jan 15-19, 2024 period
+    - Expected: 300,425 ticks (validated empirically)
+    - Threshold: 1 (0.1bps in v3.0.0 units)
+    - Target: ~480 bars/day
 
 ### Phase 8: Deprecate Dukascopy (5 minutes)
 
@@ -647,13 +669,14 @@ pub mod dukascopy;
 1. **Update CLAUDE.md**: ✅ Already done
 
 2. **Create migration guide**:
-   - This file (`docs/planning/exness-migration-plan.md`)
+    - This file (`docs/planning/exness-migration-plan.md`)
 
 3. **Update docs/planning/architecture/**:
-   - Add Exness to provider comparison matrix
-   - Mark Dukascopy as deprecated
+    - Add Exness to provider comparison matrix
+    - Mark Dukascopy as deprecated
 
 4. **Archive Dukascopy docs**:
+
 ```bash
 mv docs/planning/dukascopy-* docs/planning/archive/dukascopy/
 ```
@@ -695,17 +718,17 @@ chrono = "0.4"         # Timestamp parsing (may already exist)
 ### Medium Risk ⚠️
 
 1. **Timestamp parsing**: ISO 8601 with potential format variations
-   - **Mitigation**: Handle both `2024-01-15 00:00:00.032Z` and without `Z`
-   - **Fallback**: Use chrono's flexible parsing
+    - **Mitigation**: Handle both `2024-01-15 00:00:00.032Z` and without `Z`
+    - **Fallback**: Use chrono's flexible parsing
 
 2. **Missing volumes**: SpreadStats no longer tracks liquidity
-   - **Impact**: Loss of bid/ask liquidity metadata
-   - **Mitigation**: Document in ExnessRangeBar as known limitation
-   - **Future**: Could add volume estimation from price volatility
+    - **Impact**: Loss of bid/ask liquidity metadata
+    - **Mitigation**: Document in ExnessRangeBar as known limitation
+    - **Future**: Could add volume estimation from price volatility
 
 3. **Monthly granularity**: Cannot fetch single day
-   - **Impact**: Must download ~9MB for single-day test
-   - **Mitigation**: Cache monthly files locally, filter in memory
+    - **Impact**: Must download ~9MB for single-day test
+    - **Mitigation**: Cache monthly files locally, filter in memory
 
 ### Zero Risk ✅
 
@@ -718,18 +741,18 @@ chrono = "0.4"         # Timestamp parsing (may already exist)
 
 ## Timeline Estimate
 
-| Phase | Task | Effort | Dependencies |
-|-------|------|--------|--------------|
-| 1 | Copy directory, find-replace | 5 min | None |
-| 2 | Update types.rs (remove volumes) | 30 min | Phase 1 |
-| 3 | Rewrite client.rs (ZIP/CSV) | 2 hours | Phase 1 |
-| 4 | Update builder.rs (no volumes) | 15 min | Phase 2 |
-| 5 | Update conversion.rs (simplify) | 20 min | Phase 2 |
-| 6 | Update mod.rs (docs) | 5 min | Phases 2-5 |
-| 7 | Copy/update tests | 1 hour | Phases 2-6 |
-| 8 | Deprecate Dukascopy (README) | 5 min | None |
-| 9 | Update module registration | 5 min | Phase 6 |
-| 10 | Update documentation | 15 min | All |
+| Phase | Task                             | Effort  | Dependencies |
+| ----- | -------------------------------- | ------- | ------------ |
+| 1     | Copy directory, find-replace     | 5 min   | None         |
+| 2     | Update types.rs (remove volumes) | 30 min  | Phase 1      |
+| 3     | Rewrite client.rs (ZIP/CSV)      | 2 hours | Phase 1      |
+| 4     | Update builder.rs (no volumes)   | 15 min  | Phase 2      |
+| 5     | Update conversion.rs (simplify)  | 20 min  | Phase 2      |
+| 6     | Update mod.rs (docs)             | 5 min   | Phases 2-5   |
+| 7     | Copy/update tests                | 1 hour  | Phases 2-6   |
+| 8     | Deprecate Dukascopy (README)     | 5 min   | None         |
+| 9     | Update module registration       | 5 min   | Phase 6      |
+| 10    | Update documentation             | 15 min  | All          |
 
 **Total effort**: ~4.5 hours (single developer, uninterrupted)
 
@@ -747,6 +770,7 @@ cargo test --package rangebar --test exness_integration_test -- fetch_month --ex
 ```
 
 **Expected**:
+
 - Download completes in <5 seconds
 - Returns ~1.35M ticks for full month
 - No HTTP errors, no timeout errors
@@ -759,6 +783,7 @@ cargo test --package rangebar exness_
 ```
 
 **Expected**:
+
 - `exness_integration_test` ✅ (basic fetcher)
 - `exness_eurusd_ultra_low_threshold` ✅ (Jan 15-19 validation)
 - 300,425 ticks fetched
@@ -767,6 +792,7 @@ cargo test --package rangebar exness_
 ### Phase 10 Complete: Documentation Audit
 
 **Checklist**:
+
 - [ ] CLAUDE.md references Exness (not Dukascopy) ✅ Already done
 - [ ] `src/providers/mod.rs` marks Dukascopy deprecated
 - [ ] Dukascopy README.md explains deprecation
@@ -782,10 +808,12 @@ cargo test --package rangebar exness_
 **Idea**: Create `ExnessAdapter` that wraps `DukascopyRangeBarBuilder`
 
 **Pros**:
+
 - Maximum code reuse
 - Dukascopy stays canonical
 
 **Cons**:
+
 - Artificial dependency (Exness depends on Dukascopy types)
 - Confusing to maintain (volume fields always zero)
 - Performance overhead (extra conversion layer)
@@ -797,10 +825,12 @@ cargo test --package rangebar exness_
 **Idea**: Create `ForexTickProvider` trait, both implement
 
 **Pros**:
+
 - Clean abstraction
 - Polymorphic provider switching
 
 **Cons**:
+
 - Over-engineering for 2 providers
 - Volume field mismatch breaks abstraction
 - More boilerplate than copy-and-modify
@@ -812,10 +842,12 @@ cargo test --package rangebar exness_
 **Idea**: Maintain both Dukascopy and Exness indefinitely
 
 **Pros**:
+
 - User choice
 - Fallback if Exness fails
 
 **Cons**:
+
 - Dukascopy unusable (77.5% reliability)
 - Maintenance burden (2× providers)
 - Confusing to users ("which should I use?")
@@ -827,10 +859,12 @@ cargo test --package rangebar exness_
 **Idea**: Remove Dukascopy code entirely
 
 **Pros**:
+
 - Clean slate
 - No deprecated code
 
 **Cons**:
+
 - Loss of volume-tracking implementation
 - Loss of binary parsing patterns
 - Harder to rollback if Exness fails
@@ -846,19 +880,20 @@ cargo test --package rangebar exness_
 **Execution order**:
 
 1. **Immediate** (Phases 1-6): Core migration (3 hours)
-   - Copy directory, gut client.rs, simplify types
-   - Faster than from-scratch (no design decisions)
-   - Lower risk than abstraction layers
+    - Copy directory, gut client.rs, simplify types
+    - Faster than from-scratch (no design decisions)
+    - Lower risk than abstraction layers
 
 2. **Next session** (Phases 7-10): Tests + docs (1.5 hours)
-   - Validate against same Jan 15-19 data
-   - Document deprecation clearly
+    - Validate against same Jan 15-19 data
+    - Document deprecation clearly
 
 3. **Long term**: Deprecation → eventual removal
-   - Keep Dukascopy code for 1 release cycle
-   - Remove in v3.1.0 or later (after Exness proven)
+    - Keep Dukascopy code for 1 release cycle
+    - Remove in v3.1.0 or later (after Exness proven)
 
 **Why this is sensible**:
+
 - ✅ Reuses 80% of logic (builder, spread stats, validation)
 - ✅ Simplifies maintenance (removes LZMA, binary, config complexity)
 - ✅ Preserves history (Dukascopy deprecated, not deleted)

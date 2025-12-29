@@ -11,38 +11,39 @@ This diagram will show **business decisions when processing fails**, including r
 ### Failure Scenarios
 
 1. **Network Timeout**
-   - Response: Retry 3× with exponential backoff
-   - If all fail: Skip symbol + log error
-   - Business impact: Partial data loss, continue processing
+    - Response: Retry 3× with exponential backoff
+    - If all fail: Skip symbol + log error
+    - Business impact: Partial data loss, continue processing
 
 2. **Disk Full**
-   - Response: Alert administrator
-   - Action: Manual intervention (free space)
-   - Business impact: Processing paused
+    - Response: Alert administrator
+    - Action: Manual intervention (free space)
+    - Business impact: Processing paused
 
 3. **Invalid Data**
-   - Response: Skip corrupted symbol
-   - Action: Log error for review
-   - Business impact: Continue with other symbols
+    - Response: Skip corrupted symbol
+    - Action: Log error for review
+    - Business impact: Continue with other symbols
 
 4. **Out of Memory (OOM)**
-   - Response: Reduce batch size automatically
-   - Action: Restart with smaller chunks
-   - Business impact: Slower but completes
+    - Response: Reduce batch size automatically
+    - Action: Restart with smaller chunks
+    - Business impact: Slower but completes
 
 5. **Breach Invariant Violation**
-   - Response: STOP all processing
-   - Action: File bug report
-   - Business impact: Algorithm bug - needs fix
+    - Response: STOP all processing
+    - Action: File bug report
+    - Business impact: Algorithm bug - needs fix
 
 6. **Data Corruption**
-   - Response: Delete partial files
-   - Action: Re-fetch from source
-   - Business impact: Time cost but integrity maintained
+    - Response: Delete partial files
+    - Action: Re-fetch from source
+    - Business impact: Time cost but integrity maintained
 
 ### Planned Diagram Type
 
 Mermaid flowchart showing:
+
 - Processing node (start)
 - Error detection decision
 - 6 error type branches

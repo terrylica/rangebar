@@ -1,6 +1,7 @@
 # Examples Folder Reorganization Plan
 
 ## Current Issues
+
 - All examples are in flat `examples/` directory
 - Mix of different types: demos, analysis, validation, educational
 - Hard to find specific type of example
@@ -38,25 +39,33 @@ examples/
 ## Category Descriptions
 
 ### `analysis/`
+
 **Purpose**: Market research, statistical analysis, and comparison tools
+
 - Performance comparisons between markets
 - Statistical analysis of trading patterns
 - Research tools for market behavior
 
 ### `interactive/`
+
 **Purpose**: Interactive demonstrations and real-time tools
+
 - Historical data replay with controls
 - Live visualizations
 - Demo applications
 
 ### `educational/`
+
 **Purpose**: Learning materials and reference examples
+
 - Terminology clarifications
 - Basic usage examples
 - Conceptual demonstrations
 
 ### `validation/`
+
 **Purpose**: Testing, validation, and verification tools
+
 - Algorithm validation
 - Threshold testing
 - Data integrity checks

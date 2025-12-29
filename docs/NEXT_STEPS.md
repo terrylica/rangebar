@@ -8,17 +8,17 @@
 ## Completed ✅
 
 1. **Workspace Restructuring (v5.0.0)**
-   - 8-crate modular architecture
-   - Provider pattern (Binance, Exness)
-   - Data management (data/, cache/, output/ with READMEs)
-   - 108+ tests passing
-   - All clippy warnings fixed
-   - Backward compatibility via meta-crate
+    - 8-crate modular architecture
+    - Provider pattern (Binance, Exness)
+    - Data management (data/, cache/, output/ with READMEs)
+    - 108+ tests passing
+    - All clippy warnings fixed
+    - Backward compatibility via meta-crate
 
 2. **Documentation**
-   - Updated CLAUDE.md with v5.0.0 structure
-   - Migration plan complete
-   - Documentation audit (3 rounds)
+    - Updated CLAUDE.md with v5.0.0 structure
+    - Migration plan complete
+    - Documentation audit (3 rounds)
 
 ---
 
@@ -27,12 +27,14 @@
 ### 1. Investigate 4 Pre-Existing Test Failures (Unrelated to EURUSD Audit)
 
 **Failing Tests**:
+
 1. `engines::batch::engine::tests::test_single_symbol_analysis`
 2. `engines::batch::engine::tests::test_multiple_symbols_analysis`
 3. `infrastructure::io::formats::tests::test_dataframe_to_rangebar_conversion`
 4. `infrastructure::io::formats::tests::test_rangebar_to_rangebar_conversion`
 
 **Error Pattern**:
+
 ```
 called `Result::unwrap()` on an `Err` value: ValueExtractionFailed {
     operation: "extract_f64_at_index_3",
@@ -43,6 +45,7 @@ called `Result::unwrap()` on an `Err` value: ValueExtractionFailed {
 **Root Cause**: Likely test data has NULL values in Polars DataFrame columns
 
 **Investigation**:
+
 ```bash
 # Run single test with backtrace:
 RUST_BACKTRACE=1 cargo test --lib engines::batch::engine::tests::test_single_symbol_analysis -- --nocapture
@@ -58,6 +61,7 @@ rg "test_single_symbol_analysis" src/engines/batch/engine.rs -A 30
 ### 4. Validate No Regressions
 
 **Full Test Suite**:
+
 ```bash
 # All features enabled
 cargo test --all-features
@@ -72,11 +76,13 @@ cargo test --features streaming-stats
 ```
 
 **Clippy (strict)**:
+
 ```bash
 cargo clippy --all-features -- -D warnings
 ```
 
 **Build (release)**:
+
 ```bash
 cargo build --release --all-features
 ```

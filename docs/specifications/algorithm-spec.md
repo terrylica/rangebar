@@ -22,10 +22,12 @@ This specification defines the **canonical range bar construction algorithm** im
 **Threshold Units** (v3.0.0+): Thresholds specified in **tenths of basis points (0.1bps units)**
 
 Given:
+
 - `threshold_bps` = threshold in 0.1bps units (e.g., `250` = 25bps = 0.25%)
 - Bar opens at price `P_open`
 
 For each bar:
+
 ```
 threshold_ratio = threshold_bps / 100_000  # Convert 0.1bps units to decimal
 upper_breach = P_open + (P_open * threshold_ratio)
@@ -33,6 +35,7 @@ lower_breach = P_open - (P_open * threshold_ratio)
 ```
 
 **Examples**:
+
 ```
 threshold_bps = 250 (25bps = 0.25%)
   P_open = 50000.00
@@ -58,6 +61,7 @@ threshold_bps = 10 (1bps = 0.01%)
 ### Breaking Change History
 
 **v3.0.0 (2025-09-24)**: Threshold units changed from 1bps to 0.1bps for precision
+
 - **Migration**: Multiply all threshold values by 10
 - **Before**: `threshold_bps = 25` (25bps = 0.25%)
 - **After**: `threshold_bps = 250` (250 × 0.1bps = 25bps = 0.25%)
@@ -185,12 +189,12 @@ pub struct RangeBar {
 
 **Schema Differences**:
 
-| Aspect | Spot | UM Futures | CM Futures |
-|--------|------|------------|------------|
-| Headers | No | Yes (descriptive) | Yes (descriptive) |
-| Columns | `a,p,q,f,l,T,m` | `agg_trade_id,price,quantity,...` | Same as UM |
-| Timestamp | 16-digit μs | 13-digit ms | 13-digit ms |
-| Normalization | None (native) | ×1000 → 16-digit μs | ×1000 → 16-digit μs |
+| Aspect        | Spot            | UM Futures                        | CM Futures          |
+| ------------- | --------------- | --------------------------------- | ------------------- |
+| Headers       | No              | Yes (descriptive)                 | Yes (descriptive)   |
+| Columns       | `a,p,q,f,l,T,m` | `agg_trade_id,price,quantity,...` | Same as UM          |
+| Timestamp     | 16-digit μs     | 13-digit ms                       | 13-digit ms         |
+| Normalization | None (native)   | ×1000 → 16-digit μs               | ×1000 → 16-digit μs |
 
 **Critical**: Use `aggTrades` nomenclature (not `trades`) in all naming and documentation.
 
@@ -204,24 +208,28 @@ pub struct RangeBar {
 **Data Format**: ZIP → CSV (Bid/Ask/Timestamp)
 
 **Schema**:
+
 ```csv
 "Exness","Symbol","Timestamp","Bid","Ask"
 "exness","EURUSD_Standard","2024-01-15 00:00:00.032Z",1.0945,1.09456
 ```
 
 **Characteristics**:
+
 - Monthly granularity (~1.26M ticks/month for EURUSD 2019-2025)
 - No volume data (Bid/Ask prices only)
 - ISO 8601 UTC timestamps with millisecond precision
 - ZIP compression (~10:1 ratio, ~9MB/month)
 
 **Volume Semantics**:
+
 - `RangeBar.volume` = 0 (no volume data available)
 - `buy_volume` = 0 (direction unknown - market maker quotes)
 - `sell_volume` = 0
 - Use `SpreadStats` for market stress signals instead
 
 **Threshold Recommendations**:
+
 - HFT: 0.2bps (2 units) = 0.002%
 - Intraday: 0.5bps (5 units) = 0.005%
 - Swing: 1.0bps (10 units) = 0.01%
@@ -233,6 +241,7 @@ pub struct RangeBar {
 ### Breach Consistency Invariant
 
 **Every completed bar must satisfy**:
+
 ```
 IF (high - open) >= threshold THEN (close == high)
 IF (open - low) >= threshold THEN (close == low)
@@ -241,6 +250,7 @@ IF (open - low) >= threshold THEN (close == low)
 **Explanation**: If high/low breached threshold, bar must close at that extreme.
 
 **Validation Example**:
+
 ```rust
 #[test]
 fn test_breach_consistency() {
@@ -262,12 +272,14 @@ fn test_breach_consistency() {
 ### What Makes It Non-Lookahead
 
 ✅ **Correct (No Lookahead)**:
+
 1. Compute thresholds from bar's open price (fixed)
 2. Update bar statistics with current tick (high, low, close, volume)
 3. Check if current tick breaches pre-computed thresholds
 4. If breach: close bar, next tick opens new bar
 
 ❌ **Incorrect (Has Lookahead)**:
+
 1. Update bar statistics with current tick
 2. Recompute thresholds using updated high/low (dynamic)
 3. Check if current tick breaches updated thresholds
@@ -379,17 +391,18 @@ pub enum ProcessingError {
 
 ### Performance Targets
 
-| Dataset Size | Target Time | Memory Usage |
-|--------------|-------------|--------------|
-| 1M ticks | < 100ms | O(1) per bar (streaming) |
-| 100M ticks | < 10s | O(N) for N bars (batch) |
-| 1B ticks | < 100s | Parallel processing (Rayon) |
+| Dataset Size | Target Time | Memory Usage                |
+| ------------ | ----------- | --------------------------- |
+| 1M ticks     | < 100ms     | O(1) per bar (streaming)    |
+| 100M ticks   | < 10s       | O(N) for N bars (batch)     |
+| 1B ticks     | < 100s      | Parallel processing (Rayon) |
 
 ---
 
 ## References
 
 **Source Code**:
+
 - Core Algorithm: [`../../crates/rangebar-core/src/processor.rs`](../../crates/rangebar-core/src/processor.rs)
 - Fixed-Point: [`../../crates/rangebar-core/src/fixed_point.rs`](../../crates/rangebar-core/src/fixed_point.rs)
 - Types: [`../../crates/rangebar-core/src/types.rs`](../../crates/rangebar-core/src/types.rs)
@@ -397,13 +410,15 @@ pub enum ProcessingError {
 - Exness Provider: [`../../crates/rangebar-providers/src/exness/mod.rs`](../../crates/rangebar-providers/src/exness/mod.rs)
 
 **Migration Guides**:
+
 - v4→v5 Workspace: [`../development/MIGRATION-v4-to-v5.md`](../development/MIGRATION-v4-to-v5.md)
-- v3.0.0 Precision: [`../planning/v3.0.0-precision-migration-plan.md`](../planning/v3.0.0-precision-migration-plan.md)
 
 **Architecture**:
+
 - Overview: [`../ARCHITECTURE.md`](../ARCHITECTURE.md)
 
 **Superseded Documents**:
+
 - [`../planning/architecture/algorithm-spec.md`](../planning/architecture/algorithm-spec.md) (v1.0.0, archived)
 
 ---

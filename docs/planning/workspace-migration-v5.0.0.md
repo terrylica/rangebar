@@ -8,21 +8,25 @@
 ## SLOs
 
 ### Availability
+
 - Zero downtime for library users (backward compatibility via meta-crate)
 - All 7 CLI binaries remain functional throughout migration
 - CI/CD pipeline passes at each phase completion
 
 ### Correctness
+
 - All 16 existing test suites pass without modification
 - No behavioral changes to core algorithm
 - Identical output for identical inputs (verified via golden tests)
 
 ### Observability
+
 - Each phase creates git commit with structured message
 - Migration tracking via `docs/planning/workspace-migration-v5.0.0.md`
 - Dependency graph documented in each crate's README
 
 ### Maintainability
+
 - Maximum 3 levels of dependency depth (core → provider → engine)
 - Each crate compiles independently
 - Clear separation of concerns (no circular dependencies)
@@ -73,6 +77,7 @@ rangebar/
 **Status**: ✅ Completed (2025-10-04)
 
 ### Tasks
+
 - [x] Create workspace root `Cargo.toml`
 - [x] Create crate directories: `crates/{rangebar-core,rangebar-providers,rangebar-config,rangebar-io,rangebar-streaming,rangebar-batch,rangebar-cli,rangebar}`
 - [x] Define `[workspace.package]` common metadata
@@ -80,18 +85,21 @@ rangebar/
 - [x] Create stub manifests for all 8 crates
 
 ### Validation
+
 ```bash
 cargo build -p rangebar-core  # ✅ Success (4.95s)
 cargo build -p rangebar        # ✅ Success (0.13s)
 ```
 
 ### Files Created
+
 - `Cargo.toml` (workspace root)
 - `Cargo.toml.v4-backup` (backup of v4.0.0 manifest)
 - `crates/*/Cargo.toml` (8 stub manifests)
 - `crates/*/src/lib.rs` (8 empty libraries)
 
 ### Observations
+
 - Workspace resolver 2 handles dependency resolution correctly
 - Empty crates compile without errors
 - Build time for empty crates: <5 seconds total
@@ -105,20 +113,23 @@ cargo build -p rangebar        # ✅ Success (0.13s)
 **Status**: ✅ Completed (2025-10-10)
 
 ### Rationale
+
 - Core has ZERO dependencies on other modules (validated via import analysis)
 - If core tests pass → guaranteed no breaking changes
 - Easiest phase to validate (builds confidence)
 
 ### Tasks
+
 - [x] Create `crates/rangebar-core/Cargo.toml`
-  - Dependencies: serde, chrono, thiserror, pyo3 (optional), utoipa (optional)
-  - Features: test-utils, python, api (all optional)
+    - Dependencies: serde, chrono, thiserror, pyo3 (optional), utoipa (optional)
+    - Features: test-utils, python, api (all optional)
 - [x] Copy `src/core/*` → `crates/rangebar-core/src/`
 - [x] Create `crates/rangebar-core/src/lib.rs`
 - [x] Fix internal imports (`crate::core::` → `crate::`)
 - [x] Run tests: `cargo test -p rangebar-core` (24/24 passed)
 
 ### Validation
+
 ```bash
 cd crates/rangebar-core
 cargo test --all-features
@@ -127,16 +138,19 @@ cargo build --release
 ```
 
 ### Files Modified
+
 - Created: `crates/rangebar-core/Cargo.toml`
 - Created: `crates/rangebar-core/src/lib.rs`
 - Copied: `src/core/*.rs` → `crates/rangebar-core/src/`
 
 ### Success Criteria
+
 - ✅ All core tests pass (24/24 - 23 unit tests + 1 doctest)
 - ✅ Zero clippy warnings (with `-D warnings`)
 - ✅ Compiles in <5 seconds (dev mode: 4.95s)
 
 ### Implementation Notes
+
 - Fixed import paths: `crate::core::` → `crate::`
 - Updated doctest: `rangebar::core::timestamp` → `rangebar_core::timestamp`
 - Added optional features: `python = ["pyo3"]`, `api = ["utoipa"]`
@@ -151,22 +165,25 @@ cargo build --release
 **Status**: ✅ Completed (2025-10-10)
 
 ### Dependencies
+
 - `rangebar-core` (from Phase 2)
 
 ### Tasks
+
 - [x] Create `crates/rangebar-providers/Cargo.toml`
-  - Dependencies: rangebar-core, reqwest, tokio, csv, zip, lzma-rs, tokio-tungstenite, tokio-stream, futures-util, byteorder, once_cell, toml
-  - Features: binance (default), exness, dukascopy, all-providers
+    - Dependencies: rangebar-core, reqwest, tokio, csv, zip, lzma-rs, tokio-tungstenite, tokio-stream, futures-util, byteorder, once_cell, toml
+    - Features: binance (default), exness, dukascopy, all-providers
 - [x] Copy `src/providers/*` → `crates/rangebar-providers/src/`
 - [x] Update imports:
-  - `use crate::core::FixedPoint;` → `use rangebar_core::FixedPoint;`
-  - `use crate::core::types::AggTrade;` → `use rangebar_core::AggTrade;`
-  - `use crate::providers::exness::` → `use crate::exness::`
+    - `use crate::core::FixedPoint;` → `use rangebar_core::FixedPoint;`
+    - `use crate::core::types::AggTrade;` → `use rangebar_core::AggTrade;`
+    - `use crate::providers::exness::` → `use crate::exness::`
 - [x] Feature-gate providers in `lib.rs`
 - [x] Fix doctests with correct module paths
 - [x] Fix include_str! path for Dukascopy instrument config
 
 ### Import Changes
+
 ```rust
 // Before
 use crate::core::fixed_point::FixedPoint;
@@ -180,6 +197,7 @@ use crate::exness::types::ExnessTick;
 ```
 
 ### Validation
+
 ```bash
 cargo test -p rangebar-providers --features binance       # 7 unit + 3 doctests ✅
 cargo test -p rangebar-providers --features exness        # 23 unit + 3 doctests ✅
@@ -189,16 +207,18 @@ cargo clippy -p rangebar-providers --all-features -- -D warnings  # ✅ Clean
 ```
 
 ### Success Criteria
+
 - ✅ All 38 unit tests pass (binance: 7, exness: 23, dukascopy: 22)
 - ✅ All 10 doctests pass (binance: 3, exness: 3, dukascopy: 4)
 - ✅ Feature-isolated compilation works (each provider compiles independently)
 - ✅ Zero clippy warnings (with `-D warnings`)
 
 ### Implementation Notes
+
 - Added provider-specific optional dependencies:
-  - **Binance**: tokio-tungstenite 0.23, tokio-stream 0.1, futures-util 0.3 (WebSocket support)
-  - **Exness/Dukascopy**: lzma-rs 0.3 (LZMA compression)
-  - **Dukascopy only**: byteorder 1.5, once_cell 1.20, toml 0.8 (binary parsing + config)
+    - **Binance**: tokio-tungstenite 0.23, tokio-stream 0.1, futures-util 0.3 (WebSocket support)
+    - **Exness/Dukascopy**: lzma-rs 0.3 (LZMA compression)
+    - **Dukascopy only**: byteorder 1.5, once_cell 1.20, toml 0.8 (binary parsing + config)
 - Fixed include_str! path: `../../../docs/` → `../../../../docs/` (workspace depth adjustment)
 - Updated all doctests from `use rangebar::providers::` to `use rangebar_providers::`
 - Fixed exness mod.rs doctest error handling to avoid returning Result in unit function
@@ -214,6 +234,7 @@ cargo clippy -p rangebar-providers --all-features -- -D warnings  # ✅ Clean
 ### 4A: rangebar-config
 
 **Tasks**:
+
 - [ ] Create `crates/rangebar-config/Cargo.toml`
 - [ ] Copy `src/infrastructure/config/*` → `crates/rangebar-config/src/`
 - [ ] Update imports to use `rangebar_core`
@@ -221,12 +242,14 @@ cargo clippy -p rangebar-providers --all-features -- -D warnings  # ✅ Clean
 ### 4B: rangebar-io
 
 **Tasks**:
+
 - [ ] Create `crates/rangebar-io/Cargo.toml`
 - [ ] Copy `src/infrastructure/io/*` → `crates/rangebar-io/src/`
 - [ ] Feature-gate polars: `parquet = ["polars"]`
 - [ ] Update imports to use `rangebar_core`
 
 ### Validation
+
 ```bash
 cargo test -p rangebar-config
 cargo test -p rangebar-io --features parquet
@@ -243,11 +266,13 @@ cargo test -p rangebar-io --features parquet
 ### Critical Issue: engines/streaming/universal.rs
 
 **Problem**:
+
 ```rust
 use crate::providers::binance::BinanceWebSocketStream;
 ```
 
 **Solution**: Feature-gate binance integration
+
 ```toml
 [features]
 binance-integration = ["rangebar-providers/binance"]
@@ -261,6 +286,7 @@ use rangebar_providers::binance::BinanceWebSocketStream;
 ### 5A: rangebar-streaming
 
 **Tasks**:
+
 - [ ] Create `crates/rangebar-streaming/Cargo.toml`
 - [ ] Copy `src/engines/streaming/*` → `crates/rangebar-streaming/src/`
 - [ ] Feature-gate binance dependency in `universal.rs`
@@ -269,12 +295,14 @@ use rangebar_providers::binance::BinanceWebSocketStream;
 ### 5B: rangebar-batch
 
 **Tasks**:
+
 - [ ] Create `crates/rangebar-batch/Cargo.toml`
 - [ ] Copy `src/engines/batch/*` → `crates/rangebar-batch/src/`
 - [ ] Depend on `rangebar-io` for DataFrameConverter
 - [ ] Update imports
 
 ### Validation
+
 ```bash
 cargo test -p rangebar-streaming --all-features
 cargo test -p rangebar-batch
@@ -289,16 +317,18 @@ cargo test -p rangebar-batch
 **Status**: Pending
 
 ### Tasks
+
 - [ ] Create `crates/rangebar-cli/Cargo.toml`
-  - Depends on: all previous crates with full features
+    - Depends on: all previous crates with full features
 - [ ] Copy `src/bin/*` → `crates/rangebar-cli/src/bin/`
 - [ ] Update imports in all 7 binaries:
-  - `use rangebar::infrastructure::config::Settings;` → `use rangebar_config::Settings;`
-  - `use rangebar::get_tier1_symbols;` → `use rangebar_providers::binance::get_tier1_symbols;`
-  - etc.
+    - `use rangebar::infrastructure::config::Settings;` → `use rangebar_config::Settings;`
+    - `use rangebar::get_tier1_symbols;` → `use rangebar_providers::binance::get_tier1_symbols;`
+    - etc.
 - [ ] Define `[[bin]]` entries for all 7 executables
 
 ### Validation
+
 ```bash
 cargo build -p rangebar-cli --release
 cargo run --bin tier1-symbol-discovery -- --help
@@ -314,17 +344,20 @@ cargo run --bin rangebar-analyze -- --help
 **Status**: Pending
 
 ### Purpose
+
 Backward compatibility for users upgrading from v4.0.0
 
 ### Tasks
+
 - [ ] Create `crates/rangebar/Cargo.toml`
-  - Optional dependencies on all sub-crates
-  - Features: core, providers, io, streaming, batch, full
+    - Optional dependencies on all sub-crates
+    - Features: core, providers, io, streaming, batch, full
 - [ ] Create `crates/rangebar/src/lib.rs`
-  - Re-export all crates
-  - Maintain legacy module paths (`pub mod fixed_point`, `pub mod core`, etc.)
+    - Re-export all crates
+    - Maintain legacy module paths (`pub mod fixed_point`, `pub mod core`, etc.)
 
 ### Validation
+
 ```bash
 # Test backward compatibility
 cargo test -p rangebar --features full
@@ -342,6 +375,7 @@ cargo build --example basic-usage
 **Status**: Pending
 
 ### Tasks
+
 - [ ] Move current `src/` → `src-archived/` (backup)
 - [ ] Update root `Cargo.toml` to be workspace-only
 - [ ] Remove `[lib]` and `[[bin]]` from root
@@ -350,6 +384,7 @@ cargo build --example basic-usage
 - [ ] Update `README.md` (if exists)
 
 ### Validation
+
 ```bash
 cargo build --workspace --all-features
 cargo test --workspace --all-features
@@ -391,12 +426,14 @@ done
 ## Error Handling Policy
 
 **Zero Tolerance**:
+
 - Tests fail → STOP, fix before proceeding
 - Clippy warnings → STOP, fix before proceeding
 - Circular dependency detected → STOP, redesign
 - Import resolution fails → STOP, fix paths
 
 **No Fallbacks**:
+
 - No `unwrap_or_default()`
 - No silent `Result` ignoring
 - No optional dependencies to hide errors
@@ -407,6 +444,7 @@ done
 ## Git Commit Strategy
 
 **One commit per phase**:
+
 ```bash
 # Phase 1
 git commit -m "refactor: create workspace structure (Phase 1/8)
@@ -434,6 +472,7 @@ SLO: Correctness ✓ (tests pass), Maintainability ✓ (zero external deps)"
 ## Rollback Strategy
 
 **If any phase fails**:
+
 1. `git reset --hard HEAD~1` (undo last commit)
 2. Restore from `src-archived/` if needed
 3. Document failure in this plan
@@ -444,6 +483,7 @@ SLO: Correctness ✓ (tests pass), Maintainability ✓ (zero external deps)"
 ## Documentation Updates
 
 **After migration completes**:
+
 - [ ] Update `README.md` with new crate structure
 - [ ] Update `CLAUDE.md` with workspace conventions
 - [ ] Create `crates/*/README.md` for each crate
@@ -454,16 +494,16 @@ SLO: Correctness ✓ (tests pass), Maintainability ✓ (zero external deps)"
 
 ## Timeline
 
-| Phase | Duration | Commit | Date | Status |
-|-------|----------|--------|------|--------|
-| 1. Workspace setup | 2h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 2. Extract core | 6h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 3. Extract providers | 8h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 4. Extract config+io | 8h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 5. Extract engines | 10h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 6. Extract CLI | 6h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 7. Meta-crate | 4h | 44c9515 | 2025-10-04 | ✅ Complete |
-| 8. Root cleanup | 2h | dd8f971 | 2025-10-11 | ✅ Complete |
+| Phase                | Duration | Commit  | Date       | Status      |
+| -------------------- | -------- | ------- | ---------- | ----------- |
+| 1. Workspace setup   | 2h       | 44c9515 | 2025-10-04 | ✅ Complete |
+| 2. Extract core      | 6h       | 44c9515 | 2025-10-04 | ✅ Complete |
+| 3. Extract providers | 8h       | 44c9515 | 2025-10-04 | ✅ Complete |
+| 4. Extract config+io | 8h       | 44c9515 | 2025-10-04 | ✅ Complete |
+| 5. Extract engines   | 10h      | 44c9515 | 2025-10-04 | ✅ Complete |
+| 6. Extract CLI       | 6h       | 44c9515 | 2025-10-04 | ✅ Complete |
+| 7. Meta-crate        | 4h       | 44c9515 | 2025-10-04 | ✅ Complete |
+| 8. Root cleanup      | 2h       | dd8f971 | 2025-10-11 | ✅ Complete |
 
 **Total**: 46 hours (~6 days at 8h/day)
 

@@ -14,10 +14,12 @@
 ### Categorization
 
 #### 1. DELETE - Integration Tests (6 files)
+
 **Location**: `tests/`
 **Status**: Cannot compile, orphaned after provider removal
 
 Files:
+
 - `tests/dukascopy_audit_test.rs`
 - `tests/dukascopy_comprehensive_test.rs`
 - `tests/dukascopy_eurusd_adversarial_audit.rs`
@@ -31,10 +33,12 @@ Files:
 ---
 
 #### 2. DELETE - Planning Docs (15 files)
+
 **Location**: `docs/planning/` and `docs/planning/research/`
 **Status**: Historical planning docs, provider removed
 
 **Main Planning Docs** (6 files):
+
 - `docs/planning/dukascopy-eurusd-audit-implementation.md`
 - `docs/planning/dukascopy-eurusd-audit-plan.md`
 - `docs/planning/dukascopy-eurusd-threshold-optimization.md`
@@ -43,6 +47,7 @@ Files:
 - `docs/planning/dukascopy-timeout-retry-strategy.md`
 
 **Research Docs** (9 files):
+
 - `docs/planning/research/dukascopy-comprehensive-validation.md`
 - `docs/planning/research/dukascopy-data-fetcher-validation.md`
 - `docs/planning/research/dukascopy-endpoint-validation.md`
@@ -59,10 +64,12 @@ Files:
 ---
 
 #### 3. KEEP - Archived Code (6 files)
+
 **Location**: `src-archived/providers/dukascopy/`
 **Status**: Already archived in v4.0.0 monolith
 
 Files:
+
 - `src-archived/providers/dukascopy/builder.rs`
 - `src-archived/providers/dukascopy/client.rs`
 - `src-archived/providers/dukascopy/conversion.rs`
@@ -77,16 +84,19 @@ Files:
 ---
 
 #### 4. UPDATE - Comparative References (6 files)
+
 **Location**: Active codebase and archived code
 **Status**: Documentary comparisons "Exness vs Dukascopy"
 
 **Active Code** (3 files):
+
 - `crates/rangebar-core/src/timestamp.rs` - Comment: "covers Dukascopy historical Forex"
 - `crates/rangebar-providers/src/exness/client.rs` - Comment: "100% reliability vs Dukascopy 77.5%"
 - `crates/rangebar-providers/src/exness/mod.rs` - Comment: "100% reliability (vs Dukascopy 77.5%)"
 - `crates/rangebar-providers/src/exness/types.rs` - Comment: "100% vs Dukascopy 77.5%"
 
 **Archived Code** (3 files):
+
 - `src-archived/core/timestamp.rs` - Same comment
 - `src-archived/providers/exness/client.rs` - Same comment
 - `src-archived/providers/exness/mod.rs` - Same comment
@@ -94,6 +104,7 @@ Files:
 - `src-archived/providers/mod.rs` - May have deprecation notice
 
 **Action**:
+
 - **Active code**: REMOVE Dukascopy comparisons (provider no longer exists)
 - **Archived code**: KEEP (historical snapshot)
 
@@ -102,10 +113,12 @@ Files:
 ---
 
 #### 5. UPDATE - README Files (3 files)
+
 **Location**: Various directories
 **Status**: Reference Dukascopy directory structure
 
 Files:
+
 - `cache/README.md` - Mentions cache/dukascopy/ directory
 - `data/README.md` - Mentions data/dukascopy/ directory and usage example
 - `test_data/README.md` - Mentions Dukascopy real data samples
@@ -118,10 +131,12 @@ Files:
 ---
 
 #### 6. UPDATE - Planning Docs with References (6 files)
+
 **Location**: `docs/planning/` and `docs/`
 **Status**: Other docs that mention Dukascopy
 
 Files:
+
 - `docs/NEXT_STEPS.md` - References Dukascopy audit tasks
 - `docs/planning/api-threshold-granularity-migration.md` - May mention Dukascopy
 - `docs/planning/architecture/restructure-v2.3.0-migration.md` - Historical migration doc
@@ -133,6 +148,7 @@ Files:
 - `output/exness_test/AUDIT_REPORT.md` - May reference Dukascopy
 
 **Action**:
+
 - `exness-migration-plan.md`: ARCHIVE to `docs/planning/legacy/` (migration complete)
 - `docs/NEXT_STEPS.md`: UPDATE - Remove Dukascopy sections
 - `docs/planning/README.md`: UPDATE - Remove Dukascopy entries
@@ -143,10 +159,12 @@ Files:
 ---
 
 #### 7. KEEP - Historical CHANGELOG (1 file)
+
 **Location**: Root
 **Status**: Historical record of when Dukascopy was added/deprecated
 
 File:
+
 - `CHANGELOG.md` - Contains historical entries about Dukascopy feature/deprecation
 
 **Action**: KEEP (historical record)
@@ -158,11 +176,14 @@ File:
 ## Cleanup Strategy
 
 ### Phase 1: Delete Orphaned Files (LOW RISK)
+
 **Files to delete**: 21 files
-- 6 test files (tests/dukascopy_*.rs)
-- 15 planning docs (docs/planning/*dukascopy*.md + research/)
+
+- 6 test files (tests/dukascopy\_\*.rs)
+- 15 planning docs (docs/planning/_dukascopy_.md + research/)
 
 **Commands**:
+
 ```bash
 # Remove integration tests
 rm tests/dukascopy_audit_test.rs
@@ -197,14 +218,17 @@ rm docs/planning/research/dukascopy-slo-spec.md
 ---
 
 ### Phase 2: Update Active Code Comments (LOW RISK)
+
 **Files to update**: 4 active files
 
 **Changes**:
+
 - Remove "vs Dukascopy 77.5%" comparisons
 - Remove "covers Dukascopy historical" comments
 - Keep timestamp range (2000-2035) but remove Dukascopy reference
 
 **Files**:
+
 1. `crates/rangebar-core/src/timestamp.rs`
 2. `crates/rangebar-providers/src/exness/client.rs`
 3. `crates/rangebar-providers/src/exness/mod.rs`
@@ -215,14 +239,17 @@ rm docs/planning/research/dukascopy-slo-spec.md
 ---
 
 ### Phase 3: Update README Files (LOW RISK)
+
 **Files to update**: 3 files (output/README.md had no Dukascopy references)
 
 **Changes**:
+
 - Remove Dukascopy directory structure references
 - Remove Dukascopy usage examples
 - Remove Dukascopy from data source lists
 
 **Files**:
+
 1. `cache/README.md`
 2. `data/README.md`
 3. `test_data/README.md`
@@ -232,14 +259,17 @@ rm docs/planning/research/dukascopy-slo-spec.md
 ---
 
 ### Phase 4: Update/Archive Planning Docs (LOW RISK)
+
 **Files to update**: 2 files
 **Files to archive**: 1 file
 
 **Archive**:
+
 - `docs/planning/exness-migration-plan.md` → `docs/planning/legacy/exness-migration-plan.md`
   (Migration complete, historical doc)
 
 **Update**:
+
 - `docs/NEXT_STEPS.md` - Remove Dukascopy audit tasks
 - `docs/planning/README.md` - Remove Dukascopy doc listings
 
@@ -251,12 +281,12 @@ rm docs/planning/research/dukascopy-slo-spec.md
 
 ## Risk Assessment
 
-| Phase | Files | Risk | Impact | Rollback |
-|-------|-------|------|--------|----------|
-| 1. Delete orphaned | 21 | ZERO | None | Git revert |
-| 2. Update code comments | 4 | LOW | Comments only | Git revert |
-| 3. Update READMEs | 3 | LOW | Docs only | Git revert |
-| 4. Update/archive planning | 3 | LOW | Docs only | Git revert |
+| Phase                      | Files | Risk | Impact        | Rollback   |
+| -------------------------- | ----- | ---- | ------------- | ---------- |
+| 1. Delete orphaned         | 21    | ZERO | None          | Git revert |
+| 2. Update code comments    | 4     | LOW  | Comments only | Git revert |
+| 3. Update READMEs          | 3     | LOW  | Docs only     | Git revert |
+| 4. Update/archive planning | 3     | LOW  | Docs only     | Git revert |
 
 **Overall Risk**: LOW - No functional code changes, only cleanup
 
@@ -265,6 +295,7 @@ rm docs/planning/research/dukascopy-slo-spec.md
 ## Validation Checklist
 
 After each phase:
+
 - [x] `cargo build --workspace --all-features` - Success
 - [x] `cargo test --workspace --all-features` - All pass (108 tests)
 - [x] `cargo clippy --workspace --all-features -- -D warnings` - Clean
@@ -291,7 +322,7 @@ After each phase:
 **DELETE**: 21 files (tests + planning docs)
 **UPDATE**: 9 files (4 code comments + 3 READMEs + 2 planning docs)
 **ARCHIVE**: 1 file (exness-migration-plan.md)
-**KEEP UNCHANGED**: 7 files (src-archived/* + CHANGELOG.md)
+**KEEP UNCHANGED**: 7 files (src-archived/\* + CHANGELOG.md)
 
 **Total affected**: 31 files (2 fewer than planned - output/README.md had no refs, research comparisons kept)
 **Total Dukascopy references found**: 46 files (13 remain as historical/archived, 2 kept as factual comparisons)
@@ -319,6 +350,7 @@ After each phase:
 **Duration**: ~1 hour (automated execution with validation)
 
 ### Git Statistics
+
 ```
 32 files changed, 391 insertions(+), 9,073 deletions(-)
 Net reduction: 8,682 lines removed
@@ -327,23 +359,27 @@ Net reduction: 8,682 lines removed
 ### Phase-by-Phase Results
 
 **Phase 1: Delete Orphaned Files** ✅
+
 - Deleted: 21 files (6 tests + 15 planning docs)
 - Validation: `cargo test --workspace --all-features` - 108 tests passed
 - Time: 15 minutes
 
 **Phase 2: Update Code Comments** ✅
+
 - Updated: 4 active code files
 - Files: `crates/rangebar-core/src/timestamp.rs`, `crates/rangebar-providers/src/exness/{client,mod,types}.rs`
 - Validation: `cargo build` + `cargo test` - All passed
 - Time: 10 minutes
 
 **Phase 3: Update README Files** ✅
+
 - Updated: 3 files (`cache/`, `data/`, `test_data/` READMEs)
 - Note: `output/README.md` had no Dukascopy references (verified)
 - Validation: Manual review
 - Time: 10 minutes
 
 **Phase 4: Archive/Update Planning Docs** ✅
+
 - Archived: `exness-migration-plan.md` → `docs/planning/legacy/`
 - Updated: `docs/NEXT_STEPS.md`, `docs/planning/README.md`
 - Note: Research comparison files kept for factual value
@@ -351,6 +387,7 @@ Net reduction: 8,682 lines removed
 - Time: 10 minutes
 
 **Final Validation** ✅
+
 - `cargo build --workspace --all-features` - Success (2.16s)
 - `cargo test --workspace --all-features` - 108 tests passed
 - `cargo clippy --workspace --all-features -- -D warnings` - Clean
@@ -370,31 +407,34 @@ Net reduction: 8,682 lines removed
 **Trigger**: Context restoration revealed 2 files with Dukascopy references that were missed in initial cleanup
 
 **Files Updated** (2 total):
+
 1. **output/README.md**:
-   - Line 30: `2025-10-02_dukascopy-105k-ticks/summary.json` → `2025-10-02_binance-spot-1M-ticks/summary.json`
-   - Line 56: `dukascopy_EURUSD_rangebar_20250115_20250115_0025bps.csv` → `exness_EURUSD_rangebar_20250115_20250131_0025bps.csv`
+    - Line 30: `2025-10-02_dukascopy-105k-ticks/summary.json` → `2025-10-02_binance-spot-1M-ticks/summary.json`
+    - Line 56: `dukascopy_EURUSD_rangebar_20250115_20250115_0025bps.csv` → `exness_EURUSD_rangebar_20250115_20250131_0025bps.csv`
 
 2. **output/exness_test/AUDIT_REPORT.md** (Historical test report from Oct 3, 2025):
-   - Line 138: "Expected (from Dukascopy planning)" → "Expected (from initial planning with other forex providers)"
-   - Line 140: "Based on: Dukascopy data (84K ticks/day, has volumes)" → "Based on: Historical forex data (84K ticks/day, with volumes)"
-   - Line 194: "Comparison: Dukascopy 77.5%" → "Comparison: Previous provider 77.5%"
-   - Line 208: "vs Dukascopy: lzma-rs, byteorder, custom parser" → "simpler than previous provider's lzma-rs, byteorder, custom parser"
-   - Line 251: "Dukascopy: Lower zero-spread %" → "Other providers: Lower zero-spread %"
-   - Line 258: "Dukascopy: 77.5% reliability" → "Previous provider: 77.5% reliability"
+    - Line 138: "Expected (from Dukascopy planning)" → "Expected (from initial planning with other forex providers)"
+    - Line 140: "Based on: Dukascopy data (84K ticks/day, has volumes)" → "Based on: Historical forex data (84K ticks/day, with volumes)"
+    - Line 194: "Comparison: Dukascopy 77.5%" → "Comparison: Previous provider 77.5%"
+    - Line 208: "vs Dukascopy: lzma-rs, byteorder, custom parser" → "simpler than previous provider's lzma-rs, byteorder, custom parser"
+    - Line 251: "Dukascopy: Lower zero-spread %" → "Other providers: Lower zero-spread %"
+    - Line 258: "Dukascopy: 77.5% reliability" → "Previous provider: 77.5% reliability"
 
 **Reason for Missed Files**:
+
 - output/README.md: Verification error during Phase 3 - grep check may have been run before file was properly staged
 - output/exness_test/AUDIT_REPORT.md: Historical document (dated Oct 3), exists outside typical documentation structure
 
 **Validation**: grep verification confirms zero remaining Dukascopy references in active/output docs
 
 **Remaining References** (8 files, all intentional):
+
 1. `CHANGELOG.md` - Historical record
-2-7. `src-archived/**` - Archived v4.0.0 code
-8-10. Migration docs: `api-threshold-granularity-migration.md`, `restructure-v2.3.0-migration.md`, `workspace-migration-v5.0.0.md` (historical migration records)
-11-12. Research comparisons: `exness-eurusd-variant-analysis.md`, `exness-tick-data-evaluation.md` (factual comparisons)
-13. `dukascopy-cleanup-plan-v5.0.0.md` (this document)
-14. `legacy/exness-migration-plan.md` (archived migration plan)
+   2-7. `src-archived/**` - Archived v4.0.0 code
+   8-10. Migration docs: `api-threshold-granularity-migration.md`, `restructure-v2.3.0-migration.md`, `workspace-migration-v5.0.0.md` (historical migration records)
+   11-12. Research comparisons: `exness-eurusd-variant-analysis.md`, `exness-tick-data-evaluation.md` (factual comparisons)
+2. `dukascopy-cleanup-plan-v5.0.0.md` (this document)
+3. `legacy/exness-migration-plan.md` (archived migration plan)
 
 ### SLO Achievement
 
@@ -408,18 +448,21 @@ Net reduction: 8,682 lines removed
 ## Rationale
 
 **Why delete instead of archive**:
+
 - Git history already preserves all files
 - Archiving creates duplicate clutter
 - No functional value in keeping orphaned tests/docs
 - Provider completely removed, no migration path back
 
 **Why keep src-archived/providers/dukascopy/**:
+
 - Part of v4.0.0 historical snapshot
 - Maintains workspace migration continuity
 - Already clearly marked as archived
 - Useful for understanding historical decisions
 
 **Why update code comments**:
+
 - Comparing to non-existent provider confuses future developers
 - Timestamp range is still valid, just remove Dukascopy reference
 - Keeps codebase focused on current providers (Binance, Exness)
@@ -431,26 +474,32 @@ Net reduction: 8,682 lines removed
 **Remaining Dukascopy references**: 14 files (all intentional)
 
 **Category 1: Historical Records** (1 file)
+
 - `CHANGELOG.md` - Historical changelog, never retroactively edit
 
 **Category 2: Archived Code** (6 files)
+
 - `src-archived/providers/dukascopy/*` - v4.0.0 archived snapshot
 
 **Category 3: Migration Documentation** (3 files)
+
 - `docs/planning/api-threshold-granularity-migration.md` - v3.0.0 threshold units migration
 - `docs/planning/architecture/restructure-v2.3.0-migration.md` - v2.3.0 architecture migration
 - `docs/planning/workspace-migration-v5.0.0.md` - v5.0.0 workspace migration
 - **Reason**: Historical records of completed migrations, factually document what existed
 
 **Category 4: Research Comparisons** (2 files)
+
 - `docs/planning/research/exness-eurusd-variant-analysis.md` - Factual provider comparison
 - `docs/planning/research/exness-tick-data-evaluation.md` - Factual provider evaluation
 - **Reason**: Provide valuable context for provider selection decisions
 
 **Category 5: Legacy Documentation** (1 file)
+
 - `docs/planning/legacy/exness-migration-plan.md` - Archived migration plan
 
 **Category 6: This Document** (1 file)
+
 - `docs/planning/dukascopy-cleanup-plan-v5.0.0.md` - This cleanup plan
 
 **Active codebase**: ZERO Dukascopy references (100% clean)

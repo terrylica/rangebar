@@ -12,6 +12,7 @@
 **Winner**: `EURUSD_Raw_Spread`
 
 **Key Finding**: Raw_Spread has **8× higher spread variability** (CV=8.17) than other variants, encoding broker risk perception as a bimodal spread distribution:
+
 - **98% of ticks**: 0.0 pip spread (ultra-tight, broker confident)
 - **2% of ticks**: 1-9 pip spread spikes (stress events, broker nervous)
 
@@ -21,15 +22,15 @@
 
 ## Available Variants on Exness
 
-| Variant | Availability | File Size (Sept 2024) | Notes |
-|---------|-------------|----------------------|-------|
-| EURUSD (Standard) | ✅ | 7.2 MB | Variable spread, no commission |
-| EURUSD_Raw_Spread | ✅ | 5.9 MB | **Ultra-variable spread, commission model** |
-| EURUSD_Zero_Spread | ❌ Excluded | N/A | Artificial 0.0 spread (rejected by user) |
-| EURUSD_Standart_Plus | ✅ | 7.5 MB | Enhanced standard account |
-| EURUSDm (Mini) | ✅ | 6.2 MB | Smaller contract size |
-| EURUSDc (Cent) | ✅ | 6.2 MB | Micro-lot account |
-| EURUSDc_Standart_Plus | ❌ | N/A | Not available Sept 2024 |
+| Variant               | Availability | File Size (Sept 2024) | Notes                                       |
+| --------------------- | ------------ | --------------------- | ------------------------------------------- |
+| EURUSD (Standard)     | ✅           | 7.2 MB                | Variable spread, no commission              |
+| EURUSD_Raw_Spread     | ✅           | 5.9 MB                | **Ultra-variable spread, commission model** |
+| EURUSD_Zero_Spread    | ❌ Excluded  | N/A                   | Artificial 0.0 spread (rejected by user)    |
+| EURUSD_Standart_Plus  | ✅           | 7.5 MB                | Enhanced standard account                   |
+| EURUSDm (Mini)        | ✅           | 6.2 MB                | Smaller contract size                       |
+| EURUSDc (Cent)        | ✅           | 6.2 MB                | Micro-lot account                           |
+| EURUSDc_Standart_Plus | ❌           | N/A                   | Not available Sept 2024                     |
 
 ---
 
@@ -37,13 +38,13 @@
 
 ### Comprehensive Statistics
 
-| Variant | Ticks | Mean (pips) | Std (pips) | **CV** | Min | Max | Range |
-|---------|-------|------------|-----------|--------|-----|-----|-------|
-| **Raw_Spread** | 925,780 | 0.028 | 0.229 | **8.169** | 0.0 | 8.8 | 8.8 |
-| Mini | 961,877 | 0.950 | 0.463 | 0.487 | 0.7 | 18.6 | 17.9 |
-| Cent | 961,877 | 0.950 | 0.463 | 0.487 | 0.7 | 18.6 | 17.9 |
-| Standard | 1,082,145 | 0.666 | 0.307 | 0.460 | 0.4 | 13.0 | 12.6 |
-| Standart_Plus | 1,099,453 | 1.309 | 0.230 | 0.176 | 1.0 | 10.0 | 9.0 |
+| Variant        | Ticks     | Mean (pips) | Std (pips) | **CV**    | Min | Max  | Range |
+| -------------- | --------- | ----------- | ---------- | --------- | --- | ---- | ----- |
+| **Raw_Spread** | 925,780   | 0.028       | 0.229      | **8.169** | 0.0 | 8.8  | 8.8   |
+| Mini           | 961,877   | 0.950       | 0.463      | 0.487     | 0.7 | 18.6 | 17.9  |
+| Cent           | 961,877   | 0.950       | 0.463      | 0.487     | 0.7 | 18.6 | 17.9  |
+| Standard       | 1,082,145 | 0.666       | 0.307      | 0.460     | 0.4 | 13.0 | 12.6  |
+| Standart_Plus  | 1,099,453 | 1.309       | 0.230      | 0.176     | 1.0 | 10.0 | 9.0   |
 
 **Coefficient of Variation (CV)**: Ratio of standard deviation to mean, measuring relative variability. Higher CV = more information content.
 
@@ -59,19 +60,19 @@
 
 ### September 2020 (COVID Volatility Regime)
 
-| Variant | Ticks | Mean | Std | **CV** | Range |
-|---------|-------|------|-----|--------|-------|
-| **Raw_Spread** | 1,177,872 | 0.047 | 0.387 | **8.285** | 10.0 |
-| Standard | 1,299,904 | 0.689 | 0.491 | 0.712 | 9.4 |
-| Mini | 1,176,049 | 1.083 | 0.674 | 0.622 | 9.0 |
+| Variant        | Ticks     | Mean  | Std   | **CV**    | Range |
+| -------------- | --------- | ----- | ----- | --------- | ----- |
+| **Raw_Spread** | 1,177,872 | 0.047 | 0.387 | **8.285** | 10.0  |
+| Standard       | 1,299,904 | 0.689 | 0.491 | 0.712     | 9.4   |
+| Mini           | 1,176,049 | 1.083 | 0.674 | 0.622     | 9.0   |
 
 ### September 2024 (Post-COVID Normal Regime)
 
-| Variant | CV (2024) | CV (2020) | Change |
-|---------|----------|----------|--------|
-| Raw_Spread | 8.169 | 8.285 | -1.4% |
-| Standard | 0.460 | 0.712 | -35.4% |
-| Mini | 0.487 | 0.622 | -21.7% |
+| Variant    | CV (2024) | CV (2020) | Change |
+| ---------- | --------- | --------- | ------ |
+| Raw_Spread | 8.169     | 8.285     | -1.4%  |
+| Standard   | 0.460     | 0.712     | -35.4% |
+| Mini       | 0.487     | 0.622     | -21.7% |
 
 **Validation**: Raw_Spread maintains **8× higher CV** across vastly different market conditions.
 
@@ -81,21 +82,23 @@
 
 ### Percentile Breakdown (Sept 2024)
 
-| Percentile | Spread (pips) | Interpretation |
-|-----------|--------------|----------------|
-| P0-P95 | 0.0 | 98% of market = ultra-tight spread (broker confident) |
-| P99 | 1.4 | Top 1% = stress threshold |
-| P99.9 | 2.8 | Top 0.1% = significant stress |
-| P100 | 8.8 | Max stress event |
+| Percentile | Spread (pips) | Interpretation                                        |
+| ---------- | ------------- | ----------------------------------------------------- |
+| P0-P95     | 0.0           | 98% of market = ultra-tight spread (broker confident) |
+| P99        | 1.4           | Top 1% = stress threshold                             |
+| P99.9      | 2.8           | Top 0.1% = significant stress                         |
+| P100       | 8.8           | Max stress event                                      |
 
 ### Bimodal Distribution Pattern
 
 **Mode 1 (98% of ticks)**: Spread = 0.0 pips
+
 - Liquid market conditions
 - Broker confident in price discovery
 - Institutional-grade interbank pricing
 
 **Mode 2 (2% of ticks)**: Spread = 1-9 pips
+
 - Volatility events (news, data releases)
 - Liquidity shocks (thin order book)
 - Broker risk mitigation (wider spread = protection)
@@ -103,6 +106,7 @@
 ### Information Content
 
 **Raw_Spread spread changes encode**:
+
 - **0.0 → 1.4 pips**: Moderate stress (P99 threshold)
 - **0.0 → 2.8 pips**: High stress (P99.9 threshold)
 - **0.0 → 8.8 pips**: Extreme stress (max observed)
@@ -113,12 +117,12 @@
 
 ## Comparison: Raw_Spread vs Standard
 
-| Metric | Raw_Spread | Standard | Interpretation |
-|--------|-----------|----------|----------------|
-| Zero-spread ticks | 98.0% | 0.0% | Raw = tight default |
-| Stress events (>1 pip) | 1.3% | 1.7% | Similar stress frequency |
-| Max stress | 8.8 pips | 13.0 pips | Similar stress magnitude |
-| **CV (variability)** | **8.17** | **0.46** | **17× more variable** |
+| Metric                 | Raw_Spread | Standard  | Interpretation           |
+| ---------------------- | ---------- | --------- | ------------------------ |
+| Zero-spread ticks      | 98.0%      | 0.0%      | Raw = tight default      |
+| Stress events (>1 pip) | 1.3%       | 1.7%      | Similar stress frequency |
+| Max stress             | 8.8 pips   | 13.0 pips | Similar stress magnitude |
+| **CV (variability)**   | **8.17**   | **0.46**  | **17× more variable**    |
 
 **Key Insight**: Both capture stress events, but Raw_Spread has 17× higher signal-to-noise via bimodal distribution.
 
@@ -131,17 +135,19 @@
 Standard spread (0.6 pips constant) reflects **average transaction cost**.
 
 Raw_Spread (0.0 → 9 pips dynamic) reflects **broker's real-time risk assessment**:
+
 - Spread widens when broker perceives:
-  - Incoming volatility
-  - Order flow imbalance
-  - Liquidity evaporation
-  - Information asymmetry
+    - Incoming volatility
+    - Order flow imbalance
+    - Liquidity evaporation
+    - Information asymmetry
 
 ### 2. Leading Indicator Potential
 
 **Hypothesis**: Raw_Spread widens **before** price moves, not after.
 
 **Rationale**: Brokers have:
+
 - Order flow visibility (retail buy/sell pressure)
 - Liquidity depth monitoring
 - News/event calendars
@@ -152,6 +158,7 @@ Raw_Spread (0.0 → 9 pips dynamic) reflects **broker's real-time risk assessmen
 ### 3. Regime Classification
 
 Bimodal distribution enables **regime detection**:
+
 - **Regime 0** (98% of time): Spread = 0.0 → Normal market
 - **Regime 1** (2% of time): Spread > 1.0 → Stress market
 
@@ -166,11 +173,13 @@ Bimodal distribution enables **regime detection**:
 **Selected**: `EURUSD_Raw_Spread`
 
 **URL Pattern**:
+
 ```
 https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/{year}/{month}/Exness_EURUSD_Raw_Spread_{year}_{month}.zip
 ```
 
 **Example**:
+
 ```
 https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/09/Exness_EURUSD_Raw_Spread_2024_09.zip
 ```
@@ -178,11 +187,13 @@ https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/09/Exness_EURUSD_Raw_S
 ### Range Bar Construction Modification
 
 **Standard approach**: Use mid-price for range bars
+
 ```
 mid = (bid + ask) / 2
 ```
 
 **Enhanced approach**: Include spread as metadata
+
 ```rust
 pub struct ExnessTick {
     pub timestamp: i64,
@@ -210,6 +221,7 @@ pub struct RangeBar {
 **Objective**: Validate Raw_Spread produces comparable bar counts vs standard EURUSD
 
 **Test**:
+
 ```rust
 #[test]
 fn raw_spread_eurusd_01bps_jan15_19_2024() {
@@ -240,6 +252,7 @@ fn raw_spread_eurusd_01bps_jan15_19_2024() {
 **Hypothesis**: High spread predicts high volatility in next N ticks
 
 **Test**:
+
 ```python
 import pandas as pd
 
@@ -263,6 +276,7 @@ print(f"Spread-Volatility Correlation: {corr.iloc[0, 1]:.4f}")
 **Objective**: Validate spread regime predicts price regime
 
 **Metrics**:
+
 - Precision: % of stress ticks followed by volatility
 - Recall: % of volatility events preceded by stress ticks
 - Lead time: Median lag between spread spike and price move
@@ -272,38 +286,41 @@ print(f"Spread-Volatility Correlation: {corr.iloc[0, 1]:.4f}")
 ## Next Steps
 
 1. **Update Exness Provider** (`src/providers/exness/`)
-   - Change default symbol from `EURUSD` to `EURUSD_Raw_Spread`
-   - Add spread calculation to `ExnessTick` struct
-   - Extend `RangeBar` with spread metadata fields
+    - Change default symbol from `EURUSD` to `EURUSD_Raw_Spread`
+    - Add spread calculation to `ExnessTick` struct
+    - Extend `RangeBar` with spread metadata fields
 
 2. **Create Comparison Test** (`tests/exness_eurusd_variants_comparison.rs`)
-   - Fetch same period for Standard vs Raw_Spread
-   - Generate range bars with identical thresholds
-   - Compare bar counts, validation pass rates
+    - Fetch same period for Standard vs Raw_Spread
+    - Generate range bars with identical thresholds
+    - Compare bar counts, validation pass rates
 
 3. **Implement Spread-Volatility Study** (`scripts/spread_volatility_analysis.py`)
-   - Calculate correlation coefficients
-   - Measure lead time distribution
-   - Visualize spread spikes vs price volatility
+    - Calculate correlation coefficients
+    - Measure lead time distribution
+    - Visualize spread spikes vs price volatility
 
 4. **Document Provider Decision** (`docs/planning/architecture/data-source-selection.md`)
-   - Exness Raw_Spread for EURUSD (validated)
-   - Binance for crypto (existing)
-   - Dukascopy for volume-weighted features (future)
+    - Exness Raw_Spread for EURUSD (validated)
+    - Binance for crypto (existing)
+    - Dukascopy for volume-weighted features (future)
 
 ---
 
 ## References
 
 **Data Sources**:
+
 - Exness Archive: https://ticks.ex2archive.com/ticks/
 - Test Data: `/tmp/Exness_EURUSD_Raw_Spread_2024_09.csv` (925,780 ticks)
 
 **Analysis Period**:
+
 - Sept 2024: 1,082,145 ticks (Standard), 925,780 ticks (Raw_Spread)
 - Sept 2020: 1,299,904 ticks (Standard), 1,177,872 ticks (Raw_Spread)
 
 **Related Documentation**:
+
 - `docs/planning/research/exness-tick-data-evaluation.md` (general Exness overview)
 - `docs/planning/dukascopy-eurusd-ultra-low-threshold.md` (original threshold plan)
 - `docs/planning/architecture/restructure-v2.3.0-migration.md` (provider architecture)

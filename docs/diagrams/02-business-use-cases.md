@@ -11,26 +11,27 @@ This diagram will show **who uses the rangebar system for what business objectiv
 ### User Personas
 
 1. **Researchers**
-   - Historical backtesting
-   - Multi-symbol comparison
-   - Threshold optimization
-   - Strategy development
+    - Historical backtesting
+    - Multi-symbol comparison
+    - Threshold optimization
+    - Strategy development
 
 2. **Live Traders**
-   - Real-time bar generation
-   - Market stress detection
-   - Entry/exit signals
-   - Position sizing
+    - Real-time bar generation
+    - Market stress detection
+    - Entry/exit signals
+    - Position sizing
 
 3. **Portfolio Managers**
-   - Cross-market analysis
-   - Liquidity assessment
-   - Volatility forecasting
-   - Asset allocation
+    - Cross-market analysis
+    - Liquidity assessment
+    - Volatility forecasting
+    - Asset allocation
 
 ### Planned Diagram Type
 
 Mermaid graph showing:
+
 - 3 user persona boxes
 - 9+ use case nodes (3 per persona)
 - Connections to Range Bar System (central node)

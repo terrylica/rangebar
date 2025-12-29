@@ -15,6 +15,7 @@ Please refer to the authoritative specification:
 This file is retained for historical reference only. Do not use for implementation guidance.
 
 **Key Differences from Current (v5.0.0)**:
+
 1. Threshold units: 1bps (old) → 0.1bps (current)
 2. Data sources: UM Futures only (old) → Spot/UM/CM Futures + Exness (current)
 3. Basis points scale: 10,000 (old) → 100,000 (current)
@@ -32,10 +33,12 @@ This specification defines a **non-lookahead bias** range bar construction algor
 ### Mathematical Formulation
 
 Given:
+
 - `threshold_bps = 80` (80 basis points = 0.8%)
 - Bar opens at price `P_open`
 
 For each bar:
+
 ```
 threshold_ratio = threshold_bps / 10000  # Convert basis points to decimal
 upper_breach = P_open × (1 + threshold_ratio) = P_open × 1.008
@@ -54,12 +57,13 @@ lower_breach = P_open × (1 - threshold_ratio) = P_open × 0.992
 ## Implementation Pseudocode
 
 ### High-Level Algorithm
+
 ```python
 def iter_range_bars_from_aggtrades(trades, threshold_bps=80):
     threshold_ratio = threshold_bps / 10000  # Convert basis points to decimal
     bar = None
     defer_open = False
-    
+
     for tick in sorted_trades:  # Sorted by (timestamp, aggTradeId)
         if defer_open:
             # Previous bar closed, this tick opens new bar
@@ -68,14 +72,14 @@ def iter_range_bars_from_aggtrades(trades, threshold_bps=80):
             bar.lower_breach = bar.open * (1 - threshold_ratio)
             defer_open = False
             continue
-        
+
         if bar is None:
             # First bar initialization
             bar = new_bar(tick)
             bar.upper_breach = bar.open * (1 + threshold_ratio)
             bar.lower_breach = bar.open * (1 - threshold_ratio)
             continue
-        
+
         # Update bar with current tick (ALWAYS include tick first)
         bar.high = max(bar.high, tick.price)
         bar.low = min(bar.low, tick.price)
@@ -84,29 +88,30 @@ def iter_range_bars_from_aggtrades(trades, threshold_bps=80):
         bar.individual_trade_count += (tick.last_trade_id - tick.first_trade_id + 1)
         bar.close_time = tick.timestamp
         bar.last_trade_id = tick.agg_trade_id
-        
+
         # Check breach using FIXED thresholds (computed from open)
         if tick.price >= bar.upper_breach or tick.price <= bar.lower_breach:
             yield finalize_bar(bar)
             bar = None
             defer_open = True  # Next tick will open new bar
-    
+
     # Yield final partial bar if exists
     if bar is not None:
         yield finalize_bar(bar)
 ```
 
 ### Bar Structure
+
 ```python
 class RangeBar:
     # OHLCV data
     open_time: int        # Timestamp of first tick (ms)
-    close_time: int       # Timestamp of last tick (ms) 
+    close_time: int       # Timestamp of last tick (ms)
     open: Decimal         # First tick price
     high: Decimal         # Maximum price in bar
     low: Decimal          # Minimum price in bar
     close: Decimal        # Last tick price (breach tick)
-    
+
     # Volume and trade data
     volume: Decimal                # Sum of quantities
     turnover: Decimal              # Sum of price × quantity
@@ -114,7 +119,7 @@ class RangeBar:
     agg_record_count: int          # Number of AggTrade records
     first_trade_id: int            # First aggTradeId
     last_trade_id: int             # Last aggTradeId
-    
+
     # Algorithm metadata (not output)
     upper_breach: Decimal # Fixed threshold (open × 1.008)
     lower_breach: Decimal # Fixed threshold (open × 0.992)
@@ -127,6 +132,7 @@ class RangeBar:
 **Source**: https://github.com/stas-prokopiev/binance_historical_data
 
 **Configuration**:
+
 ```python
 from binance_historical_data import BinanceDataDumper
 
@@ -138,17 +144,19 @@ dumper = BinanceDataDumper(
 ```
 
 ### Schema (UM Futures aggTrades)
-| Field | Type | Description | Example |
-|-------|------|-------------|---------|
-| `a` | int64 | Aggregate trade ID | 26129 |
-| `p` | string | Price (decimal) | "0.01633102" |
-| `q` | string | Quantity | "4.70443515" |
-| `f` | int64 | First trade ID | 27781 |
-| `l` | int64 | Last trade ID | 27781 |
-| `T` | int64 | Timestamp (milliseconds) | 1498793709153 |
-| `m` | bool | Was buyer the maker | true |
+
+| Field | Type   | Description              | Example       |
+| ----- | ------ | ------------------------ | ------------- |
+| `a`   | int64  | Aggregate trade ID       | 26129         |
+| `p`   | string | Price (decimal)          | "0.01633102"  |
+| `q`   | string | Quantity                 | "4.70443515"  |
+| `f`   | int64  | First trade ID           | 27781         |
+| `l`   | int64  | Last trade ID            | 27781         |
+| `T`   | int64  | Timestamp (milliseconds) | 1498793709153 |
+| `m`   | bool   | Was buyer the maker      | true          |
 
 ### Data Requirements
+
 1. **Sorting**: Must be sorted by `(T, a)` for deterministic processing
 2. **Completeness**: No gaps in trade sequence
 3. **Validation**: SHA256 checksums verified
@@ -159,14 +167,16 @@ dumper = BinanceDataDumper(
 ### What Makes It Non-Lookahead
 
 ✅ **Correct (No Lookahead)**:
+
 1. Compute thresholds from bar's open price
-2. Include current tick in bar statistics  
+2. Include current tick in bar statistics
 3. Check if current tick breaches pre-computed thresholds
 4. If breach: close bar, mark next tick to open new bar
 
 ❌ **Incorrect (Has Lookahead)**:
+
 1. Include current tick in bar statistics
-2. Recompute thresholds using updated high/low  
+2. Recompute thresholds using updated high/low
 3. Check if current tick breaches updated thresholds
 
 ### Validation Tests
@@ -175,7 +185,7 @@ dumper = BinanceDataDumper(
 def test_no_lookahead_bias():
     """Verify thresholds computed from open only"""
     open_price = 50000.00
-    
+
     # These ticks should NOT cause thresholds to change
     ticks = [
         {'price': 50000.00, 'timestamp': 1000},  # Open
@@ -183,9 +193,9 @@ def test_no_lookahead_bias():
         {'price': 49700.00, 'timestamp': 3000},  # -0.6% from open
         {'price': 50400.00, 'timestamp': 4000},  # +0.8% from open -> BREACH
     ]
-    
+
     bars = list(iter_range_bars_from_aggtrades(ticks))
-    
+
     # Thresholds should always be based on 50000.00 (open)
     assert bars[0]['close'] == 50400.00  # Breach tick included
     assert bars[0]['high'] == 50400.00   # Maximum reached
@@ -197,10 +207,10 @@ def test_no_lookahead_bias():
 ### Rust Implementation Targets
 
 | Dataset Size | Target Time | Memory Usage |
-|--------------|-------------|--------------|
-| 1M ticks | < 100ms | < 50MB |
-| 100M ticks | < 3s | < 500MB |
-| 1B ticks | < 30s | < 1GB |
+| ------------ | ----------- | ------------ |
+| 1M ticks     | < 100ms     | < 50MB       |
+| 100M ticks   | < 3s        | < 500MB      |
+| 1B ticks     | < 30s       | < 1GB        |
 
 ### Optimization Strategies
 
@@ -211,6 +221,7 @@ def test_no_lookahead_bias():
 5. **Streaming**: O(1) memory per output bar
 
 ### Fixed-Point Implementation
+
 ```rust
 // Scale factor for 8 decimal precision
 const SCALE: i64 = 100_000_000;
@@ -231,6 +242,7 @@ fn compute_thresholds(open: i64, basis_points: u32) -> (i64, i64) {
 ## Edge Cases
 
 ### 1. Exact Threshold Breach
+
 ```
 Open: 50000.00
 Threshold: +0.8% = 50400.00
@@ -239,14 +251,16 @@ Result: Bar closes, breach tick included
 ```
 
 ### 2. Large Price Gap
+
 ```
-Open: 50000.00  
+Open: 50000.00
 Threshold: ±0.8% = [49600.00, 50400.00]
 Tick: 51000.00 (+2% gap)
 Result: Single bar closes at 51000.00 (NOT multiple bars)
 ```
 
 ### 3. Oscillation Without Breach
+
 ```
 Open: 50000.00
 Ticks: 50300.00 (+0.6%), 49700.00 (-0.6%), 50390.00 (+0.78%)
@@ -254,6 +268,7 @@ Result: No bar closes, continues building
 ```
 
 ### 4. First Tick Handling
+
 ```
 First tick: 50000.00
 Action: Initialize bar, set thresholds, continue (no breach check on open)
@@ -262,6 +277,7 @@ Action: Initialize bar, set thresholds, continue (no breach check on open)
 ## Integration Points
 
 ### Python API
+
 ```python
 from rangebar import iter_range_bars_from_aggtrades
 
@@ -276,7 +292,8 @@ for bar in bars:
     print(f"O:{bar['open']} H:{bar['high']} L:{bar['low']} C:{bar['close']}")
 ```
 
-### CLI Interface  
+### CLI Interface
+
 ```bash
 # Fetch data
 rangebar fetch --symbol BTCUSDT --start 2024-01-01 --end 2024-01-02
@@ -289,7 +306,7 @@ rangebar build --input data/parquet/BTCUSDT --pct 0.008 --output data/bars
 
 - [ ] Thresholds computed from bar open only (never recalculated)
 - [ ] Breach tick included in closing bar
-- [ ] Next tick after breach opens new bar  
+- [ ] Next tick after breach opens new bar
 - [ ] No future information used in decisions
 - [ ] UM Futures data only (asset_class="um")
 - [ ] Data sorted by (timestamp, aggTradeId)

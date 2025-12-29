@@ -27,6 +27,7 @@ This diagram will show the **comprehensive end-to-end business process** with al
 ### Planned Diagram Type
 
 Large Mermaid graph TB showing:
+
 - 7 main stages (subgraphs)
 - 10+ decision points (diamonds)
 - 15+ output nodes (rectangles)

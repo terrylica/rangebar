@@ -12,42 +12,43 @@ This diagram will show **core business logic guarantees** that make the algorith
 
 1. **New Tick Arrives**
 2. **Breach Check Decision**
-   - No breach → Update current bar
-   - Breach detected → Close current bar
+    - No breach → Update current bar
+    - Breach detected → Close current bar
 
 3. **If No Breach**
-   - Update OHLCV of current bar
-   - Wait for next tick
-   - Loop back to step 1
+    - Update OHLCV of current bar
+    - Wait for next tick
+    - Loop back to step 1
 
 4. **If Breach**
-   - Include breach tick in closing bar
-   - Output completed bar
-   - Start new bar with next tick
-   - Wait for next tick
-   - Loop back to step 1
+    - Include breach tick in closing bar
+    - Output completed bar
+    - Start new bar with next tick
+    - Wait for next tick
+    - Loop back to step 1
 
 ### Business Guarantees (Subgraph)
 
 1. **No Future Information Used**
-   - Current tick cannot see next tick
-   - Decisions made with past + current only
+    - Current tick cannot see next tick
+    - Decisions made with past + current only
 
 2. **Fixed Thresholds from Open**
-   - Threshold computed once when bar opens
-   - Never recalculated during bar lifetime
+    - Threshold computed once when bar opens
+    - Never recalculated during bar lifetime
 
 3. **Breach Tick Always Included**
-   - Tick that causes breach belongs to closing bar
-   - Not to next bar (prevents information loss)
+    - Tick that causes breach belongs to closing bar
+    - Not to next bar (prevents information loss)
 
 4. **Deterministic Output**
-   - Same input → same output, always
-   - Platform-independent results
+    - Same input → same output, always
+    - Platform-independent results
 
 ### Planned Diagram Type
 
 Mermaid graph TD showing:
+
 - Circular state machine (tick processing loop)
 - Decision node (breach check)
 - Two paths (update vs close)

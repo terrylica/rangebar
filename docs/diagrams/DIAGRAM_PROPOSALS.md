@@ -20,6 +20,7 @@ graph LR
 ```
 
 **What This Shows**:
+
 - 5 major business stages
 - Data transformation flow
 - End-to-end value chain
@@ -66,6 +67,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - 3 user personas
 - 9 distinct business use cases
 - How different users interact with the system
@@ -99,6 +101,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - Business decision: asset class selection
 - Available data sources per asset class
 - Unified validation regardless of source
@@ -136,6 +139,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - Business decision factors (use case, memory, size, needs)
 - 3 processing modes (streaming, batch, simple)
 - Different outputs per mode
@@ -170,6 +174,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - 4 trading styles
 - Threshold ranges per style
 - Expected bar frequency (business outcome)
@@ -211,6 +216,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - 7 business stages
 - 2 major decision points
 - Multiple paths to business value
@@ -251,6 +257,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - 6 failure scenarios
 - Business-appropriate responses per scenario
 - Recovery paths vs. stop conditions
@@ -292,6 +299,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - Parallel data fetching (business efficiency)
 - Unified processing across markets
 - 3 business insights derived
@@ -330,6 +338,7 @@ graph TD
 ```
 
 **What This Shows**:
+
 - 4 business guarantees (trust factors)
 - Decision logic: breach vs. no breach
 - State machine: update → close → new
@@ -339,21 +348,25 @@ graph TD
 ## Recommended Diagram Combinations
 
 ### For New Users (Business Overview)
+
 1. **Option 1**: High-Level Business Flow (see the big picture)
 2. **Option 2**: Business Use Cases (understand who uses it for what)
 3. **Option 5**: Threshold Selection Guide (practical decision making)
 
 ### For Researchers (Data Analysis Focus)
+
 1. **Option 3**: Data Acquisition Decision Tree (choose data sources)
 2. **Option 4**: Processing Mode Decision Logic (optimize for your use case)
 3. **Option 8**: Cross-Market Comparison Workflow (analytical workflows)
 
 ### For Live Traders (Production Focus)
+
 1. **Option 9**: Algorithm Business Rules (understand guarantees)
 2. **Option 4**: Processing Mode Decision Logic (real-time considerations)
 3. **Option 7**: Error Recovery Business Logic (handle failures)
 
 ### For Portfolio Managers (Strategic Focus)
+
 1. **Option 8**: Cross-Market Comparison Workflow (market analysis)
 2. **Option 6**: Complete Business Workflow (end-to-end process)
 3. **Option 2**: Business Use Cases (strategic applications)
@@ -365,6 +378,7 @@ graph TD
 **Proposed Location**: `docs/diagrams/business-logic.md`
 
 **Structure**:
+
 ```
 docs/diagrams/
 ├── business-logic.md          # All business logic diagrams
@@ -385,8 +399,8 @@ docs/diagrams/
 2. **Organization preference**: Single file or multiple files?
 3. **Additional business logic** you want visualized?
 4. **Diagram style preference**:
-   - More colors/styling?
-   - More detailed?
-   - Simpler/cleaner?
+    - More colors/styling?
+    - More detailed?
+    - Simpler/cleaner?
 
 Once you confirm, I'll create the full documentation with your selected diagrams in proper Mermaid format.

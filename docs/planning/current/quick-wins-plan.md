@@ -24,11 +24,13 @@ Eliminate highest-risk production failures through 3 targeted fixes.
 **Strategy**: Raise and propagate - no fallbacks, no defaults, no retries, no silent handling
 
 **Rationale**:
+
 - Fail fast - detect issues immediately
 - Explicit errors - caller decides handling
 - No hidden state - all failures visible
 
 **Implementation**:
+
 ```rust
 // ❌ DO NOT:
 let value = risky_operation().unwrap_or_default();  // Silent failure
@@ -45,6 +47,7 @@ let value = risky_operation()?;                     // Propagate error
 **File**: `../../crates/rangebar-cli/src/bin/data_structure_validator.rs:388`
 
 **Current State** (v5.0.0):
+
 ```rust
 let market_path = match market.as_str() {
     "spot" => "spot",
@@ -57,6 +60,7 @@ let market_path = match market.as_str() {
 **Issue**: Process termination on invalid input (no cleanup, no logs)
 
 **Target State**:
+
 ```rust
 let market_path = match market.as_str() {
     "spot" => "spot",
@@ -72,12 +76,14 @@ let market_path = match market.as_str() {
 ```
 
 **SLOs**:
+
 - **Availability**: 100% (no process crash on invalid input)
 - **Correctness**: 100% (proper error message with context)
 - **Observability**: 100% (error visible to caller)
 - **Maintainability**: 100% (standard error pattern)
 
 **Validation**:
+
 ```bash
 # Test invalid market type
 cargo run --bin data_structure_validator -- --market invalid-market
@@ -93,6 +99,7 @@ cargo run --bin data_structure_validator -- --market invalid-market
 **File**: `../../crates/rangebar-streaming/src/replay_buffer.rs:95`
 
 **Current State** (v5.0.0):
+
 ```rust
 pub fn get_trades_from(&self, minutes_ago: u32) -> Vec<AggTrade> {
     let inner = self.inner.lock().unwrap();  // Line 88 - UNWRAP #1
@@ -114,6 +121,7 @@ pub fn get_trades_from(&self, minutes_ago: u32) -> Vec<AggTrade> {
 **Actual Issue**: Logic assumes `.back()` succeeds after `is_empty()` check, but safe to use pattern matching
 
 **Target State**:
+
 ```rust
 pub fn get_trades_from(&self, minutes_ago: u32) -> Vec<AggTrade> {
     let inner = self.inner.lock().unwrap();  // Keep unwrap - discussed in Fix 3
@@ -139,12 +147,14 @@ pub fn get_trades_from(&self, minutes_ago: u32) -> Vec<AggTrade> {
 This fix addresses the TOCTOU logic bug. The `.lock().unwrap()` issue is a separate concern (mutex poisoning) that requires broader API changes (return Result from all methods). This is P0-1 in the roadmap and will be addressed in a separate PR.
 
 **SLOs**:
+
 - **Availability**: 100% (no panic on empty buffer)
 - **Correctness**: 100% (correct behavior: return empty vec)
 - **Observability**: 100% (explicit handling visible)
 - **Maintainability**: 100% (pattern matching is idiomatic)
 
 **Validation**:
+
 ```rust
 #[test]
 fn test_get_trades_from_empty_buffer() {
@@ -163,6 +173,7 @@ fn test_get_trades_from_empty_buffer() {
 **File**: `../../crates/rangebar-core/src/processor.rs:36`
 
 **Current State** (v5.0.0):
+
 ```rust
 impl RangeBarProcessor {
     pub fn new(threshold_bps: u32) -> Self {
@@ -177,6 +188,7 @@ impl RangeBarProcessor {
 **Issue**: Accepts invalid thresholds (0, MAX_U32) → division by zero, overflow, nonsensical results
 
 **Target State**:
+
 ```rust
 impl RangeBarProcessor {
     pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
@@ -203,6 +215,7 @@ impl RangeBarProcessor {
 ```
 
 **Error Type Update**:
+
 ```rust
 #[derive(Error, Debug)]
 pub enum ProcessingError {
@@ -218,18 +231,21 @@ pub enum ProcessingError {
 **Call Site Updates** (30+ locations):
 
 1. **Test files** (safe - can use unwrap):
+
 ```rust
 // Before: let mut processor = RangeBarProcessor::new(250);
 // After:  let mut processor = RangeBarProcessor::new(250).unwrap();
 ```
 
 2. **Production code** (must propagate):
+
 ```rust
 // Before: let processor = RangeBarProcessor::new(threshold);
 // After:  let processor = RangeBarProcessor::new(threshold)?;
 ```
 
 **Affected Files**:
+
 - `rangebar-core/src/processor.rs` (tests)
 - `rangebar-batch/src/engine.rs` (production)
 - `rangebar-streaming/src/processor.rs` (production)
@@ -237,12 +253,14 @@ pub enum ProcessingError {
 - `rangebar/tests/*.rs` (10 test files)
 
 **SLOs**:
+
 - **Availability**: 100% (reject invalid inputs at construction)
 - **Correctness**: 100% (only valid thresholds accepted)
 - **Observability**: 100% (clear error message with bounds)
 - **Maintainability**: 100% (validation enforced by type system)
 
 **Validation**:
+
 ```rust
 #[test]
 fn test_threshold_validation() {
@@ -270,11 +288,13 @@ fn test_threshold_validation() {
 ## Implementation Strategy
 
 ### Phase 1: Preparation (30 minutes)
+
 1. Create feature branch: `fix/quick-wins-option-c`
 2. Document current state (baseline)
 3. Run full test suite (baseline: 144 passing)
 
 ### Phase 2: Fix 1 - Validator Panic (1 hour)
+
 1. Update `data_structure_validator.rs:388`
 2. Test with invalid market type
 3. Verify exit code 1 (not panic)
@@ -282,12 +302,14 @@ fn test_threshold_validation() {
 5. Commit: `fix: replace panic with error in data_structure_validator`
 
 ### Phase 3: Fix 2 - Buffer Unwrap (30 minutes)
+
 1. Update `replay_buffer.rs:95`
 2. Add test for empty buffer
 3. Run replay_buffer tests
 4. Commit: `fix: eliminate TOCTOU unwrap in replay_buffer`
 
 ### Phase 4: Fix 3 - Threshold Validation (4 hours)
+
 1. Update `ProcessingError` enum (15 min)
 2. Update `RangeBarProcessor::new()` (15 min)
 3. Update test files with `.unwrap()` (1 hour)
@@ -298,6 +320,7 @@ fn test_threshold_validation() {
 8. Commit: `fix: enforce threshold validation at construction`
 
 ### Phase 5: Validation (30 minutes)
+
 1. Run full test suite: `cargo nextest run --all-features`
 2. Run clippy: `cargo clippy --all-targets --all-features -- -D warnings`
 3. Verify all 144 tests pass
@@ -309,22 +332,26 @@ fn test_threshold_validation() {
 ## Success Criteria
 
 ### Fix 1 - Validator:
+
 - ✅ No panic on invalid market type
 - ✅ Error message includes valid options
 - ✅ Exit code 1 (not 101 for panic)
 
 ### Fix 2 - Buffer:
+
 - ✅ No panic on empty buffer
 - ✅ Returns empty Vec gracefully
 - ✅ Test added and passing
 
 ### Fix 3 - Threshold:
+
 - ✅ Invalid thresholds rejected at construction
 - ✅ Error message includes valid bounds
 - ✅ All call sites updated (30+ locations)
 - ✅ All 144 tests passing
 
 ### Overall:
+
 - ✅ Zero new warnings
 - ✅ Clippy clean
 - ✅ All tests passing
@@ -335,21 +362,25 @@ fn test_threshold_validation() {
 ## SLO Compliance
 
 ### Availability
+
 - **Before**: 85% (panic scenarios cause process crash)
 - **After**: 99% (proper error propagation, no crashes)
 - **Delta**: +14% availability improvement
 
 ### Correctness
+
 - **Before**: 100% (algorithm correct, but crashes on invalid input)
 - **After**: 100% (algorithm correct, rejects invalid input)
 - **Delta**: 0% (maintained)
 
 ### Observability
+
 - **Before**: 60% (panics visible but not actionable)
 - **After**: 90% (errors have context, caller can log/handle)
 - **Delta**: +30% observability improvement
 
 ### Maintainability
+
 - **Before**: 75% (implicit invariants, panics in production)
 - **After**: 95% (explicit validation, type-safe construction)
 - **Delta**: +20% maintainability improvement
@@ -366,11 +397,11 @@ fn test_threshold_validation() {
 
 ## Progress Tracking
 
-| Fix | Status | Estimated | Actual | Blockers | Commit |
-|-----|--------|-----------|--------|----------|--------|
-| 1. Validator panic | ⏭️ deferred | 1h | - | Deprioritized | N/A |
-| 2. Buffer unwrap | ✅ completed | 0.5h | 0.5h | None | cf70d80 |
-| 3. Threshold validation | ✅ completed | 4h | 2h | None | Multiple commits |
+| Fix                     | Status       | Estimated | Actual | Blockers      | Commit           |
+| ----------------------- | ------------ | --------- | ------ | ------------- | ---------------- |
+| 1. Validator panic      | ⏭️ deferred  | 1h        | -      | Deprioritized | N/A              |
+| 2. Buffer unwrap        | ✅ completed | 0.5h      | 0.5h   | None          | cf70d80          |
+| 3. Threshold validation | ✅ completed | 4h        | 2h     | None          | Multiple commits |
 
 **Total Estimated**: 5.5 hours
 **Total Actual**: 2.5 hours (Fix 2 + Fix 3 completed, Fix 1 deferred)
@@ -379,7 +410,7 @@ fn test_threshold_validation() {
 
 ## Learnings & Updates
 
-*(This section updated as implementation progresses)*
+_(This section updated as implementation progresses)_
 
 ---
 

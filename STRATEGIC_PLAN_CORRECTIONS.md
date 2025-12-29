@@ -9,26 +9,32 @@
 ## Correction 1: CSV I/O Priority (Section 2.1)
 
 **Original claim** (STRATEGIC_PLAN.md lines 136-173):
+
 > ### 2.1 CSV I/O Consolidation (HIGH PRIORITY)
+>
 > **SOTA Alternative**: Polars native CSV codec
 > **Estimated Impact**: Performance: 5-10x faster CSV loading
 
 **Correction** (2025-10-16):
+
 - ❌ **INCORRECT PRIORITY**: CSV consolidation is NOT high priority
 - ❌ **SPECULATIVE CLAIM**: "5-10x improvement" has no profiling evidence
 - ❌ **WRONG CONTEXT**: CSV is testing-only, not production format
 
 **Corrected understanding**:
+
 - ✅ **Production formats**: Parquet, Arrow (already implemented via polars)
 - ✅ **CSV role**: Testing/debugging only (human-readable inspection)
 - ✅ **Current state**: Adequate for testing needs (polars_benchmark.rs:84 uses `csv` crate)
 - ✅ **Priority**: LOW or SKIP (not on critical path)
 
 **Impact**:
+
 - Hybrid Plan Phase 1 Action 4 **rejected** (2-3 days saved)
 - Focus redirected to valuable work (Action 5: ADR documentation)
 
 **Rationale**:
+
 1. **No evidence of bottleneck**: No profiling data showing CSV is slow
 2. **Not on critical path**: CSV is not used for production output
 3. **Premature optimization**: Classic "measure first, optimize later" violation
@@ -46,6 +52,7 @@
 4. ✅ **User need**: Solves real user pain point (not developer curiosity)
 
 **Red flags** (skip the optimization):
+
 - ❌ Claims like "5-10x improvement" without measurements
 - ❌ "HIGH PRIORITY" based on library capabilities, not user needs
 - ❌ Optimizing testing utilities instead of production code
@@ -56,11 +63,13 @@
 ## CSV Usage Guideline
 
 **Production use cases** (performance-critical):
+
 - ❌ DO NOT use CSV for production output
 - ✅ USE Parquet (70% compression, columnar storage)
 - ✅ USE Arrow IPC (zero-copy Python transfer)
 
 **Testing/debugging use cases** (human inspection):
+
 - ✅ CSV is appropriate (human-readable, easy to inspect)
 - ✅ Current `csv` crate is adequate (not a bottleneck)
 - ✅ polars_benchmark.rs already uses `csv` crate for loading test data

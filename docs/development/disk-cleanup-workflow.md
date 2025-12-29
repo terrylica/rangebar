@@ -63,15 +63,16 @@ cargo clean-all --cargo-cache
 
 ## What Gets Cleaned
 
-| Command | What It Removes | Regenerates On |
-|---------|----------------|----------------|
-| `cargo clean` | `target/` directory | Next `cargo build` |
-| `cargo clean-all` | All `target/` directories system-wide | Next build in each project |
-| Manual `rm -rf output/*` | Test output files | Re-running tests |
+| Command                  | What It Removes                       | Regenerates On             |
+| ------------------------ | ------------------------------------- | -------------------------- |
+| `cargo clean`            | `target/` directory                   | Next `cargo build`         |
+| `cargo clean-all`        | All `target/` directories system-wide | Next build in each project |
+| Manual `rm -rf output/*` | Test output files                     | Re-running tests           |
 
 ## What's Protected
 
 The following are **never** cleaned automatically:
+
 - Source code (`crates/`, `src-archived/`)
 - Git history (`.git/`)
 - Test data (`test_data/`)
@@ -81,6 +82,7 @@ The following are **never** cleaned automatically:
 ## Pre-commit Hook
 
 Your pre-commit hook **does NOT run cargo clean**. It only:
+
 - Prevents files > 5MB from being committed to git
 - Runs `cargo fmt`, `cargo clippy`, `cargo nextest`, `cargo deny`
 - Checks for merge conflicts, private keys, etc.

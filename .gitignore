@@ -113,6 +113,12 @@ statistics_v2_validation
 RELEASE_NOTES.draft.md
 RELEASE_NOTES_SHORT.md
 
+# Linting output files
+.lychee-results.txt
+.lycheecache
+.lint-*.txt
+.lint-*-results.txt
+
 # .Sessions folder - never delete
 .sessions/
 !.sessions/.gitignore

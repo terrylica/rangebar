@@ -19,6 +19,7 @@ data/
 ## Naming Conventions
 
 ### Binance
+
 - **Path**: `binance/[market]/[SYMBOL]/YYYY-MM-DD.csv.zip`
 - **Example**: `binance/spot/BTCUSDT/2024-07-01.csv.zip`
 - **Markets**: `spot`, `um` (UM futures), `cm` (CM futures)
@@ -26,7 +27,9 @@ data/
 ## Download Methods
 
 ### Binance
+
 Use `binance_historical_data` Python package:
+
 ```bash
 python -c "from binance_historical_data import BinanceDataDumper; \
   BinanceDataDumper('spot', './data/binance').dump_data('BTCUSDT', '2024-07-01', '2024-07-31')"

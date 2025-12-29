@@ -11,28 +11,29 @@ This diagram will show **business logic for choosing optimal threshold** based o
 ### Trading Styles & Thresholds
 
 1. **High-Frequency Trading (HFT)**
-   - Threshold: 0.1-0.5 bps
-   - Expected: 1000-5000 bars/day
-   - Use case: Sub-minute trades
+    - Threshold: 0.1-0.5 bps
+    - Expected: 1000-5000 bars/day
+    - Use case: Sub-minute trades
 
 2. **Intraday Trading**
-   - Threshold: 0.5-5 bps
-   - Expected: 200-1000 bars/day
-   - Use case: Minutes to hours
+    - Threshold: 0.5-5 bps
+    - Expected: 200-1000 bars/day
+    - Use case: Minutes to hours
 
 3. **Swing Trading**
-   - Threshold: 5-25 bps
-   - Expected: 50-200 bars/day
-   - Use case: Days to weeks
+    - Threshold: 5-25 bps
+    - Expected: 50-200 bars/day
+    - Use case: Days to weeks
 
 4. **Position Trading**
-   - Threshold: 25-100 bps
-   - Expected: 10-50 bars/day
-   - Use case: Weeks to months
+    - Threshold: 25-100 bps
+    - Expected: 10-50 bars/day
+    - Use case: Weeks to months
 
 ### Planned Diagram Type
 
 Mermaid flowchart showing:
+
 - Single decision: "Trading Style?"
 - 4 branches (HFT, Intraday, Swing, Position)
 - Threshold ranges per branch

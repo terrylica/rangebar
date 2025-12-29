@@ -10,6 +10,7 @@
 ## Quick Command Index
 
 ### Setup
+
 ```bash
 # Install audit tools
 cargo install cargo-udeps cargo-outdated cargo-audit cargo-deny cargo-machete tokei
@@ -431,6 +432,7 @@ done
 6. Add `2>&1` to capture stderr with stdout
 
 **Safety**:
+
 - All listed commands are read-only
 - Create backups before any deletions
 - Test changes on feature branch first

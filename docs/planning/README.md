@@ -10,7 +10,9 @@ This directory contains all planning, architectural, and research documentation 
 ## 📁 Directory Structure
 
 ### `/current/`
+
 **Active planning documents** - Current development priorities and ongoing work
+
 - `code-consolidation-plan.yml` - DRY principle implementation
 - `data-structure-validation-plan.yml` - Cross-market validation system
 - `historical-replay-visualizer.yml` - Historical data replay system
@@ -18,18 +20,24 @@ This directory contains all planning, architectural, and research documentation 
 - `walk-forward-pattern-recognition-system-session.txt` - Development session notes
 
 ### `/architecture/`
+
 **System architecture specifications** - Core algorithm and integration designs
+
 - `algorithm-spec.md` - Range bar algorithm specification
 - `polars-integration-plan.yml` - Polars dataframe integration
 
 ### `/research/`
+
 **Research findings and analysis** - Academic and experimental work
+
 - `critical-finding-flat-bars-impossible.yml` - Mathematical constraints research
 - `extended-entropy-analysis.yml` - Market entropy analysis
 - `pattern-continuation-entropy-research-synthesis.yml` - Pattern research synthesis
 
 ### `/legacy/`
+
 **Historical planning documents** - Completed phases and superseded plans
+
 - `exness-migration-plan.md` - Provider migration plan (Exness implementation complete)
 - `phase6-data-flow-architecture.md` - Phase 6 web visualization planning
 - `phase6-technical-specification.yaml` - Phase 6 technical specs
@@ -52,4 +60,4 @@ This directory contains all planning, architectural, and research documentation 
 
 ---
 
-*Reorganized October 11, 2025 after v5.0.0 workspace migration*
+_Reorganized October 11, 2025 after v5.0.0 workspace migration_

@@ -11,21 +11,22 @@ This diagram will show **business logic for choosing data sources and markets**,
 ### Decision Points
 
 1. **Asset Class?**
-   - Cryptocurrency → Binance (Spot/UM/CM)
-   - Forex → Exness (Raw_Spread variant)
+    - Cryptocurrency → Binance (Spot/UM/CM)
+    - Forex → Exness (Raw_Spread variant)
 
 2. **Market Type?** (if Crypto)
-   - Spot trading → Binance Spot
-   - Futures USDT → Binance UM Futures
-   - Futures Coin → Binance CM Futures
+    - Spot trading → Binance Spot
+    - Futures USDT → Binance UM Futures
+    - Futures Coin → Binance CM Futures
 
 3. **Validation**
-   - All paths converge → Data Validation
-   - Then → Range Bar Processing
+    - All paths converge → Data Validation
+    - Then → Range Bar Processing
 
 ### Planned Diagram Type
 
 Mermaid flowchart showing:
+
 - Binary decision nodes (diamond shapes)
 - Market endpoint nodes (rectangles)
 - Convergence to unified processing

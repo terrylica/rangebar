@@ -22,6 +22,7 @@ Long-running jobs (multi-symbol analysis, historical backtests, large datasets) 
 ### 1. Network Timeouts (Binance/Exness API)
 
 **Symptoms**:
+
 ```
 Error: reqwest::Error: operation timed out
 Failed to fetch BTCUSDT 2024-01-15
@@ -34,6 +35,7 @@ Failed to fetch BTCUSDT 2024-01-15
 ### 2. Disk Space Exhaustion
 
 **Symptoms**:
+
 ```
 Error: No space left on device (os error 28)
 Failed to write output/ETHUSDT_25bps.parquet
@@ -42,6 +44,7 @@ Failed to write output/ETHUSDT_25bps.parquet
 **Impact**: Completed bars in memory are lost, partial file may be corrupted
 
 **Recovery**:
+
 1. Free disk space (`df -h` to check)
 2. Remove corrupted partial files
 3. Resume from last complete checkpoint
@@ -50,6 +53,7 @@ Failed to write output/ETHUSDT_25bps.parquet
 ### 3. Out of Memory (OOM)
 
 **Symptoms**:
+
 ```
 signal: 9, SIGKILL
 Killed: 9
@@ -58,6 +62,7 @@ Killed: 9
 **Impact**: All in-memory state lost, no partial results saved
 
 **Recovery**:
+
 1. Reduce batch size (process fewer symbols/dates per run)
 2. Use streaming mode instead of batch mode
 3. Resume with smaller chunks
@@ -65,6 +70,7 @@ Killed: 9
 ### 4. Invalid Data / Parse Errors
 
 **Symptoms**:
+
 ```
 Error: CSV parse error at line 45123
 Error: FixedPoint parse error: invalid decimal "1.234e-5"
@@ -74,6 +80,7 @@ Error: Timestamp parse error
 **Impact**: Single symbol/date may fail, others may succeed
 
 **Recovery**:
+
 1. Identify failed symbol/date from error message
 2. Skip corrupted data (log for manual review)
 3. Resume processing remaining symbols
@@ -82,6 +89,7 @@ Error: Timestamp parse error
 ### 5. Algorithm Invariant Violations
 
 **Symptoms**:
+
 ```
 Assertion failed: high >= open
 Breach consistency invariant violated
@@ -90,6 +98,7 @@ Breach consistency invariant violated
 **Impact**: Bug in algorithm or data corruption, partial results may be invalid
 
 **Recovery**:
+
 1. Save input data that triggered violation
 2. File bug report with reproducible test case
 3. DO NOT resume - results may be invalid
@@ -102,6 +111,7 @@ Breach consistency invariant violated
 **When to Use**: Multi-symbol processing, large date ranges
 
 **Pattern**:
+
 ```rust
 use std::path::Path;
 use std::collections::HashSet;
@@ -155,6 +165,7 @@ fn process_symbols_with_checkpointing(
 ```
 
 **Benefits**:
+
 - Zero memory overhead (filesystem is the state)
 - Automatically resumes from failures
 - Works across process restarts
@@ -165,6 +176,7 @@ fn process_symbols_with_checkpointing(
 **When to Use**: Need detailed audit trail, debugging failures
 
 **Pattern**:
+
 ```rust
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -232,6 +244,7 @@ for symbol in symbols {
 ```
 
 **Analyzing Progress**:
+
 ```bash
 # Check completion rate
 grep "COMPLETE" progress.log | wc -l
@@ -249,6 +262,7 @@ comm -23 <(grep "START" progress.log | awk '{print $3}' | sort) \
 **When to Use**: Prevent partial/corrupted files
 
 **Pattern**:
+
 ```rust
 use std::fs;
 use std::path::Path;
@@ -269,6 +283,7 @@ fn write_bars_atomically(bars: &[RangeBar], output_path: &Path) -> Result<(), Er
 ```
 
 **Benefits**:
+
 - File either exists completely or doesn't exist
 - Never leaves partial/corrupted files
 - Safe to retry on same filename
@@ -278,6 +293,7 @@ fn write_bars_atomically(bars: &[RangeBar], output_path: &Path) -> Result<(), Er
 **When to Use**: Memory constraints, progress visibility
 
 **Pattern**:
+
 ```rust
 const BATCH_SIZE: usize = 10;  // Process 10 symbols at a time
 
@@ -294,6 +310,7 @@ for batch in symbols.chunks(BATCH_SIZE) {
 ```
 
 **Tuning Guidelines**:
+
 - **Memory-constrained**: 5-10 symbols per batch
 - **I/O-bound**: 50-100 symbols per batch
 - **Network-bound**: Reduce batch size on timeouts
@@ -609,6 +626,7 @@ fn process_large_dataset_streaming(
 ```
 
 **Benefits**:
+
 - Constant memory usage (O(1) bars in memory)
 - Partial results saved if crash occurs
 - Works with unlimited data sizes
@@ -702,14 +720,14 @@ where
 
 ## Quick Reference
 
-| Failure Mode | Recovery Strategy | Tools |
-|--------------|-------------------|-------|
-| Network timeout | Skip failed symbol, retry with backoff | `retry_with_backoff()` |
-| Disk full | Free space, resume from checkpoints | `df -h`, file-based checkpointing |
-| OOM | Reduce batch size, use streaming | `StreamingCsvExporter` |
-| Invalid data | Log error, skip symbol | Progress log, `log_error()` |
-| Partial corruption | Validate on resume, delete if invalid | `validate_existing_output()` |
-| Process crash | File-based checkpoints auto-resume | Manifest pattern, atomic writes |
+| Failure Mode       | Recovery Strategy                      | Tools                             |
+| ------------------ | -------------------------------------- | --------------------------------- |
+| Network timeout    | Skip failed symbol, retry with backoff | `retry_with_backoff()`            |
+| Disk full          | Free space, resume from checkpoints    | `df -h`, file-based checkpointing |
+| OOM                | Reduce batch size, use streaming       | `StreamingCsvExporter`            |
+| Invalid data       | Log error, skip symbol                 | Progress log, `log_error()`       |
+| Partial corruption | Validate on resume, delete if invalid  | `validate_existing_output()`      |
+| Process crash      | File-based checkpoints auto-resume     | Manifest pattern, atomic writes   |
 
 ## Further Reading
 

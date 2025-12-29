@@ -12,6 +12,7 @@
 **Result**: ✅ **PASS** (after fixing 1 critical bug)
 
 **Critical Bug Found and Fixed**:
+
 - **Bug**: `bid == ask` incorrectly rejected as "CrossedMarket"
 - **Impact**: 97.21% of valid ticks rejected (257,097 / 264,474)
 - **Root Cause**: Logic error in `conversion.rs:46` - used `>=` instead of `>`
@@ -23,6 +24,7 @@
 ## Test Execution Results
 
 ### Data Fetching
+
 - **Total ticks (Jan 2024)**: 1,209,058
 - **Filtered ticks (Jan 15-19)**: 264,474
 - **Ticks per day**: 52,894 (within 50K-70K expected range) ✅
@@ -30,17 +32,20 @@
 - **Success rate**: 100% (zero rate limiting) ✅
 
 ### Temporal Integrity
+
 - **Monotonic timestamps**: ✅ PASS
 - **No duplicate ticks**: ✅ PASS (same timestamp allowed if prices differ)
 - **Validation method**: Sequential comparison, fail-fast on violation
 
 ### Spread Distribution
+
 - **Zero spread ticks**: 98.46% (bid == ask)
 - **Stress events (>1 pip)**: 0.00%
 - **Characteristic**: Matches Raw_Spread bimodal distribution (CV=8.17)
 - **Interpretation**: Jan 15-19, 2024 was a low-volatility period
 
 ### Range Bar Generation
+
 - **Total bars**: 147,599
 - **Bars per day**: 29,519
 - **Ticks per bar (avg)**: 1.79
@@ -48,6 +53,7 @@
 - **Validation strictness**: Strict
 
 ### Bar Integrity
+
 - **OHLC relationships**: ✅ PASS (all 147,599 bars)
 - **Volume semantics**: ✅ PASS (volume=0, no bid/ask volume data)
 - **Spread stats**: ✅ PASS (tick_count > 0 for all bars)
@@ -61,6 +67,7 @@
 **Location**: `src/providers/exness/conversion.rs:46`
 
 **Incorrect Code**:
+
 ```rust
 if tick.bid >= tick.ask {  // BUG: Rejects bid==ask as crossed!
     return Err(ConversionError::CrossedMarket { bid, ask });
@@ -68,6 +75,7 @@ if tick.bid >= tick.ask {  // BUG: Rejects bid==ask as crossed!
 ```
 
 **Corrected Code**:
+
 ```rust
 // Crossed market check: bid > ask (strictly greater)
 // Note: bid == ask is valid (zero spread, common in Raw_Spread data)
@@ -79,12 +87,14 @@ if tick.bid > tick.ask {
 ### Impact Analysis
 
 **Before Fix**:
+
 - Error rate: 97.21%
 - Valid ticks rejected: 257,097 out of 264,474
 - Bars generated: 2,746 (from 2.79% of data!)
 - **System would fail in production**
 
 **After Fix**:
+
 - Error rate: 0.00%
 - Valid ticks processed: 264,474 (100%)
 - Bars generated: 147,599
@@ -93,10 +103,12 @@ if tick.bid > tick.ask {
 ### Root Cause Analysis
 
 **Semantic Confusion**: "Crossed market" vs "Zero spread"
+
 - **Crossed market** (invalid): bid > ask (inverted prices, data corruption)
 - **Zero spread** (valid): bid == ask (tight market, broker confident)
 
 **Why This Matters for Raw_Spread**:
+
 - Raw_Spread exhibits **98.46% zero-spread ticks**
 - This is the DATA CHARACTERISTIC that gives CV=8.17 (high variability)
 - Bimodal distribution: 98% zero spread, 2% stress events (1-9 pips)
@@ -124,6 +136,7 @@ for i in 1..ticks.len() {
 ```
 
 ### Results
+
 - **264,474 ticks validated**
 - **Zero violations** ✅
 - **No duplicate ticks** (same timestamp + same prices)
@@ -136,10 +149,12 @@ for i in 1..ticks.len() {
 ### Initial Expectation vs Reality
 
 **Expected** (from initial planning with other forex providers):
+
 - 0.1bps threshold → ~480 bars/day
 - Based on: Historical forex data (84K ticks/day, with volumes)
 
 **Actual** (Exness Raw_Spread):
+
 - 0.1bps threshold → 29,519 bars/day
 - Based on: Exness data (53K ticks/day, no volumes, 98.46% zero spread)
 
@@ -150,11 +165,13 @@ for i in 1..ticks.len() {
 **Key Insight**: Zero-spread ticks create identical mid-prices
 
 When `bid == ask = 1.09453`:
+
 - Mid-price = `(1.09453 + 1.09453) / 2 = 1.09453`
 - **No price movement** between consecutive zero-spread ticks
 - Threshold breaches happen more frequently due to clustered price levels
 
 **Example from output (bars 0-9)**:
+
 - Bar 0: open=1.09453, close=1.09451 (4 ticks)
 - Bar 1: open=1.09451, close=1.09449 (2 ticks)
 - **Average bar duration**: ~5-15 seconds
@@ -163,6 +180,7 @@ When `bid == ask = 1.09453`:
 ### Validation: This is NOT a Bug
 
 **Reasons**:
+
 1. **Algorithm is correct**: RangeBarProcessor works as designed
 2. **Threshold is correct**: 0.1bps = 0.001% = 0.000011 at EURUSD=1.09
 3. **Data is correct**: Exness Raw_Spread is ultra-sensitive by design (CV=8.17)
@@ -175,12 +193,12 @@ When `bid == ask = 1.09453`:
 
 Based on empirical results:
 
-| Threshold | Expected Bars/Day | Ticks/Bar | Use Case |
-|-----------|------------------|-----------|----------|
-| 0.1bps | 29,519 | 1.8 | High-frequency micro-structure analysis |
-| 1bps | ~2,952 | ~18 | Intraday pattern analysis |
-| 5bps | ~590 | ~90 | Daily trading signals |
-| 10bps | ~295 | ~180 | Swing trading |
+| Threshold | Expected Bars/Day | Ticks/Bar | Use Case                                |
+| --------- | ----------------- | --------- | --------------------------------------- |
+| 0.1bps    | 29,519            | 1.8       | High-frequency micro-structure analysis |
+| 1bps      | ~2,952            | ~18       | Intraday pattern analysis               |
+| 5bps      | ~590              | ~90       | Daily trading signals                   |
+| 10bps     | ~295              | ~180      | Swing trading                           |
 
 **Recommendation**: Start with **5bps** (threshold=50 in v3.0.0 units) for balanced granularity.
 
@@ -189,21 +207,25 @@ Based on empirical results:
 ## SLO Validation
 
 ### Availability SLO: 100% Fetch Success
+
 - **Target**: Zero rate limiting
 - **Result**: ✅ 100% success (1 request, 1.2M ticks, 3.53 seconds)
 - **Comparison**: Previous provider 77.5% (27/120 requests failed)
 
 ### Correctness SLO: 100% Validation Pass
+
 - **Target**: All ticks pass validation
 - **Result**: ✅ 100% after bug fix (0% before fix)
 - **Error Policy**: Fail-fast (any error propagates immediately)
 
 ### Observability SLO: 100% Error Traceability
+
 - **Target**: All errors logged with full context
 - **Result**: ✅ thiserror provides complete error context
 - **Example**: `Conversion(CrossedMarket { bid: 1.09453, ask: 1.09453 })`
 
 ### Maintainability SLO: Out-of-Box Dependencies
+
 - **Target**: Standard crates only
 - **Result**: ✅ zip, csv, chrono (simpler than previous provider's lzma-rs, byteorder, custom parser)
 
@@ -212,21 +234,24 @@ Based on empirical results:
 ## Output Files Validation
 
 ### summary.json
+
 ```json
 {
-  "test_period": "2024-01-15 to 2024-01-19",
-  "total_ticks": 264474,
-  "total_bars": 147599,
-  "ticks_per_bar_avg": 1.79,
-  "bars_per_day": 29519,
-  "ticks_per_day": 52894,
-  "threshold_bps": 0.1,
-  "validation_strictness": "Strict"
+    "test_period": "2024-01-15 to 2024-01-19",
+    "total_ticks": 264474,
+    "total_bars": 147599,
+    "ticks_per_bar_avg": 1.79,
+    "bars_per_day": 29519,
+    "ticks_per_day": 52894,
+    "threshold_bps": 0.1,
+    "validation_strictness": "Strict"
 }
 ```
+
 ✅ All metrics match test output
 
 ### bars_sample.csv (First 10 bars)
+
 - **OHLC integrity**: ✅ All bars pass (high >= open/close, low <= open/close)
 - **Spread stats**: ✅ All bars have avg_spread=0 (98.46% zero spread)
 - **Tick counts**: ✅ All bars have 2-6 ticks (avg 1.79)
@@ -254,6 +279,7 @@ Based on empirical results:
 
 **Incorrect Assumption**: More ticks always means better data (84K ticks/day vs 53K)
 **Reality**: Signal quality > quantity
+
 - Exness: 100% reliability, simpler format (zip, csv, chrono)
 - Previous provider: 77.5% reliability, complex parsing (lzma-rs, byteorder)
 
@@ -294,6 +320,7 @@ Based on empirical results:
 ### Threshold Guidance
 
 **For EURUSD Raw_Spread**:
+
 - **Micro-structure analysis**: 0.1-1bps (expect 3K-30K bars/day)
 - **Intraday patterns**: 5-10bps (expect 300-600 bars/day)
 - **Daily signals**: 25-50bps (expect 60-120 bars/day)

@@ -7,19 +7,20 @@ This guide helps you upgrade between RangeBar versions.
 ### 🚨 Breaking Changes
 
 #### Field Names Changed (Breaking)
+
 Output field names changed from **plural** to **singular** for consistency:
 
-| v0.3.x (Old) | v0.4.0 (New) | 
-|-------------|-------------|
-| `opens` → | `open` |
-| `highs` → | `high` |
-| `lows` → | `low` |
-| `closes` → | `close` |
-| `volumes` → | `volume` |
-| `turnovers` → | `turnover` |
+| v0.3.x (Old)     | v0.4.0 (New)             |
+| ---------------- | ------------------------ |
+| `opens` →        | `open`                   |
+| `highs` →        | `high`                   |
+| `lows` →         | `low`                    |
+| `closes` →       | `close`                  |
+| `volumes` →      | `volume`                 |
+| `turnovers` →    | `turnover`               |
 | `trade_counts` → | `individual_trade_count` |
-| `first_ids` → | `first_trade_id` |
-| `last_ids` → | `last_trade_id` |
+| `first_ids` →    | `first_trade_id`         |
+| `last_ids` →     | `last_trade_id`          |
 
 **Timestamps remain unchanged**: `open_time`, `close_time`
 
@@ -33,7 +34,7 @@ rust_result = rust.compute_range_bars(...)
 first_price = rust_result['opens'][0]
 first_volume = rust_result['volumes'][0]
 
-# ✅ v0.4.0 (New) 
+# ✅ v0.4.0 (New)
 rust_result = rust.compute_range_bars(...)
 first_price = rust_result['open'][0]
 first_volume = rust_result['volume'][0]
@@ -55,12 +56,14 @@ df = pd.DataFrame({k: v for k, v in rust_result.items() if not k.startswith('_')
 ### 🎯 New Features
 
 #### Zero Conversion Overhead
+
 - **Direct pandas integration**: No manual conversion needed
 - **Excel/CSV ready**: Immediate export compatibility
 - **Schema validation**: Built-in format checking
 - **Metadata included**: Automatic schema information
 
 #### Format Alignment Benefits
+
 ```python
 import pandas as pd
 from rangebar import _rangebar_rust as rust, convert
@@ -82,6 +85,7 @@ arrow_data = convert.json_to_arrow(json_data)
 ```
 
 #### Conversion Utilities
+
 New `rangebar.convert` module provides seamless format conversion:
 
 ```python
@@ -107,6 +111,7 @@ uv add "rangebar>=0.4.0"  # or pip install --upgrade "rangebar>=0.4.0"
 ```
 
 **Test your upgrade:**
+
 ```python
 import rangebar
 print(f"Version: {rangebar.__version__}")  # Should be 0.4.0+
@@ -115,7 +120,7 @@ print(f"Version: {rangebar.__version__}")  # Should be 0.4.0+
 from rangebar import _rangebar_rust as rust
 import numpy as np
 
-prices = np.array([5000000000000, 5040000000000], dtype=np.int64)  
+prices = np.array([5000000000000, 5040000000000], dtype=np.int64)
 volumes = np.array([100000000, 100000000], dtype=np.int64)
 timestamps = np.array([1000, 2000], dtype=np.int64)
 trade_ids = np.array([1, 2], dtype=np.int64)
@@ -143,6 +148,7 @@ This guide helps you upgrade from RangeBar v0.1.x to v0.2.0 with the latest 2025
 ## 🚨 Breaking Changes
 
 ### Python Version Requirement
+
 - **v0.1.x**: Python 3.12+
 - **v0.2.0**: Python 3.13+ ⚠️
 
@@ -159,18 +165,20 @@ uv python pin 3.13
 ```
 
 ### Dependency Versions
+
 Major dependency updates that may affect your environment:
 
-| Package | v0.1.x | v0.2.0 | Impact |
-|---------|--------|--------|---------|
-| numpy | >=1.24.0 | >=2.3.0 | Major version bump |
-| pandas | >=2.0.0 | >=2.3.0 | Minor updates |
+| Package | v0.1.x   | v0.2.0   | Impact             |
+| ------- | -------- | -------- | ------------------ |
+| numpy   | >=1.24.0 | >=2.3.0  | Major version bump |
+| pandas  | >=2.0.0  | >=2.3.0  | Minor updates      |
 | pyarrow | >=12.0.0 | >=21.0.0 | Major version bump |
-| httpx | >=0.24.0 | >=0.28.0 | Minor updates |
+| httpx   | >=0.24.0 | >=0.28.0 | Minor updates      |
 
 ## 📈 Performance Improvements
 
 ### Massive Speed Increase
+
 - **v0.1.x**: ~2.5M trades/second
 - **v0.2.0**: **137M+ trades/second** (54x faster!)
 
@@ -248,10 +256,10 @@ from decimal import Decimal
 async def process_data():
     # Fetch data (same API)
     trades = await fetch_um_futures_aggtrades('BTCUSDT', '2024-01-01', '2024-01-01')
-    
+
     # Generate bars (same API, 54x faster!)
     bars = list(iter_range_bars_from_aggtrades(trades, pct=Decimal('0.008')))
-    
+
     print(f"Processed {len(trades)} trades → {len(bars)} bars")
 
 asyncio.run(process_data())
@@ -260,6 +268,7 @@ asyncio.run(process_data())
 ## 🚀 Performance Benefits
 
 ### Before vs After
+
 ```python
 import time
 from rangebar.range_bars import iter_range_bars_from_aggtrades
@@ -278,32 +287,38 @@ duration = time.time() - start
 ### Common Issues
 
 #### 1. Python Version Error
+
 ```
 error: externally-managed-environment
 ```
 
 **Solution**: Upgrade to Python 3.13+
+
 ```bash
 uv python install 3.13
 uv sync
 ```
 
 #### 2. NumPy Compatibility
+
 ```
 ImportError: numpy compatibility issue
 ```
 
 **Solution**: Clear environment and reinstall
+
 ```bash
 uv sync --reinstall
 ```
 
 #### 3. Dependency Conflicts
+
 ```
 No solution found when resolving dependencies
 ```
 
 **Solution**: Use exact version specification
+
 ```bash
 uv add "rangebar==0.2.0"
 ```
@@ -311,6 +326,7 @@ uv add "rangebar==0.2.0"
 ## 📊 Validation
 
 ### Benchmark Your Upgrade
+
 Run this script to verify performance improvements:
 
 ```python
@@ -339,6 +355,7 @@ print(f"✅ Expected v0.2.0: 2M+ trades/sec (Python), 100M+ trades/sec (Rust)")
 ## 🎯 Summary
 
 **Upgrading to v0.2.0:**
+
 - ✅ **Massive performance boost** (54x faster)
 - ✅ **No code changes** required
 - ✅ **Latest 2025 dependencies**

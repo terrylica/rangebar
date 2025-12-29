@@ -86,17 +86,20 @@ use rangebar::data::HistoricalDataLoader;
 ```
 
 **Cargo.toml**:
+
 ```toml
 [dependencies]
 rangebar = { version = "5.0.0", features = ["full"] }
 ```
 
 **Pros**:
+
 - Zero code changes
 - Instant upgrade
 - All features enabled
 
 **Cons**:
+
 - Larger binary size (includes all crates)
 - Slower compilation (compiles everything)
 - Less modular dependency tree
@@ -110,12 +113,14 @@ Migrate to direct crate imports for better modularity:
 #### Step 1: Update Dependencies
 
 **Before (v4.0.0)**:
+
 ```toml
 [dependencies]
 rangebar = "4.0.0"
 ```
 
 **After (v5.0.0)** - Choose what you need:
+
 ```toml
 [dependencies]
 # Minimal: Core algorithm only
@@ -205,6 +210,7 @@ use rangebar_config::Settings;
 ### Example 1: Basic Range Bar Processing
 
 **Before (v4.0.0)**:
+
 ```rust
 use rangebar::fixed_point::FixedPoint;
 use rangebar::core::processor::RangeBarProcessor;
@@ -218,6 +224,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **After (v5.0.0 - Automatic)**:
+
 ```rust
 // No changes needed! Use meta-crate with legacy paths
 use rangebar::fixed_point::FixedPoint;
@@ -232,6 +239,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **After (v5.0.0 - Manual)**:
+
 ```rust
 // Direct crate imports (recommended)
 use rangebar_core::{FixedPoint, RangeBarProcessor, AggTrade};
@@ -244,6 +252,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Cargo.toml**:
+
 ```toml
 # Minimal dependency for basic processing
 [dependencies]
@@ -255,6 +264,7 @@ rangebar-core = "5.0.0"
 ### Example 2: Historical Data Loading
 
 **Before (v4.0.0)**:
+
 ```rust
 use rangebar::data::HistoricalDataLoader;
 use rangebar::tier1::get_tier1_symbols;
@@ -269,6 +279,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **After (v5.0.0 - Manual)**:
+
 ```rust
 use rangebar_providers::binance::{HistoricalDataLoader, get_tier1_symbols};
 
@@ -282,6 +293,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Cargo.toml**:
+
 ```toml
 [dependencies]
 rangebar-core = "5.0.0"
@@ -294,6 +306,7 @@ tokio = { version = "1.0", features = ["full"] }
 ### Example 3: Export to Parquet
 
 **Before (v4.0.0)**:
+
 ```rust
 use rangebar::infrastructure::io::ParquetExporter;
 
@@ -305,6 +318,7 @@ fn export_bars(bars: &[RangeBar]) -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **After (v5.0.0 - Manual)**:
+
 ```rust
 use rangebar_io::ParquetExporter;
 use rangebar_core::RangeBar;
@@ -317,6 +331,7 @@ fn export_bars(bars: &[RangeBar]) -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Cargo.toml**:
+
 ```toml
 [dependencies]
 rangebar-core = "5.0.0"
@@ -328,6 +343,7 @@ rangebar-io = { version = "5.0.0", features = ["polars-io"] }
 ### Example 4: Complete Pipeline
 
 **Before (v4.0.0)**:
+
 ```rust
 use rangebar::data::HistoricalDataLoader;
 use rangebar::core::processor::RangeBarProcessor;
@@ -352,6 +368,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **After (v5.0.0 - Manual)**:
+
 ```rust
 use rangebar_providers::binance::HistoricalDataLoader;
 use rangebar_core::RangeBarProcessor;
@@ -376,6 +393,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Cargo.toml**:
+
 ```toml
 [dependencies]
 rangebar-core = "5.0.0"
@@ -479,11 +497,13 @@ fn test_migration_compatibility() {
 ### Issue: Import not found
 
 **Error**:
+
 ```
 error[E0432]: unresolved import `rangebar::core`
 ```
 
 **Solution**: Update imports to direct crate paths or enable `full` feature:
+
 ```toml
 rangebar = { version = "5.0.0", features = ["full"] }
 ```
@@ -491,11 +511,13 @@ rangebar = { version = "5.0.0", features = ["full"] }
 ### Issue: Missing feature
 
 **Error**:
+
 ```
 error: feature `polars-io` not found in package `rangebar-core`
 ```
 
 **Solution**: Features are now on specific crates:
+
 ```toml
 # Wrong
 rangebar-core = { version = "5.0.0", features = ["polars-io"] }
@@ -507,11 +529,13 @@ rangebar-io = { version = "5.0.0", features = ["polars-io"] }
 ### Issue: Circular dependency
 
 **Error**:
+
 ```
 error: cyclic package dependency
 ```
 
 **Solution**: Use correct dependency hierarchy:
+
 - `rangebar-core` (no dependencies)
 - `rangebar-providers` → `rangebar-core`
 - `rangebar-io` → `rangebar-core`
@@ -554,10 +578,10 @@ error: cyclic package dependency
 
 ## Version History
 
-| Version | Release Date | Key Changes |
-|---------|-------------|-------------|
-| v4.0.0 | 2025-10-01 | Monolithic structure |
-| v5.0.0 | 2025-10-11 | Modular workspace with backward compatibility |
+| Version | Release Date | Key Changes                                   |
+| ------- | ------------ | --------------------------------------------- |
+| v4.0.0  | 2025-10-01   | Monolithic structure                          |
+| v5.0.0  | 2025-10-11   | Modular workspace with backward compatibility |
 
 ---
 

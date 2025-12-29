@@ -10,7 +10,9 @@
 ## EXECUTIVE SUMMARY
 
 ### Current State Assessment
+
 **Strengths**: ✅
+
 - Clean modular architecture (8 specialized crates)
 - Comprehensive testing (4,091 LOC, 43 integration tests)
 - Zero unsafe blocks (pure Rust)
@@ -19,6 +21,7 @@
 - Strong temporal integrity (well-validated)
 
 **Technical Debt**: ⚠️
+
 - Volume conservation checks disabled (need re-enabling)
 - Duplicate algorithm code (ExportRangeBarProcessor vs RangeBarProcessor)
 - Legacy code (59 files in src-archived/, 800 LOC backward compat crate)
@@ -26,6 +29,7 @@
 - CSV I/O fragmentation (multiple codecs)
 
 **Opportunities**: 📈
+
 - SOTA library consolidation (polars native CSV)
 - Production deployment readiness
 - Additional forex pair support
@@ -45,6 +49,7 @@ let trade_turnover = (trade.price.to_f64() * trade.volume.to_f64()) as i128;
 ```
 
 **Risk Assessment**: 🟡 LOW (mitigated)
+
 - **Issue**: Intermediate floating-point multiplication before cast to i128
 - **Potential Impact**: Precision loss at extreme values (>10^15)
 - **Mitigation**: Already tested with real market data (BTCUSDT, ETHUSDT)
@@ -53,6 +58,7 @@ let trade_turnover = (trade.price.to_f64() * trade.volume.to_f64()) as i128;
 **Recommendation**: MONITOR (no action unless edge cases found)
 
 **Alternative**: Pure fixed-point multiplication
+
 ```rust
 // Safer: FixedPoint arithmetic (no float intermediate)
 let trade_turnover = trade.price.raw_value()
@@ -74,6 +80,7 @@ fn test_zero_duration_bars_are_valid() {
 ```
 
 **Risk Assessment**: ✅ SAFE (by design)
+
 - **Purpose**: Fast market execution scenarios
 - **Validation**: Explicitly tested
 - **Non-lookahead**: Breach detection still uses threshold from OPEN
@@ -99,6 +106,7 @@ pub fn normalize_timestamp(timestamp: i64) -> Result<i64, String> {
 ```
 
 **Risk Assessment**: ✅ SAFE (well-validated)
+
 - **Coverage**: Temporal integrity validator (dedicated binary)
 - **Testing**: Quarterly samples 2022-2025 (data-structure-validator)
 - **Validation**: Cross-year boundary tests pass
@@ -117,6 +125,7 @@ pub fn normalize_timestamp(timestamp: i64) -> Result<i64, String> {
 ```
 
 **Risk Assessment**: 🔴 HIGH (validation gap)
+
 - **Issue**: Volume totals not verified in integration tests
 - **Impact**: Potential data loss undetected
 - **Cause**: Statistical engine refactoring incomplete
@@ -124,6 +133,7 @@ pub fn normalize_timestamp(timestamp: i64) -> Result<i64, String> {
 **Recommendation**: 🔥 IMMEDIATE ACTION REQUIRED
 
 **Action Items**:
+
 1. Identify why volume conservation fails
 2. Fix processor volume tracking
 3. Re-enable validation in all integration tests
@@ -136,6 +146,7 @@ pub fn normalize_timestamp(timestamp: i64) -> Result<i64, String> {
 ### 2.1 CSV I/O Consolidation (HIGH PRIORITY)
 
 **Current State**: Fragmented CSV handling
+
 - `csv` crate v1.3 (standalone)
 - `polars` CSV reader (DataFrame operations)
 - Multiple deserialization paths
@@ -143,6 +154,7 @@ pub fn normalize_timestamp(timestamp: i64) -> Result<i64, String> {
 **SOTA Alternative**: Polars native CSV codec
 
 **Benefits**:
+
 - Single codec family (CSV → DataFrame → Parquet)
 - 10-100x faster parsing (Rust + SIMD)
 - Lazy evaluation for large files
@@ -150,6 +162,7 @@ pub fn normalize_timestamp(timestamp: i64) -> Result<i64, String> {
 - Zero-copy optimizations
 
 **Migration Path**:
+
 ```rust
 // Before (current)
 use csv::ReaderBuilder;
@@ -164,6 +177,7 @@ let df = CsvReader::from_path("data.csv")?
 ```
 
 **Estimated Impact**:
+
 - Reduce CSV-related code by 60%
 - Performance: 5-10x faster CSV loading
 - Memory: 30-50% reduction (lazy evaluation)
@@ -175,6 +189,7 @@ let df = CsvReader::from_path("data.csv")?
 ### 2.2 Timestamp Handling: chrono → time (MEDIUM PRIORITY)
 
 **Current State**: `chrono` v0.4
+
 - Widely used, stable
 - Some legacy API patterns
 - Larger binary footprint
@@ -182,6 +197,7 @@ let df = CsvReader::from_path("data.csv")?
 **SOTA Alternative**: `time` crate v0.3+
 
 **Benefits**:
+
 - More modern API (const fn, compile-time formatting)
 - Better async support
 - Smaller binary size (~50KB reduction)
@@ -191,6 +207,7 @@ let df = CsvReader::from_path("data.csv")?
 **Migration Complexity**: MEDIUM (affects multiple modules)
 
 **Estimated Impact**:
+
 - Binary size: -50KB
 - Build time: -5-10% (fewer proc-macros)
 - API: More ergonomic datetime operations
@@ -202,6 +219,7 @@ let df = CsvReader::from_path("data.csv")?
 ### 2.3 Statistics: rolling-stats + tdigests → Polars Expressions (MEDIUM PRIORITY)
 
 **Current State**:
+
 - `rolling-stats` v0.1 (Welford's algorithm for variance)
 - `tdigests` v1.0 (Ted Dunning's percentile estimation)
 - Custom statistical engine (partially disabled)
@@ -209,6 +227,7 @@ let df = CsvReader::from_path("data.csv")?
 **SOTA Alternative**: Polars lazy expressions
 
 **Benefits**:
+
 - Unified data processing pipeline
 - GPU acceleration potential (via cuDF integration)
 - Vectorized operations (SIMD)
@@ -216,6 +235,7 @@ let df = CsvReader::from_path("data.csv")?
 - Rolling window operations built-in
 
 **Migration Path**:
+
 ```rust
 // Before (current)
 use rolling_stats::Stats;
@@ -232,6 +252,7 @@ let df = df.lazy()
 ```
 
 **Estimated Impact**:
+
 - Reduce statistics code by 70%
 - Performance: 5-20x faster (SIMD + parallelism)
 - Simplify maintenance (single dependency)
@@ -243,18 +264,21 @@ let df = df.lazy()
 ### 2.4 Fixed-Point Arithmetic (LOW PRIORITY)
 
 **Current State**: Custom `FixedPoint` implementation (259 LOC)
+
 - 8 decimal precision (SCALE = 100,000,000)
 - Basis points: 0.1 bps units (BASIS_POINTS_SCALE = 100,000)
 - Saturating operations
 - Well-tested
 
 **SOTA Alternatives**:
+
 1. `rust_decimal` - Arbitrary precision, more features
 2. `fixed` - Compile-time precision, faster
 
 **Recommendation**: ❌ DO NOT REPLACE
 
 **Rationale**:
+
 - Custom implementation is optimal for use case
 - Zero dependencies (self-contained)
 - Performance-tuned for 8 decimals
@@ -270,12 +294,14 @@ let df = df.lazy()
 **Focus**: Stabilize, validate, deploy current capabilities
 
 **Prune**:
+
 1. Remove `src-archived/` (59 files) → Git tag archive
 2. Remove `rangebar` meta-crate (800 LOC) → v4.0.0 compat deprecated
 3. Consolidate ExportRangeBarProcessor → single RangeBarProcessor
 4. Delete disabled statistical engine tests
 
 **Grow**:
+
 1. Re-enable volume conservation validation
 2. Production error recovery (retry logic, circuit breakers)
 3. Observability (structured logging, metrics, tracing)
@@ -287,6 +313,7 @@ let df = df.lazy()
 **Value**: Production-ready system
 
 **Deliverables**:
+
 - ✅ Volume conservation validation restored
 - ✅ Production deployment guide
 - ✅ Docker deployment tested
@@ -300,6 +327,7 @@ let df = df.lazy()
 **Focus**: SOTA library consolidation, performance optimization
 
 **Prune**:
+
 1. Replace `csv` crate → polars native CSV
 2. Replace `chrono` → `time` crate
 3. Replace `rolling-stats` + `tdigests` → polars expressions
@@ -307,6 +335,7 @@ let df = df.lazy()
 5. Archive v4.0.0 compat layer
 
 **Grow**:
+
 1. Unified polars data pipeline (CSV → DataFrame → Parquet)
 2. Lazy evaluation throughout
 3. GPU acceleration investigation (cuDF via polars)
@@ -318,6 +347,7 @@ let df = df.lazy()
 **Value**: 10x performance boost, simplified architecture
 
 **Deliverables**:
+
 - ✅ Single codec family (polars end-to-end)
 - ✅ 10x performance improvement validated
 - ✅ GPU acceleration proof-of-concept
@@ -331,11 +361,13 @@ let df = df.lazy()
 **Focus**: Additional forex pairs, multi-market analysis
 
 **Prune**:
+
 1. Consolidate Exness provider code
 2. Remove EURUSD-specific hardcoding
 3. Generalize forex data fetching
 
 **Grow**:
+
 1. Additional forex pairs (GBPUSD, USDJPY, EURJPY, etc.)
 2. Multi-pair correlation analysis
 3. Cross-market arbitrage detection
@@ -347,6 +379,7 @@ let df = df.lazy()
 **Value**: Broader market coverage
 
 **Deliverables**:
+
 - ✅ 5+ forex pairs supported (EURUSD, GBPUSD, USDJPY, EURJPY, AUDUSD)
 - ✅ Multi-pair analysis dashboard
 - ✅ Correlation matrix visualization
@@ -354,6 +387,7 @@ let df = df.lazy()
 - ✅ Forex-optimized thresholds documented
 
 **Prerequisites**:
+
 - Exness data quality validation for new pairs
 - SNR analysis (similar to EURUSD Standard validation)
 - API rate limit testing
@@ -365,11 +399,13 @@ let df = df.lazy()
 **Focus**: Re-architect statistical analysis with polars
 
 **Prune**:
+
 1. Remove disabled statistical engine tests
 2. Remove `rolling-stats` + `tdigests` dependencies
 3. Consolidate statistical validation code
 
 **Grow**:
+
 1. Polars-native statistical engine
 2. Streaming percentiles (P50-P99)
 3. Rolling window analytics
@@ -381,6 +417,7 @@ let df = df.lazy()
 **Value**: Unified statistics with 5-20x performance
 
 **Deliverables**:
+
 - ✅ Polars lazy expression pipeline
 - ✅ Streaming percentile tracking
 - ✅ Rolling window analytics (10+ metrics)
@@ -388,6 +425,7 @@ let df = df.lazy()
 - ✅ Statistical validation suite
 
 **Technical Design**:
+
 ```rust
 // Streaming statistics via polars lazy
 let stats = df.lazy()
@@ -415,24 +453,28 @@ let stats = df.lazy()
 **Combine**: Path A (hardening) + Path B (modernization)
 
 ### Phase 1: Critical Fixes (Week 1)
+
 1. ✅ Re-enable volume conservation validation
 2. ✅ Fix processor volume tracking
 3. ✅ Add pre-commit volume conservation check
 4. ✅ Document volume conservation SLO
 
 ### Phase 2: CSV Consolidation (Week 2-3)
+
 1. ✅ Migrate CSV I/O to polars native
 2. ✅ Benchmark performance improvement
 3. ✅ Update documentation
 4. ✅ Validate with real data (BTCUSDT, ETHUSDT, EURUSD)
 
 ### Phase 3: Code Cleanup (Week 3-4)
+
 1. ✅ Archive src-archived/ as Git tag
 2. ✅ Remove rangebar meta-crate (deprecate v4.0.0 compat)
 3. ✅ Consolidate ExportRangeBarProcessor → RangeBarProcessor
 4. ✅ Remove disabled statistical tests
 
 ### Phase 4: Production Readiness (Week 4-5)
+
 1. ✅ Add structured logging (tracing)
 2. ✅ Add metrics (Prometheus)
 3. ✅ Docker deployment
@@ -440,6 +482,7 @@ let stats = df.lazy()
 5. ✅ Production deployment guide
 
 ### Phase 5: Validation & Documentation (Week 6)
+
 1. ✅ End-to-end integration tests
 2. ✅ Performance benchmarks
 3. ✅ SLO documentation
@@ -454,6 +497,7 @@ let stats = df.lazy()
 ## PART 5: DOCUMENTATION IMPROVEMENTS
 
 ### Current Documentation Quality: HIGH
+
 - Hub-and-spoke architecture ✅
 - 30 markdown files organized ✅
 - Phase tracking (0-5 completed) ✅
@@ -463,6 +507,7 @@ let stats = df.lazy()
 **Problem**: Some docs mix implementation details with abstractions
 
 **Example (needs improvement)**:
+
 ```markdown
 ❌ BAD: "Uses csv crate v1.3 with ReaderBuilder::new().from_path()"
 ✅ GOOD: "CSV loading via abstract data provider interface"
@@ -471,16 +516,19 @@ let stats = df.lazy()
 **Recommendation**: Create layered documentation
 
 **Layer 1 (User-Facing)**:
+
 - `README.md` - What, why, quick start
 - `docs/guides/` - Conceptual guides, use cases
 - `docs/api/` - API contracts (OpenAPI specs)
 
 **Layer 2 (Developer-Facing)**:
+
 - `docs/architecture/` - System design, ADRs
 - `docs/development/` - Contributing, testing, release process
 - `CHANGELOG.md` - Version history (machine-readable)
 
 **Layer 3 (Implementation)**:
+
 - Inline code comments (rustdoc)
 - `docs/internals/` - Algorithm details, performance tuning
 - Test documentation
@@ -490,6 +538,7 @@ let stats = df.lazy()
 **Problem**: Some docs describe HOW instead of WHY
 
 **Example (needs improvement)**:
+
 ```markdown
 ❌ BAD: "Run cargo clean to remove target/ directory (40GB)"
 ✅ GOOD: "Reclaim disk space by removing build artifacts (rebuild: 5-15 min)"
@@ -498,13 +547,16 @@ let stats = df.lazy()
 **Recommendation**: Add "Intent" section to all planning docs
 
 **Template**:
+
 ```markdown
 ## Intent
+
 **Business Goal**: [Why this matters to users]
 **Technical Goal**: [What technical problem this solves]
 **Success Criteria**: [How we know it worked]
 
 ## Implementation
+
 [Implementation details - separate section]
 ```
 
@@ -515,6 +567,7 @@ let stats = df.lazy()
 **Recommendation**: Structured version metadata
 
 **Add to all docs**:
+
 ```markdown
 ---
 version: 1.0.0
@@ -525,6 +578,7 @@ replaces: [previous_doc_version]
 ```
 
 **Automation**:
+
 - Pre-commit hook: validate version metadata
 - CI check: ensure docs have version tags
 - `scripts/doc-version-check.sh` - automated validation
@@ -533,14 +587,14 @@ replaces: [previous_doc_version]
 
 ## PART 6: RISK MATRIX
 
-| Risk | Likelihood | Impact | Mitigation | Path |
-|------|------------|--------|------------|------|
-| Volume conservation false negatives | HIGH | HIGH | Re-enable validation immediately | All |
-| CSV consolidation breaks compatibility | MEDIUM | MEDIUM | Comprehensive test suite, gradual rollout | B, Hybrid |
-| chrono→time migration issues | MEDIUM | LOW | Feature flag, parallel implementation | B |
-| Statistical engine complexity | HIGH | MEDIUM | Prototype first, validate with real data | D |
-| Forex data quality (new pairs) | MEDIUM | HIGH | SNR analysis before integration | C |
-| Production deployment failures | LOW | HIGH | Docker, health checks, gradual rollout | A, Hybrid |
+| Risk                                   | Likelihood | Impact | Mitigation                                | Path      |
+| -------------------------------------- | ---------- | ------ | ----------------------------------------- | --------- |
+| Volume conservation false negatives    | HIGH       | HIGH   | Re-enable validation immediately          | All       |
+| CSV consolidation breaks compatibility | MEDIUM     | MEDIUM | Comprehensive test suite, gradual rollout | B, Hybrid |
+| chrono→time migration issues           | MEDIUM     | LOW    | Feature flag, parallel implementation     | B         |
+| Statistical engine complexity          | HIGH       | MEDIUM | Prototype first, validate with real data  | D         |
+| Forex data quality (new pairs)         | MEDIUM     | HIGH   | SNR analysis before integration           | C         |
+| Production deployment failures         | LOW        | HIGH   | Docker, health checks, gradual rollout    | A, Hybrid |
 
 ---
 
@@ -549,30 +603,35 @@ replaces: [previous_doc_version]
 ### When to Choose Each Path
 
 **PATH A (Production Hardening)** - Choose if:
+
 - ✅ Need production deployment ASAP
 - ✅ Stability is priority #1
 - ✅ Current performance is acceptable
 - ✅ Low risk tolerance
 
 **PATH B (Data Pipeline Modernization)** - Choose if:
+
 - ✅ Performance is critical (need 10x improvement)
 - ✅ Have 4-6 weeks for refactoring
 - ✅ Want simplified architecture
 - ✅ Medium risk tolerance
 
 **PATH C (Market Expansion)** - Choose if:
+
 - ✅ Need broader forex coverage
 - ✅ Cross-market analysis is priority
 - ✅ Have validated data sources
 - ✅ Medium risk tolerance
 
 **PATH D (Statistical Engine)** - Choose if:
+
 - ✅ Advanced analytics is priority
 - ✅ Have 4-5 weeks for research
 - ✅ Comfortable with polars internals
 - ✅ High risk tolerance
 
 **HYBRID PATH (Recommended)** - Choose if:
+
 - ✅ Want balanced approach (hardening + modernization)
 - ✅ Have 6 weeks for phased rollout
 - ✅ Need production-ready + performance gains
@@ -585,49 +644,59 @@ replaces: [previous_doc_version]
 **Regardless of path chosen, START HERE**:
 
 ### 1. Re-enable Volume Conservation (CRITICAL)
+
 ```bash
 # File: crates/rangebar/tests/integration_test.rs
 # Uncomment validation
 assert_volume_conservation(&bars, &trades);
 ```
+
 **Why**: Currently undetected data loss risk
 **Timeline**: 1-2 days
 **Blocker**: Must fix processor volume tracking first
 
 ### 2. Fix Processor Volume Tracking
+
 ```bash
 # Investigate RangeBarProcessor::process_agg_trade_records
 # Ensure all trades contribute to volume totals
 ```
+
 **Why**: Root cause of disabled volume validation
 **Timeline**: 2-3 days
 **Deliverable**: All integration tests pass with volume validation
 
 ### 3. Archive src-archived/ as Git Tag
+
 ```bash
 git tag -a v4.0.0-archive -m "Archive v4.0.0 monolithic structure"
 git push origin v4.0.0-archive
 rm -rf src-archived/
 ```
+
 **Why**: 59 files (compiled but never executed) clutter codebase
 **Timeline**: 1 day
 **Risk**: LOW (already have v5.0.0 modular architecture)
 
 ### 4. Benchmark CSV Consolidation Prototype
+
 ```bash
 # Create crates/rangebar-io/src/csv_polars.rs
 # Benchmark: current csv crate vs polars native
 # Measure: parse time, memory usage, API ergonomics
 ```
+
 **Why**: Validate 5-10x performance improvement claim
 **Timeline**: 2-3 days
 **Deliverable**: Performance comparison report
 
 ### 5. Document Current Architecture (ADR)
+
 ```bash
 # Create docs/architecture/ADR-001-modular-workspace.md
 # Document: Why 8 crates? What's in each? Why not monolithic?
 ```
+
 **Why**: Future developers need context for architectural decisions
 **Timeline**: 1 day
 **Deliverable**: ADR with decision rationale, alternatives considered, consequences
@@ -637,6 +706,7 @@ rm -rf src-archived/
 ## PART 9: METRICS & SLOs
 
 ### Code Quality Metrics (Target)
+
 - Unsafe blocks: 0 (current: 0) ✅
 - unwrap() in production code: <10 (current: 183, mostly tests)
 - Test coverage: >80% (current: excellent)
@@ -644,18 +714,21 @@ rm -rf src-archived/
 - Clippy warnings: 0 (current: 0) ✅
 
 ### Performance SLOs (Target)
+
 - CSV loading: <100ms per 1M trades (current: ~200ms)
 - Range bar processing: <50ms per 1M trades (current: 48ms) ✅
 - Memory usage: <500MB for 100M trades
 - Streaming latency: <10ms per trade
 
 ### Production SLOs (Target)
+
 - Availability: 99.9% (8.76 hours downtime/year)
 - Correctness: 100% (zero data loss)
 - Observability: 100% (all metrics exposed)
 - Maintainability: 100% (tests pass, docs current)
 
 ### Documentation SLOs (Target)
+
 - Version metadata: 100% of docs
 - AOD compliance: 100% user-facing docs
 - IOI compliance: 100% planning docs
@@ -668,37 +741,44 @@ rm -rf src-archived/
 ### Workspace Crates (8 Total)
 
 **Core Algorithm**:
+
 - `rangebar-core` (1.2K LOC) - Algorithm, types, fixed-point arithmetic, timestamp handling
-  - `src/processor.rs` (841 LOC) - RangeBarProcessor, ExportRangeBarProcessor
-  - `src/types.rs` (406 LOC) - AggTrade, RangeBar, error types
-  - `src/fixed_point.rs` (259 LOC) - FixedPoint arithmetic
-  - `src/timestamp.rs` (152 LOC) - Timestamp normalization
+    - `src/processor.rs` (841 LOC) - RangeBarProcessor, ExportRangeBarProcessor
+    - `src/types.rs` (406 LOC) - AggTrade, RangeBar, error types
+    - `src/fixed_point.rs` (259 LOC) - FixedPoint arithmetic
+    - `src/timestamp.rs` (152 LOC) - Timestamp normalization
 
 **Data Providers**:
+
 - `rangebar-providers` (1.4K LOC) - Binance, Exness adapters
-  - `src/binance/` (400 LOC) - REST API, WebSocket, symbol discovery
-  - `src/exness/` (300 LOC) - ZIP/CSV download, conversion
+    - `src/binance/` (400 LOC) - REST API, WebSocket, symbol discovery
+    - `src/exness/` (300 LOC) - ZIP/CSV download, conversion
 
 **Configuration**:
+
 - `rangebar-config` (1.1K LOC) - Configuration management
 
 **I/O & Data Processing**:
+
 - `rangebar-io` (600 LOC) - Polars integration, Parquet
 
 **Engines**:
+
 - `rangebar-streaming` (1.8K LOC) - Real-time streaming
 - `rangebar-batch` (600 LOC) - Batch analytics
 
 **Tools**:
+
 - `rangebar-cli` (3.2K LOC) - 6 binaries
-  - `tier1-symbol-discovery` (22K)
-  - `data-structure-validator` (25K)
-  - `spot-tier1-processor` (14K)
-  - `parallel-tier1-analysis` (21K)
-  - `polars-benchmark` (8.7K)
-  - `temporal-integrity-test` (8.4K)
+    - `tier1-symbol-discovery` (22K)
+    - `data-structure-validator` (25K)
+    - `spot-tier1-processor` (14K)
+    - `parallel-tier1-analysis` (21K)
+    - `polars-benchmark` (8.7K)
+    - `temporal-integrity-test` (8.4K)
 
 **Compatibility**:
+
 - `rangebar` (800 LOC) - v4.0.0 backward compatibility meta-crate
 
 ### Documentation Structure (30 Files)
@@ -721,6 +801,7 @@ rm -rf src-archived/
 ## APPENDIX B: TEMPORAL INTEGRITY VALIDATION SUMMARY
 
 ### Validation Coverage
+
 - ✅ Zero-duration bars (intentional)
 - ✅ Timestamp ordering (pre-condition validation)
 - ✅ Cross-year boundaries (DST, leap seconds)
@@ -730,6 +811,7 @@ rm -rf src-archived/
 - ✅ Year rollover tests (Dec 31 → Jan 1)
 
 ### Temporal Logic Patterns (Safe)
+
 1. **Microsecond standard** - All timestamps normalized to 16-digit μs
 2. **Threshold: 10^13** - Auto-detect ms vs μs
 3. **Valid range: 2000-2035 UTC** - Prevents timestamp corruption
@@ -737,6 +819,7 @@ rm -rf src-archived/
 5. **Breach detection** - Thresholds from OPEN only (non-lookahead)
 
 ### Test Files (7 Temporal-Related)
+
 1. `integration_test.rs` - Primary validation
 2. `binance_btcusdt_real_data_test.rs` - Real BTCUSDT data
 3. `binance_ethusdt_real_data_test.rs` - Real ETHUSDT data

@@ -16,6 +16,7 @@ This guide explains when to use real CSV data vs synthetic generated data in int
 **Purpose**: Validation of range bar construction against real market behavior
 
 **When to Use**:
+
 - Validating algorithm correctness with real market data
 - Testing multiple threshold scenarios (25 bps, 50 bps, 100 bps)
 - Data integrity validation (temporal ordering, positive prices/volumes)
@@ -23,10 +24,12 @@ This guide explains when to use real CSV data vs synthetic generated data in int
 - Acceptance testing and final validation
 
 **Available Datasets**:
+
 - BTCUSDT: 5,000 trades from 2025-09-01
 - ETHUSDT: 10,000 trades from 2025-09-01
 
 **Loading Data**:
+
 ```rust
 use rangebar_core::test_data_loader::{load_btcusdt_test_data, load_ethusdt_test_data};
 
@@ -44,12 +47,14 @@ fn test_with_real_ethusdt_data() {
 ```
 
 **Characteristics**:
+
 - Deterministic (same data every run)
 - Real market patterns (volatility, trends, gaps)
 - Fixed size (5,000 or 10,000 trades)
 - Pre-validated (temporal ordering, data integrity)
 
 **Limitations**:
+
 - Fixed datasets (cannot adjust size or characteristics)
 - Limited to BTCUSDT and ETHUSDT
 - Cannot test edge cases (precision limits, extreme volumes, etc.)
@@ -61,6 +66,7 @@ fn test_with_real_ethusdt_data() {
 **Purpose**: Controlled testing of specific scenarios and edge cases
 
 **When to Use**:
+
 - Testing edge cases (precision limits, extreme volumes, timestamp boundaries)
 - Large-scale testing (1M+ trades for performance and memory tests)
 - Multi-day boundary scenarios (session transitions, year boundaries)
@@ -71,6 +77,7 @@ fn test_with_real_ethusdt_data() {
 **Available Generators**:
 
 #### Basic Trade Creation
+
 ```rust
 use rangebar_core::test_utils::generators::create_test_trade;
 
@@ -82,6 +89,7 @@ let trade = create_test_trade(
 ```
 
 #### Large-Scale Datasets
+
 ```rust
 use rangebar_core::test_utils::generators::create_massive_realistic_dataset;
 
@@ -90,6 +98,7 @@ let trades = create_massive_realistic_dataset(1_000_000);
 ```
 
 #### Multi-Day Boundaries
+
 ```rust
 use rangebar_core::test_utils::generators::create_multi_day_boundary_dataset;
 
@@ -98,6 +107,7 @@ let trades = create_multi_day_boundary_dataset(7);
 ```
 
 #### Market Session Data
+
 ```rust
 use rangebar_core::test_utils::generators::{
     create_asian_session_data,
@@ -113,6 +123,7 @@ let weekend = create_weekend_gap_data();      // Very low activity
 ```
 
 #### Frequency Variations
+
 ```rust
 use rangebar_core::test_utils::generators::{
     create_high_frequency_data,
@@ -128,6 +139,7 @@ let mixed = create_mixed_frequency_data();   // Variable intervals
 ```
 
 #### Stress Testing
+
 ```rust
 use rangebar_core::test_utils::generators::{
     create_rapid_threshold_hit_data,
@@ -145,6 +157,7 @@ let floating = create_floating_point_stress_data(); // Float precision edge case
 ```
 
 **Characteristics**:
+
 - Deterministic (pure functions, no randomness)
 - Parameterized (adjustable size, patterns, characteristics)
 - Mathematical patterns (sine waves, trends, oscillations)
@@ -153,6 +166,7 @@ let floating = create_floating_point_stress_data(); // Float precision edge case
 ## Processing Styles
 
 ### Batch Processing
+
 ```rust
 use rangebar_core::test_utils::generators::process_batch_style;
 
@@ -161,6 +175,7 @@ let range_bars = process_batch_style(&trades, 25); // 25 bps threshold
 ```
 
 ### Streaming Processing
+
 ```rust
 use rangebar_core::test_utils::generators::process_streaming_style;
 
@@ -170,23 +185,24 @@ let range_bars = process_streaming_style(&trades, 25).await; // 25 bps threshold
 
 ## Decision Matrix
 
-| Test Scenario | Data Type | Rationale |
-|--------------|-----------|-----------|
-| Algorithm correctness validation | Real CSV | Validates against actual market behavior |
-| Threshold scaling (25/50/100 bps) | Real CSV | Real market patterns for threshold comparison |
-| Data integrity (temporal ordering, positive values) | Real CSV | Pre-validated real data |
-| Edge cases (precision, extremes) | Synthetic | Controlled edge case generation |
-| Large-scale (1M+ trades) | Synthetic | Real datasets too small |
-| Multi-day boundaries | Synthetic | Controlled day-to-day pattern variations |
-| Session transitions (Asian/EU/US) | Synthetic | Controlled session characteristics |
-| Frequency variations (HFT/mixed) | Synthetic | Controlled interval patterns |
-| Stress testing | Synthetic | Controlled extreme conditions |
-| Performance benchmarks | Synthetic | Parametric dataset sizes |
-| Memory efficiency tests | Synthetic | Large parametric datasets |
+| Test Scenario                                       | Data Type | Rationale                                     |
+| --------------------------------------------------- | --------- | --------------------------------------------- |
+| Algorithm correctness validation                    | Real CSV  | Validates against actual market behavior      |
+| Threshold scaling (25/50/100 bps)                   | Real CSV  | Real market patterns for threshold comparison |
+| Data integrity (temporal ordering, positive values) | Real CSV  | Pre-validated real data                       |
+| Edge cases (precision, extremes)                    | Synthetic | Controlled edge case generation               |
+| Large-scale (1M+ trades)                            | Synthetic | Real datasets too small                       |
+| Multi-day boundaries                                | Synthetic | Controlled day-to-day pattern variations      |
+| Session transitions (Asian/EU/US)                   | Synthetic | Controlled session characteristics            |
+| Frequency variations (HFT/mixed)                    | Synthetic | Controlled interval patterns                  |
+| Stress testing                                      | Synthetic | Controlled extreme conditions                 |
+| Performance benchmarks                              | Synthetic | Parametric dataset sizes                      |
+| Memory efficiency tests                             | Synthetic | Large parametric datasets                     |
 
 ## Examples
 
 ### Example 1: Real Data Test (BTCUSDT)
+
 ```rust
 use rangebar::{FixedPoint, RangeBar, RangeBarProcessor};
 use rangebar_core::test_data_loader::load_btcusdt_test_data;
@@ -214,6 +230,7 @@ fn test_btcusdt_standard_threshold() {
 ```
 
 ### Example 2: Synthetic Data Test (Large Scale)
+
 ```rust
 use rangebar_core::test_utils::generators::{
     create_massive_realistic_dataset,
@@ -231,6 +248,7 @@ async fn test_massive_dataset_performance() {
 ```
 
 ### Example 3: Multi-Scenario Test (Both Types)
+
 ```rust
 use rangebar_core::test_data_loader::load_btcusdt_test_data;
 use rangebar_core::test_utils::generators::create_massive_realistic_dataset;
@@ -254,29 +272,36 @@ fn test_real_vs_synthetic_consistency() {
 ## Best Practices
 
 ### 1. Use Real Data for Acceptance Tests
+
 Real CSV data validates that the algorithm works correctly with actual market behavior.
 
 ### 2. Use Synthetic Data for Edge Cases
+
 Synthetic generators allow controlled testing of boundary conditions and edge cases that may not appear in real data.
 
 ### 3. Combine Both for Comprehensive Coverage
+
 Use real data for correctness validation and synthetic data for edge cases, performance, and parametric testing.
 
 ### 4. Fail Fast
+
 Both real and synthetic data loaders use fail-fast error handling. If data loading fails, the test fails immediately with a clear error message.
 
 ### 5. Document Data Characteristics
+
 When using synthetic data, document the pattern characteristics (volatility, frequency, session type) in test comments.
 
 ## Service Level Objectives (SLOs)
 
 ### Real Data Loader SLOs
+
 - **Availability**: 100% (fail-fast on missing files)
 - **Correctness**: 100% (strict schema validation, no data loss)
 - **Observability**: 100% (all errors include file path and line context)
 - **Maintainability**: 100% (csv crate + serde, no custom parsing)
 
 ### Synthetic Generator SLOs
+
 - **Availability**: 100% (deterministic, no external dependencies)
 - **Correctness**: 100% (monotonic timestamps, valid prices, no corruption)
 - **Observability**: 100% (predictable patterns, documented parameters)
@@ -307,6 +332,7 @@ crates/rangebar/tests/
 ## Running Tests
 
 ### Run Real Data Tests Only
+
 ```bash
 cargo nextest run --package rangebar --features test-utils \
   --test binance_btcusdt_real_data_test \
@@ -314,6 +340,7 @@ cargo nextest run --package rangebar --features test-utils \
 ```
 
 ### Run Synthetic Data Tests Only
+
 ```bash
 cargo nextest run --package rangebar --features test-utils \
   --test large_boundary_tests \
@@ -322,6 +349,7 @@ cargo nextest run --package rangebar --features test-utils \
 ```
 
 ### Run All Integration Tests
+
 ```bash
 cargo nextest run --workspace --features rangebar/test-utils,rangebar/providers,rangebar/exness,rangebar/streaming
 ```

@@ -65,6 +65,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Expected Output**:
+
 ```
 Processing BTCUSDT with 25bps threshold
 Loaded 1247893 trades
@@ -133,6 +134,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Benefits**:
+
 - Constant O(1) memory usage
 - Works with unlimited data sizes
 - Progress saved incrementally
@@ -204,6 +206,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Expected Output**:
+
 ```
 Analyzing 18 Tier-1 symbols
 Fetching BTCUSDT...
@@ -373,6 +376,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Expected Output**:
+
 ```
 Fetching BTCUSDT data (30 days)...
 Loaded 38472912 trades
@@ -390,6 +394,7 @@ Thresh       Bars    Avg Duration    Min Duration    Max Duration
 ```
 
 **Analysis**:
+
 - Lower thresholds → More bars, shorter durations (noisier)
 - Higher thresholds → Fewer bars, longer durations (smoother)
 - Choose based on strategy timeframe
@@ -553,6 +558,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Expected Output**:
+
 ```
 Comparing BTCUSDT across markets (7 days)
 
@@ -619,6 +625,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Expected Output** (Apple M1 Pro):
+
 ```
 === Range Bar Processing Throughput ===
        Ticks         Bars        Time (ms)      Throughput
@@ -630,21 +637,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Analysis**:
+
 - Throughput scales linearly with data size
 - Expected: 1-5M ticks/second on modern hardware
 - 1B ticks → ~3-5 minutes single-threaded
 
 ## Quick Reference
 
-| Workflow | Use Case | Runtime | Memory |
-|----------|----------|---------|--------|
-| Single day | Quick test, debugging | 2-5s | <100MB |
-| Streaming | Multi-GB datasets | Variable | O(1) |
-| Tier-1 parallel | Cross-symbol comparison | 1-2min | ~2GB |
-| Threshold tuning | Parameter optimization | 30-60s | ~500MB |
-| Multi-year | Historical backtest | Hours | Depends on chunking |
-| Cross-market | Liquidity analysis | 1-2min | ~1GB |
-| Benchmarking | Capacity planning | <1min | <1GB |
+| Workflow         | Use Case                | Runtime  | Memory              |
+| ---------------- | ----------------------- | -------- | ------------------- |
+| Single day       | Quick test, debugging   | 2-5s     | <100MB              |
+| Streaming        | Multi-GB datasets       | Variable | O(1)                |
+| Tier-1 parallel  | Cross-symbol comparison | 1-2min   | ~2GB                |
+| Threshold tuning | Parameter optimization  | 30-60s   | ~500MB              |
+| Multi-year       | Historical backtest     | Hours    | Depends on chunking |
+| Cross-market     | Liquidity analysis      | 1-2min   | ~1GB                |
+| Benchmarking     | Capacity planning       | <1min    | <1GB                |
 
 ## Further Reading
 

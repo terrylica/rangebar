@@ -15,12 +15,14 @@ cache/
 ## Cache Policies
 
 ### Binance
+
 - **Purpose**: Rate-limit friendly API response caching
 - **Location**: `cache/binance/api_responses/[endpoint]/[params_hash].json`
 - **Retention**: 7 days
 - **Note**: Symbol info rarely changes, cache aggressively
 
 ### Metadata
+
 - **Purpose**: Tier-1 symbol discovery, instrument configs
 - **Location**: `cache/metadata/symbol_info.json`
 - **Retention**: Refresh weekly
@@ -29,12 +31,14 @@ cache/
 ## Cleanup
 
 ### Manual
+
 ```bash
 # Remove all cache
 rm -rf cache/*/{binance,metadata}/*
 ```
 
 ### Automated (Future)
+
 ```bash
 cargo run --bin cache-manager -- --clear-old
 ```

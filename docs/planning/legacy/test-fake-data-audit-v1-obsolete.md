@@ -220,6 +220,7 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 **Massive code duplication**: 2,154 lines across 3 large test files with 32 duplicate helper functions
 
 **Breakdown**:
+
 - `large_boundary_tests.rs` (802 lines, 20 helper functions)
 - `multi_month_memory_tests.rs` (787 lines, 9 helper functions)
 - `cross_year_speed_comparison.rs` (565 lines, 3 helper functions)
@@ -227,6 +228,7 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 **Problem**: Each test file reimplements its own data generation functions instead of using centralized `test_utils.rs`
 
 **Impact**:
+
 - Maintenance nightmare (same bugs in multiple places)
 - Code bloat (2K+ lines of redundant data generation)
 - Inconsistency (different files generate different "realistic" data)
@@ -235,12 +237,14 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 ### Redundant Test Files ✅ DELETED (Phase 0 Complete)
 
 **1. `tests/bps_conversion_tests.rs` (147 lines) - DELETED** ✅
+
 - **Reason**: BROKEN (tests `BASIS_POINTS_SCALE = 10_000` but actual = `100_000`)
 - **Additional**: ORPHANED (not running as part of workspace tests)
 - **Discovery**: Would FAIL if it were running (tests v2.0 semantics, not v3.0.0)
 - **Action**: ✅ DELETED on 2025-10-15
 
 **2. `tests/statistics_v2_validation.rs` (279 lines) - DELETED** ✅
+
 - **Reason**: MISPLACED (uses `fn main()` instead of `#[test]`)
 - **Additional**: ORPHANED (not running as part of workspace tests)
 - **Should be**: In `examples/` directory or deleted
@@ -249,6 +253,7 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 **Discovery**: Both files were **ORPHANED** - workspace root `tests/` not claimed by any package, zero tests executed!
 
 **3. Large test files overlap significantly**:
+
 - `large_boundary_tests.rs` + `multi_month_memory_tests.rs` test similar concepts
 - Both test "massive datasets", "memory usage", "boundary consistency"
 - Can be consolidated into one file with parameterized tests
@@ -264,28 +269,30 @@ fn load_real_btc_test_trades() -> Result<Vec<AggTrade>, Box<dyn std::error::Erro
 **Actual Findings** (worse than initially thought):
 
 1. **Tests are ORPHANED** - Not running as part of `cargo test --workspace`
-   - Files in workspace root `tests/` not claimed by any package
-   - Zero tests executed from these files
-   - Complete waste of maintenance effort
+    - Files in workspace root `tests/` not claimed by any package
+    - Zero tests executed from these files
+    - Complete waste of maintenance effort
 
 2. **bps_conversion_tests.rs is BROKEN** - Tests wrong constant value
-   - Tests: `assert_eq!(BASIS_POINTS_SCALE, 10_000)`
-   - Actual: `pub const BASIS_POINTS_SCALE: u32 = 100_000`
-   - WOULD FAIL if it were running (tests v2.0 semantics, not v3.0.0)
-   - Change reason: v3.0.0 changed from 1bps to 0.1bps units
+    - Tests: `assert_eq!(BASIS_POINTS_SCALE, 10_000)`
+    - Actual: `pub const BASIS_POINTS_SCALE: u32 = 100_000`
+    - WOULD FAIL if it were running (tests v2.0 semantics, not v3.0.0)
+    - Change reason: v3.0.0 changed from 1bps to 0.1bps units
 
 3. **statistics_v2_validation.rs is MISPLACED** - Manual binary, not test
-   - Uses `fn main()` instead of `#[test]`
-   - Should be in `examples/` or deleted
+    - Uses `fn main()` instead of `#[test]`
+    - Should be in `examples/` or deleted
 
 **Actions Taken**:
 
 **DELETED**: `tests/bps_conversion_tests.rs` (147 lines)
+
 - **Reason**: BROKEN (tests old v2.0.0 semantics) + ORPHANED (not running)
 - **Impact**: Remove test that would fail if it ran
 - **Justification**: Tests for `BASIS_POINTS_SCALE = 10_000` but actual = `100_000`
 
 **DELETED**: `tests/statistics_v2_validation.rs` (279 lines)
+
 - **Reason**: MISPLACED (manual binary using `fn main()`) + ORPHANED (not running)
 - **Impact**: Remove non-test file from tests/ directory
 - **Justification**: Should be in examples/, not tests/
@@ -414,6 +421,7 @@ mod tests {
 **Solution**: Move ALL helper functions to `test_utils.rs` under new module `test_utils::generators`
 
 **Strategy**:
+
 1. Audit all 32 functions for actual usage
 2. Keep only functions actually used by tests
 3. Remove unused/redundant generators
@@ -466,6 +474,7 @@ pub mod generators {
 ```
 
 **Impact**:
+
 - Reduce duplication from 32 functions → ~10-15 consolidated functions
 - All test files use centralized generators
 - Single source of truth for "realistic" data generation
@@ -480,11 +489,13 @@ pub mod generators {
 **Problem**: 2,154 lines across 3 files testing overlapping concepts
 
 **Files to consolidate**:
+
 - `large_boundary_tests.rs` (802 lines, 5 tests)
 - `multi_month_memory_tests.rs` (787 lines, 4 tests)
 - `cross_year_speed_comparison.rs` (565 lines, 2 tests)
 
 **Overlap analysis**:
+
 - All test "massive datasets" (1M+ trades)
 - All test memory usage
 - All test batch vs streaming consistency
@@ -493,6 +504,7 @@ pub mod generators {
 **Solution**: Merge into single `tests/performance_integration.rs`
 
 **New structure**:
+
 ```rust
 //! Performance and scalability integration tests
 //!
@@ -528,6 +540,7 @@ async fn test_streaming_vs_batch_performance() {
 ```
 
 **Impact**:
+
 - Reduce 3 files (2,154 lines) → 1 file (~600 lines)
 - Eliminate redundant helper functions
 - Clearer test organization
@@ -736,25 +749,27 @@ let eth_trades = test_data_loader::load_ethusdt_test_data()?;
 
 ## Risk Assessment
 
-| Phase                          | Files                 | Risk   | Impact                         | Rollback                      |
-| ------------------------------ | --------------------- | ------ | ------------------------------ | ----------------------------- |
-| 0. Remove redundant files      | 2 files deleted       | ZERO   | Remove 100% redundant tests    | Git revert                    |
-| 1. Add CSV loader              | 1 new file            | LOW    | Additive only                  | Git revert                    |
-| 1.5. Consolidate helpers       | 3 files + test_utils  | MEDIUM | Move 32 functions → 10-15      | Git revert                    |
-| 2. Consolidate test files      | 3 files → 1 file      | MEDIUM | Merge 2,154 lines → ~600 lines | Git revert                    |
-| 3. Replace test data           | 5 files               | MEDIUM | Test assertions may change     | Git revert, update assertions |
-| 4. New real data tests         | 2 new files           | LOW    | Additive only                  | Git revert                    |
-| 5. Documentation               | 3 files               | LOW    | Docs only                      | Git revert                    |
+| Phase                     | Files                | Risk   | Impact                         | Rollback                      |
+| ------------------------- | -------------------- | ------ | ------------------------------ | ----------------------------- |
+| 0. Remove redundant files | 2 files deleted      | ZERO   | Remove 100% redundant tests    | Git revert                    |
+| 1. Add CSV loader         | 1 new file           | LOW    | Additive only                  | Git revert                    |
+| 1.5. Consolidate helpers  | 3 files + test_utils | MEDIUM | Move 32 functions → 10-15      | Git revert                    |
+| 2. Consolidate test files | 3 files → 1 file     | MEDIUM | Merge 2,154 lines → ~600 lines | Git revert                    |
+| 3. Replace test data      | 5 files              | MEDIUM | Test assertions may change     | Git revert, update assertions |
+| 4. New real data tests    | 2 new files          | LOW    | Additive only                  | Git revert                    |
+| 5. Documentation          | 3 files              | LOW    | Docs only                      | Git revert                    |
 
 **Overall Risk**: MEDIUM (due to consolidation phases)
 
 **Net Impact**:
+
 - **Delete**: 2 files (426 lines) - redundant tests
 - **Consolidate**: 3 files → 1 file (~1,500 line reduction)
 - **Add**: 3 new files (CSV loader + 2 real data tests)
 - **Total reduction**: ~1,900 lines of redundant/duplicate code
 
 **Mitigation**:
+
 - Execute phases sequentially with validation between each
 - Validate before/after bar counts for real data changes
 - Keep comprehensive git history for rollback
@@ -778,23 +793,27 @@ After each phase:
 ## Success Criteria
 
 **Code Reduction**:
+
 - [ ] Delete 2 redundant test files (bps_conversion, statistics_v2_validation)
 - [ ] Consolidate 3 large files → 1 performance test file (~1,500 line reduction)
 - [ ] Consolidate 32 helper functions → 10-15 in test_utils::generators
 - [ ] **Net reduction**: ~1,900 lines of redundant code
 
 **Real Data Integration**:
+
 - [ ] All integration tests load from `test_data/` where appropriate
 - [ ] CSV loader in test_utils for BTCUSDT/ETHUSDT
 - [ ] New Binance real data tests created (parallel to Exness tests)
 
 **Quality**:
+
 - [ ] All remaining tests pass (with updated assertions if needed)
 - [ ] Zero clippy warnings
 - [ ] Documentation explains when to use real vs synthetic data
 - [ ] Single source of truth for test data generation
 
 **DRY Compliance**:
+
 - [ ] No duplicate test logic across files
 - [ ] All helper functions centralized in test_utils
 - [ ] Clear separation: unit tests (synthetic) vs integration tests (real data)
@@ -828,34 +847,41 @@ After each phase:
 ## Files Summary
 
 **Real data available**: 2 files (15K trades total)
+
 - `test_data/BTCUSDT/BTCUSDT_aggTrades_20250901.csv` (5,001 trades)
 - `test_data/ETHUSDT/ETHUSDT_aggTrades_20250901.csv` (10,001 trades)
 
 **Tests to DELETE**: 2 files (completely redundant)
+
 - `tests/bps_conversion_tests.rs` (147 lines) - duplicate of fixed_point.rs unit tests
 - `tests/statistics_v2_validation.rs` (279 lines) - not a test, move to examples/ or delete
 
 **Tests to CONSOLIDATE**: 3 files → 1 file
+
 - `tests/large_boundary_tests.rs` (802 lines, 20 helpers) \
 - `tests/multi_month_memory_tests.rs` (787 lines, 9 helpers) → `tests/performance_integration.rs` (~600 lines, 10-15 helpers)
 - `tests/cross_year_speed_comparison.rs` (565 lines, 3 helpers) /
 
 **Tests to UPDATE**: 2 integration test files
+
 - `tests/integration_test.rs` - Replace fake data with real data
 - `tests/boundary_consistency_tests.rs` - Use test_utils::generators
 
 **Tests to CREATE**: 3 new files
+
 - `crates/rangebar-core/src/test_data_loader.rs` - CSV loading utilities
 - `tests/binance_btcusdt_real_data_test.rs` - Real BTCUSDT validation
 - `tests/binance_ethusdt_real_data_test.rs` - Real ETHUSDT validation
 
 **Tests to keep as-is**: ~20 unit test modules + 4 integration tests
+
 - Unit tests (legitimate synthetic data use)
 - `production_streaming_validation.rs` (architecture tests)
 - `exness_eurusd_integration_test.rs` (real forex data)
 - `exness_eurusd_statistical_analysis.rs` (real forex analysis)
 
 **Net Impact**:
+
 - **Before**: 13 test files, ~4,500 lines, 105 tests
 - **After**: 10 test files, ~2,600 lines, 98 tests (fewer but better)
 - **Reduction**: -3 files, -1,900 lines, -7 redundant tests

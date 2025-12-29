@@ -5,18 +5,22 @@ Learning materials and reference examples for understanding concepts, terminolog
 ## Examples in this category:
 
 ### `terminology_clarification.rs`
+
 **Purpose**: Clarifies the difference between volume, trades, and aggTrades
 **Usage**: `cargo run --example educational/terminology_clarification`
 **Key concepts**:
+
 - What aggTrades actually represent
 - Why aggTrade count ≠ trade count ≠ volume
 - How Binance aggregates individual trades
 - Visual examples of aggregation process
 
 ### `basic_usage.rs`
+
 **Purpose**: Simple introduction to range bar construction
 **Usage**: `cargo run --example educational/basic_usage`
 **Covers**:
+
 - Basic range bar algorithm
 - Threshold concepts
 - Simple usage patterns
@@ -39,6 +43,7 @@ Learning materials and reference examples for understanding concepts, terminolog
 ## No requirements:
 
 Educational examples are designed to:
+
 - Run without external data dependencies
 - Provide quick, immediate insights
 - Work in any environment

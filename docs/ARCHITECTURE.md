@@ -30,22 +30,26 @@ The workspace consists of 8 specialized crates:
 ### Core Crates
 
 **rangebar-core** - Core algorithm and types
+
 - Minimal dependencies: chrono (timestamps), serde/serde_json (serialization), thiserror (errors)
 - Fixed-point arithmetic (8-decimal precision)
 - Non-lookahead threshold breach detection
 - Public types: `AggTrade`, `RangeBar`, `FixedPoint`, `RangeBarProcessor`
 
 **rangebar-providers** - Data providers
+
 - Binance: `HistoricalDataLoader`, aggTrades CSV/Parquet, Tier-1 symbol discovery
 - Exness: `ExnessFetcher`, EURUSD Standard (forex)
 - Unified `AggTrade` interface for all providers
 
 **rangebar-config** - Configuration management
+
 - Settings management via `config` crate
 - Environment-aware configuration
 - Public API: `Settings::load()`, `Settings::default()`
 
 **rangebar-io** - I/O operations
+
 - Polars integration for DataFrame operations
 - Multiple export formats: CSV, Parquet, Arrow, IPC
 - Streaming CSV export with bounded memory
@@ -53,12 +57,14 @@ The workspace consists of 8 specialized crates:
 ### Engine Crates
 
 **rangebar-streaming** - Real-time streaming processor
+
 - Bounded memory processing (configurable buffer size)
 - Circuit breaker pattern for error handling
 - Real-time metrics collection
 - Public API: `StreamingProcessor`, `StreamingConfig`, `StreamingMetrics`
 
 **rangebar-batch** - Batch analytics engine
+
 - High-throughput batch processing
 - Multi-symbol parallel analysis
 - Comprehensive statistics generation
@@ -67,10 +73,12 @@ The workspace consists of 8 specialized crates:
 ### Tools & Compatibility
 
 **rangebar-cli** - Command-line tools
+
 - All binaries consolidated in `src/bin/` (6 total)
 - Tools: `tier1-symbol-discovery`, `parallel-tier1-analysis`, `spot-tier1-processor`, `data-structure-validator`, `polars-benchmark`, `temporal-integrity-test-only`
 
 **rangebar** - Meta-crate
+
 - Backward compatibility with v4.0.0 API
 - Re-exports all sub-crates
 - Legacy module paths: `fixed_point`, `range_bars`, `types`, `tier1`, `data`
@@ -103,6 +111,7 @@ rangebar-cli (standalone)
 ```
 
 **Key Characteristics**:
+
 - `rangebar-core` has minimal external dependencies (4 essential libs: chrono for timestamps, serde/serde_json for serialization, thiserror for error handling)
 - All other crates depend on `rangebar-core`
 - `rangebar-streaming` depends on `rangebar-providers` (data fetching)
@@ -149,6 +158,7 @@ High-level data processing pipeline:
 ```
 
 **Data Types Flow**:
+
 ```
 Raw CSV/JSON → AggTrade → RangeBar → DataFrame → File
              (providers) (core)     (io)      (exporters)
@@ -159,6 +169,7 @@ Raw CSV/JSON → AggTrade → RangeBar → DataFrame → File
 ### rangebar-core
 
 **Core Types**:
+
 ```rust
 pub struct AggTrade {
     pub agg_trade_id: i64,
@@ -183,6 +194,7 @@ pub struct FixedPoint(i64);  // 8-decimal precision (SCALE = 100,000,000)
 ```
 
 **Processor**:
+
 ```rust
 impl RangeBarProcessor {
     pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError>;
@@ -194,6 +206,7 @@ impl RangeBarProcessor {
 ### rangebar-providers
 
 **Binance**:
+
 ```rust
 impl HistoricalDataLoader {
     pub fn new(symbol: &str) -> Self;
@@ -206,6 +219,7 @@ pub fn get_tier1_usdt_pairs() -> Vec<String>;
 ```
 
 **Exness**:
+
 ```rust
 impl ExnessFetcher {
     pub fn new(variant: &str) -> Self;
@@ -301,6 +315,7 @@ pub struct AnalysisReport {
 **Pattern**: Algorithm isolation with minimal essential dependencies
 
 **Implementation**:
+
 ```toml
 # rangebar-core/Cargo.toml
 [dependencies]
@@ -311,11 +326,13 @@ thiserror = "2.0"        # Ergonomic error handling
 ```
 
 **Rationale**:
+
 - **chrono**: Required for timestamp operations and conversions
 - **serde/serde_json**: Enables serialization of core types (AggTrade, RangeBar)
 - **thiserror**: Provides ergonomic error handling without boilerplate
 
 **Benefits**:
+
 - Minimal transitive dependency surface area (4 well-audited crates)
 - Stable core algorithm with battle-tested dependencies
 - Easy to audit and verify (all deps are Rust ecosystem standards)
@@ -325,6 +342,7 @@ thiserror = "2.0"        # Ergonomic error handling
 **Pattern**: Unified interface for multiple data sources
 
 **Implementation**:
+
 ```rust
 // Common trait: AggTrade
 pub struct AggTrade {
@@ -340,6 +358,7 @@ pub struct AggTrade {
 ```
 
 **Benefits**:
+
 - Unified processing pipeline
 - Easy to add new data sources
 - Temporal integrity via timestamp normalization (13-digit ms ↔ 16-digit μs)
@@ -349,6 +368,7 @@ pub struct AggTrade {
 **Pattern**: Selective compilation via Cargo features
 
 **Implementation**:
+
 ```toml
 # rangebar/Cargo.toml
 [features]
@@ -360,6 +380,7 @@ full = ["providers", "config", "io", "streaming", "batch"]
 ```
 
 **Benefits**:
+
 - Smaller binary sizes
 - Faster compilation
 - Optional dependencies (e.g., Polars only when needed)
@@ -369,6 +390,7 @@ full = ["providers", "config", "io", "streaming", "batch"]
 **Pattern**: Integer-based decimal arithmetic to avoid floating-point errors
 
 **Implementation**:
+
 ```rust
 pub struct FixedPoint(i64);  // Value × 100,000,000 (8 decimals)
 
@@ -386,6 +408,7 @@ impl FixedPoint {
 ```
 
 **Benefits**:
+
 - No floating-point rounding errors
 - Exact decimal representation
 - Deterministic results across platforms
@@ -395,6 +418,7 @@ impl FixedPoint {
 **Pattern**: Fault tolerance in streaming processing
 
 **Implementation**:
+
 ```rust
 pub struct StreamingProcessorConfig {
     pub max_buffer_size: usize,
@@ -407,6 +431,7 @@ pub struct StreamingProcessorConfig {
 ```
 
 **Benefits**:
+
 - Graceful degradation under load
 - Prevents memory exhaustion
 - Real-time monitoring via metrics
@@ -416,17 +441,20 @@ pub struct StreamingProcessorConfig {
 ### Streaming Mode (Real-time)
 
 **Characteristics**:
+
 - Bounded memory (configurable buffer size)
 - Suitable for real-time tick processing
 - Circuit breaker for error handling
 - Metrics collection for monitoring
 
 **Use Cases**:
+
 - Live trading systems
 - Real-time analytics
 - WebSocket data ingestion
 
 **Example**:
+
 ```rust
 use rangebar::streaming::StreamingProcessor;
 
@@ -441,17 +469,20 @@ println!("Processed {} trades", metrics.trades_processed);
 ### Batch Mode (Analytics)
 
 **Characteristics**:
+
 - High-throughput batch processing
 - Multi-symbol parallel analysis (Rayon)
 - Comprehensive statistics generation
 - In-memory data structures
 
 **Use Cases**:
+
 - Historical backtesting
 - Multi-symbol analysis
 - Research and development
 
 **Example**:
+
 ```rust
 use rangebar::batch::BatchAnalysisEngine;
 
@@ -464,13 +495,13 @@ println!("Mean price: {}", report.price_statistics.mean);
 
 ### Comparison
 
-| Feature | Streaming | Batch |
-|---------|-----------|-------|
-| Memory Usage | Bounded | Unbounded |
-| Throughput | Moderate | High |
-| Parallelism | Single-threaded | Multi-threaded (Rayon) |
-| Real-time | Yes | No |
-| Use Case | Live trading | Historical analysis |
+| Feature      | Streaming       | Batch                  |
+| ------------ | --------------- | ---------------------- |
+| Memory Usage | Bounded         | Unbounded              |
+| Throughput   | Moderate        | High                   |
+| Parallelism  | Single-threaded | Multi-threaded (Rayon) |
+| Real-time    | Yes             | No                     |
+| Use Case     | Live trading    | Historical analysis    |
 
 ## Critical Invariants
 
@@ -479,6 +510,7 @@ println!("Mean price: {}", report.price_statistics.mean);
 **Specification**: [`specifications/algorithm-spec.md`](specifications/algorithm-spec.md) (authoritative)
 
 **Validation**:
+
 ```rust
 // Every bar must satisfy:
 assert!(high_breach → close_breach);
@@ -493,12 +525,14 @@ assert!(low_breach → close_breach);
 ### Temporal Integrity
 
 **Timestamp Normalization**:
+
 - All timestamps normalized to microseconds (16-digit)
 - Binance Spot: 16-digit μs (native)
 - Binance UM Futures: 13-digit ms → 16-digit μs (×1000)
 - Exness: Converted to μs during tick processing
 
 **Validation**:
+
 ```rust
 // Monotonic timestamp ordering
 assert!(bar.open_time < bar.close_time);
@@ -508,11 +542,13 @@ assert!(bar[i].close_time ≤ bar[i+1].open_time);
 ### Data Integrity
 
 **AggTrade Requirements**:
+
 - Sorted by `(timestamp, agg_trade_id)`
 - No duplicate `agg_trade_id` values
 - All prices and volumes > 0
 
 **Validation Tools**:
+
 - `data-structure-validator`: Cross-market schema verification
 - `temporal-integrity-validator`: Timestamp continuity checks
 

@@ -41,24 +41,29 @@ Fully automated update pipeline with zero manual intervention required.
 ## What Gets Updated
 
 ### Layer 1: Homebrew Packages (Daily)
+
 - **uv**: Python package manager (Rust-based, 10-100x faster than pip)
 - **pipx**: Python app installer (optional, currently using uv)
 - **cargo-clean-all**: Rust build artifact cleaner
 - All other Homebrew packages
 
 ### Layer 2: Python Tools via uv (Daily)
+
 - **pre-commit** v4.3.0 - Git pre-commit hooks framework
 - **maturin** v1.9.6 - Rust-Python bindings builder
 - **gapless-crypto-data** v2.15.0 - Custom crypto data tool
 
 ### Layer 3: Pre-commit Hook Configs (Weekly)
+
 - **pre-commit-hooks** v6.0.0 - Standard file checks
 - Updates `.pre-commit-config.yaml` automatically via GitHub Actions
 
 ## Configuration Files
 
 ### LaunchAgent (Daily Homebrew Updates)
+
 **File**: `~/Library/LaunchAgents/com.terryli.brew_autoupdate.sh.plist`
+
 ```xml
 <key>StartCalendarInterval</key>
 <dict>
@@ -70,7 +75,9 @@ Fully automated update pipeline with zero manual intervention required.
 ```
 
 ### Update Script
+
 **File**: `/Users/terryli/scripts/homebrew-autoupdate/brew_autoupdate.sh`
+
 ```bash
 #!/bin/bash
 # Step 1: Homebrew updates
@@ -83,13 +90,16 @@ uv tool upgrade --all  # Upgrades pre-commit, etc.
 ```
 
 ### GitHub Action (Weekly Hook Updates)
+
 **File**: `.github/workflows/pre-commit-autoupdate.yml`
+
 - Runs every Monday at 9 AM UTC
 - Creates PR if hook versions updated
 
 ## Logs
 
 ### Homebrew + uv Updates
+
 ```bash
 # View latest logs
 tail -100 ~/scripts/homebrew-autoupdate/logs/output.txt
@@ -102,6 +112,7 @@ ls -lht ~/scripts/homebrew-autoupdate/logs/
 ```
 
 ### Manual Trigger
+
 ```bash
 # Run update script manually
 /Users/terryli/scripts/homebrew-autoupdate/brew_autoupdate.sh
@@ -113,6 +124,7 @@ launchctl start com.terryli.brew_autoupdate.sh
 ## Manual Override
 
 ### Update Specific Tool
+
 ```bash
 # Update pre-commit only
 uv tool upgrade pre-commit
@@ -125,6 +137,7 @@ uv tool list
 ```
 
 ### Update Hook Configs
+
 ```bash
 # From project root:
 pre-commit autoupdate
@@ -136,6 +149,7 @@ pre-commit autoupdate
 ## Why This Approach?
 
 ### Benefits
+
 - ✅ **Zero Manual Intervention**: Fully automated, runs while you sleep
 - ✅ **Fast**: uv is 10-100x faster than pip/pipx (Rust-based)
 - ✅ **Reliable**: Homebrew manages uv, uv manages Python tools
@@ -144,16 +158,17 @@ pre-commit autoupdate
 
 ### Comparison with Alternatives
 
-| Approach | Tool Updates | Hook Configs | Speed | Automation |
-|----------|--------------|--------------|-------|------------|
-| **Current (uv)** | ✅ Daily | ✅ Weekly PR | 🚀 Very Fast | ✅ Full |
-| pip only | ❌ Manual | ❌ Manual | 🐌 Slow | ❌ None |
-| pipx only | ⚠️ Manual | ❌ Manual | 🐢 Slow | ⚠️ Partial |
-| Homebrew only | ⚠️ Daily | ❌ Manual | 🚶 Medium | ⚠️ Partial |
+| Approach         | Tool Updates | Hook Configs | Speed        | Automation |
+| ---------------- | ------------ | ------------ | ------------ | ---------- |
+| **Current (uv)** | ✅ Daily     | ✅ Weekly PR | 🚀 Very Fast | ✅ Full    |
+| pip only         | ❌ Manual    | ❌ Manual    | 🐌 Slow      | ❌ None    |
+| pipx only        | ⚠️ Manual    | ❌ Manual    | 🐢 Slow      | ⚠️ Partial |
+| Homebrew only    | ⚠️ Daily     | ❌ Manual    | 🚶 Medium    | ⚠️ Partial |
 
 ## Troubleshooting
 
 ### Check if Updates Are Running
+
 ```bash
 # Check launchd status
 launchctl list | grep brew_autoupdate
@@ -163,6 +178,7 @@ launchctl start com.terryli.brew_autoupdate.sh
 ```
 
 ### Tool Not Updating
+
 ```bash
 # Check if tool is managed by uv
 uv tool list
@@ -173,6 +189,7 @@ uv tool install pre-commit
 ```
 
 ### Pre-commit Hook Updates Not Creating PRs
+
 - Check GitHub Actions: https://github.com/terryli/rangebar/actions
 - Verify workflow runs every Monday
 - Check repository permissions for creating PRs

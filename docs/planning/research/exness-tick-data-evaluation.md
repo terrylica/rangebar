@@ -8,6 +8,7 @@
 ## Executive Summary
 
 Exness provides **superior tick data quality** compared to Dukascopy:
+
 - **3.2× higher volume**: 1,354,843 ticks/month vs Dukascopy's 418,138 for 5 days
 - **Zero rate limiting**: Instant downloads, no 503 errors, no complex retry logic
 - **Simpler architecture**: Single HTTP GET per month, pre-aggregated CSV in ZIP
@@ -25,11 +26,13 @@ Exness provides **superior tick data quality** compared to Dukascopy:
 **Base URL**: `https://ticks.ex2archive.com/ticks/`
 
 **URL Pattern**:
+
 ```
 {base_url}{pair}/{year}/{month}/Exness_{pair}_{year}_{month}.zip
 ```
 
 **Example**:
+
 ```
 https://ticks.ex2archive.com/ticks/EURUSD/2024/01/Exness_EURUSD_2024_01.zip
 ```
@@ -45,10 +48,12 @@ https://ticks.ex2archive.com/ticks/EURUSD/2024/01/Exness_EURUSD_2024_01.zip
 ### Data Format
 
 **Archive**: ZIP compression (~10:1 ratio)
+
 - Compressed: 9.4 MB
 - Uncompressed: 83.3 MB CSV
 
 **CSV Structure**:
+
 ```csv
 "Exness","Symbol","Timestamp","Bid","Ask"
 "exness","EURUSD","2024-01-15 00:00:00.032Z",1.0945,1.09456
@@ -71,11 +76,13 @@ https://ticks.ex2archive.com/ticks/EURUSD/2024/01/Exness_EURUSD_2024_01.zip
 ### January 2024 EURUSD Dataset
 
 **Total Coverage**:
+
 - Period: Jan 1 22:05:16 - Jan 31 23:59:58 UTC
 - Total Ticks: 1,354,843
 - File Size: 83.3 MB uncompressed
 
 **Jan 15-19 Target Period** (Same as Dukascopy validation):
+
 - Total Ticks: **300,425**
 - Average: **60,085 ticks/day**
 - Coverage: Full 24-hour forex sessions
@@ -85,26 +92,28 @@ https://ticks.ex2archive.com/ticks/EURUSD/2024/01/Exness_EURUSD_2024_01.zip
 ### Spread Analysis
 
 **Bid-Ask Spread Statistics** (Jan 15-19):
+
 - Mean: **0.67 pips**
 - Median: **0.60 pips**
 - Min: 0.60 pips (tight institutional spread)
 - Max: 9.60 pips (likely news event or low liquidity)
 
 **Quality Indicators**:
+
 - ✅ Tight spreads indicate institutional-grade liquidity
 - ✅ Median = mode suggests consistent pricing
 - ✅ Max spike within normal forex volatility
 
 ### Comparison vs Dukascopy
 
-| Metric | Exness (Jan 15-19) | Dukascopy (Jan 15-19) | Ratio |
-|--------|-------------------|----------------------|-------|
-| Total Ticks | 300,425 | ~418,138* | 0.72× |
-| Ticks/Day | 60,085 | ~83,628 | 0.72× |
-| Data Fields | Bid/Ask only | Bid/Ask + Volumes | Simpler |
-| Access Reliability | 100% | 77.5% (Phase 1) | ✅ Superior |
-| Download Speed | ~3s/month | ~250s/5days | ✅ 80× faster |
-| Implementation | Single GET | 120 hourly requests | ✅ 120× simpler |
+| Metric             | Exness (Jan 15-19) | Dukascopy (Jan 15-19) | Ratio           |
+| ------------------ | ------------------ | --------------------- | --------------- |
+| Total Ticks        | 300,425            | ~418,138\*            | 0.72×           |
+| Ticks/Day          | 60,085             | ~83,628               | 0.72×           |
+| Data Fields        | Bid/Ask only       | Bid/Ask + Volumes     | Simpler         |
+| Access Reliability | 100%               | 77.5% (Phase 1)       | ✅ Superior     |
+| Download Speed     | ~3s/month          | ~250s/5days           | ✅ 80× faster   |
+| Implementation     | Single GET         | 120 hourly requests   | ✅ 120× simpler |
 
 \* Dukascopy reference: dukascopy-node fetched 418,138 ticks successfully
 
@@ -121,6 +130,7 @@ https://ticks.ex2archive.com/ticks/EURUSD/2024/01/Exness_EURUSD_2024_01.zip
 **Dependencies**: pandas, numpy
 
 **Key Patterns**:
+
 ```python
 from exfinance import Exness
 
@@ -130,6 +140,7 @@ data = exness.download('EURUSD', '2023-01-01', '2023-03-01')
 ```
 
 **Implementation Details**:
+
 - ThreadPoolExecutor for concurrent month downloads
 - In-memory ZIP extraction via `zipfile.ZipFile`
 - Pandas CSV parsing with timestamp indexing
@@ -137,6 +148,7 @@ data = exness.download('EURUSD', '2023-01-01', '2023-03-01')
 - No retry logic needed (reliable source)
 
 **Rust Translation Needs**:
+
 1. HTTP client: `reqwest` with streaming
 2. ZIP extraction: `zip` crate
 3. CSV parsing: `csv` crate
@@ -152,6 +164,7 @@ data = exness.download('EURUSD', '2023-01-01', '2023-03-01')
 **Problem**: CSV contains floats like `1.0897000000000001` (observed in data)
 
 **Evidence**:
+
 ```csv
 "exness","EURUSD","2024-01-19 21:58:54.817Z",1.0897000000000001,1.08977
 ```
@@ -159,6 +172,7 @@ data = exness.download('EURUSD', '2023-01-01', '2023-03-01')
 **Impact**: EURUSD requires 5 decimal places (0.00001 = 1 pipette). Floating-point errors at 16th decimal are negligible, but **string parsing to fixed-point is mandatory**.
 
 **Mitigation**:
+
 ```rust
 // Parse as string, convert to fixed-point integer
 let bid_str = "1.0897000000000001";
@@ -170,9 +184,11 @@ let bid_fixed = (bid_str.parse::<f64>()? * 100_000.0).round() as i64;  // 108970
 **Problem**: Exness provides Bid/Ask prices only, no tick volumes
 
 **Dukascopy Format**:
+
 - Bid, BidVolume, Ask, AskVolume (20 bytes/tick)
 
 **Exness Format**:
+
 - Bid, Ask only
 
 **Impact**: Cannot compute volume-weighted range bars
@@ -187,6 +203,7 @@ let bid_fixed = (bid_str.parse::<f64>()? * 100_000.0).round() as i64;  // 108970
 **Exness**: Monthly ZIP files (bulk download)
 
 **Impact**:
+
 - Must download full month even for single day
 - Storage: ~80MB/month uncompressed
 - Network: ~9MB/month compressed
@@ -202,6 +219,7 @@ let bid_fixed = (bid_str.parse::<f64>()? * 100_000.0).round() as i64;  // 108970
 **Module**: `src/providers/exness/`
 
 **Components**:
+
 ```
 exness/
 ├── mod.rs              # Public API
@@ -212,6 +230,7 @@ exness/
 ```
 
 **Core Struct**:
+
 ```rust
 pub struct ExnessTick {
     pub timestamp: i64,     // Microseconds since epoch
@@ -222,6 +241,7 @@ pub struct ExnessTick {
 ```
 
 **Fetcher**:
+
 ```rust
 pub struct ExnessFetcher {
     client: reqwest::Client,
@@ -282,6 +302,7 @@ impl ExnessRangeBarBuilder {
 ```
 
 **Mid-Price Justification**:
+
 - Exness lacks trade prices (Bid/Ask only)
 - Mid-price = `(Bid + Ask) / 2` is standard for quote-based bars
 - Comparable to Dukascopy's approach
@@ -328,17 +349,20 @@ async fn exness_eurusd_01bps_jan15_19_2024() {
 ### Advantages Over Dukascopy
 
 ✅ **Operational Simplicity**:
+
 - Single HTTP GET per month vs 720 hourly requests
 - Zero rate limiting issues
 - No exponential backoff logic
 - No IP blocking concerns
 
 ✅ **Development Velocity**:
+
 - Simpler implementation (3 files vs 6 files)
 - Faster testing (3s download vs 250s)
 - No retry/timeout tuning
 
 ✅ **Data Reliability**:
+
 - 100% fetch success vs 77.5% (Dukascopy Phase 1)
 - Consistent availability
 - Proven by efinance library (production use)
@@ -346,27 +370,30 @@ async fn exness_eurusd_01bps_jan15_19_2024() {
 ### Trade-offs
 
 ⚠️ **Data Volume**: 28% fewer ticks (60K/day vs 84K/day)
+
 - Still exceeds validation requirements (480 bars/day target)
 - Adequate for range bar generation
 
 ⚠️ **No Tick Volumes**: Bid/Ask prices only
+
 - Acceptable for price-based range bars
 - Volume weighting requires Dukascopy or alternative
 
 ⚠️ **Month Granularity**: Cannot fetch single hours
+
 - Must download ~9MB per month
 - Acceptable with local caching
 
 ### Decision Matrix
 
-| Criterion | Exness | Dukascopy | Winner |
-|-----------|--------|-----------|--------|
-| Access Reliability | 100% | 77.5% | ✅ Exness |
-| Implementation Complexity | Low | High | ✅ Exness |
-| Data Volume | 60K/day | 84K/day | Dukascopy |
-| Tick Volumes | ❌ | ✅ | Dukascopy |
-| Download Speed | 3s/month | 250s/5days | ✅ Exness |
-| Rate Limit Resilience | N/A | Complex | ✅ Exness |
+| Criterion                 | Exness   | Dukascopy  | Winner    |
+| ------------------------- | -------- | ---------- | --------- |
+| Access Reliability        | 100%     | 77.5%      | ✅ Exness |
+| Implementation Complexity | Low      | High       | ✅ Exness |
+| Data Volume               | 60K/day  | 84K/day    | Dukascopy |
+| Tick Volumes              | ❌       | ✅         | Dukascopy |
+| Download Speed            | 3s/month | 250s/5days | ✅ Exness |
+| Rate Limit Resilience     | N/A      | Complex    | ✅ Exness |
 
 **Verdict**: **Exness for EURUSD validation**, Dukascopy for volume-dependent features.
 
@@ -375,30 +402,30 @@ async fn exness_eurusd_01bps_jan15_19_2024() {
 ## Next Steps
 
 1. **Implement Exness Provider** (`src/providers/exness/`)
-   - HTTP client with ZIP extraction
-   - CSV parsing with fixed-point conversion
-   - Month-level fetcher
+    - HTTP client with ZIP extraction
+    - CSV parsing with fixed-point conversion
+    - Month-level fetcher
 
 2. **Create Range Bar Builder**
-   - Mid-price calculation
-   - v3.0.0 threshold units (0.1bps granularity)
-   - Validation strictness modes
+    - Mid-price calculation
+    - v3.0.0 threshold units (0.1bps granularity)
+    - Validation strictness modes
 
 3. **Write Validation Test** (`tests/exness_eurusd_ultra_low_threshold.rs`)
-   - Fetch Jan 2024 data
-   - Filter to Jan 15-19 (300,425 ticks)
-   - Generate 0.1bps range bars
-   - Verify ~480 bars/day target
+    - Fetch Jan 2024 data
+    - Filter to Jan 15-19 (300,425 ticks)
+    - Generate 0.1bps range bars
+    - Verify ~480 bars/day target
 
 4. **Document Provider Choice** (`docs/planning/architecture/`)
-   - Provider comparison matrix
-   - Use case mapping (Exness vs Dukascopy vs Binance)
-   - Data source selection guide
+    - Provider comparison matrix
+    - Use case mapping (Exness vs Dukascopy vs Binance)
+    - Data source selection guide
 
 5. **Update v3.0.0 Migration Plan**
-   - Mark Exness validation as primary path
-   - Dukascopy as secondary (volume features)
-   - Archive rate limit troubleshooting docs
+    - Mark Exness validation as primary path
+    - Dukascopy as secondary (volume features)
+    - Archive rate limit troubleshooting docs
 
 ---
 
@@ -408,5 +435,5 @@ async fn exness_eurusd_01bps_jan15_19_2024() {
 - **efinance Library**: https://github.com/alihaskar/efinance
 - **Test Data**: `/tmp/Exness_EURUSD_2024_01.zip` (validated 2025-10-03)
 - **Related Docs**:
-  - `docs/planning/dukascopy-timeout-retry-strategy.md` (superseded)
-  - `docs/planning/architecture/restructure-v2.3.0-migration.md`
+    - `docs/planning/dukascopy-timeout-retry-strategy.md` (superseded)
+    - `docs/planning/architecture/restructure-v2.3.0-migration.md`

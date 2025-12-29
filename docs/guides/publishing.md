@@ -5,11 +5,13 @@ Complete guide for publishing rangebar crates to crates.io with Doppler credenti
 ## Quick Reference
 
 **Doppler Configuration**:
+
 - Project: `claude-config`
 - Config: `dev`
 - Secret: `CRATES_IO_CLAUDE_CODE`
 
 **Publish Command**:
+
 ```bash
 export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE \
   --project claude-config --config dev --plain)
@@ -33,6 +35,7 @@ doppler secrets get CRATES_IO_CLAUDE_CODE \
 ```
 
 **Important**: This assumes Doppler CLI is already authenticated. Check authentication:
+
 ```bash
 cat ~/.doppler/.doppler.yaml
 ```
@@ -40,6 +43,7 @@ cat ~/.doppler/.doppler.yaml
 ### Alternative: Direct Cargo Login
 
 If Doppler is not available:
+
 ```bash
 cargo login
 # Paste your token from https://crates.io/settings/tokens
@@ -80,29 +84,32 @@ cargo publish -p rangebar            # depends: all 7 above
 ### Pre-Publication Checklist
 
 1. **Clean git state**:
-   ```bash
-   git status
-   # Ensure no uncommitted changes in Cargo.toml or README files
-   ```
+
+    ```bash
+    git status
+    # Ensure no uncommitted changes in Cargo.toml or README files
+    ```
 
 2. **Version specifications**:
-   ```bash
-   # All internal dependencies must specify versions:
-   # rangebar-core = { path = "../rangebar-core", version = "5.0" }
-   grep -r 'path = "../rangebar-' crates/*/Cargo.toml
-   ```
+
+    ```bash
+    # All internal dependencies must specify versions:
+    # rangebar-core = { path = "../rangebar-core", version = "5.0" }
+    grep -r 'path = "../rangebar-' crates/*/Cargo.toml
+    ```
 
 3. **Cargo checks**:
-   ```bash
-   cargo test --workspace
-   cargo clippy --workspace
-   cargo build --release
-   ```
+
+    ```bash
+    cargo test --workspace
+    cargo clippy --workspace
+    cargo build --release
+    ```
 
 4. **Dry run** (test without publishing):
-   ```bash
-   cargo publish -p rangebar-core --dry-run
-   ```
+    ```bash
+    cargo publish -p rangebar-core --dry-run
+    ```
 
 ### Automated Full Publication
 
@@ -137,16 +144,19 @@ cargo publish -p rangebar && echo "✅ All crates published!"
 ## Rate Limits
 
 **crates.io Limits**:
+
 - New publishers: **~6 crates per 12 hours**
 - Established publishers: Higher limits
 
 **If Rate Limited**:
+
 ```
 Error: You have published too many new crates in a short period of time.
 Please try again after [timestamp] or email help@crates.io
 ```
 
 **Solutions**:
+
 1. Wait until the specified timestamp
 2. Email help@crates.io to request limit increase (include project details)
 
@@ -189,6 +199,7 @@ git commit -m "chore: prepare for publication"
 ### Error: "crate not found in registry"
 
 Wait 30-60 seconds after publishing a dependency before publishing dependent crates:
+
 ```bash
 cargo publish -p rangebar-core
 sleep 30  # Wait for crates.io indexing
@@ -227,15 +238,18 @@ cargo build
 ## Security Considerations
 
 **Doppler Token Storage**:
+
 - ✅ Stored in Doppler secrets (encrypted at rest)
 - ✅ Retrieved on-demand (not persisted in environment)
 - ✅ Scoped to `claude-config` project
 
 **Token Scope**:
+
 - The `CRATES_IO_CLAUDE_CODE` token has publish permissions
 - Rotate token if compromised: https://crates.io/settings/tokens
 
 **Git Hygiene**:
+
 - Never commit tokens to git
 - Verify `.gitignore` excludes credential files
 - Use `git log -S "crates-io"` to check history
@@ -245,13 +259,14 @@ cargo build
 ## CI/CD Integration
 
 **GitHub Actions** (future):
+
 ```yaml
 env:
-  CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+    CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
 
 steps:
-  - name: Publish to crates.io
-    run: cargo publish -p rangebar-core
+    - name: Publish to crates.io
+      run: cargo publish -p rangebar-core
 ```
 
 **Note**: Currently using manual Doppler-based workflow. GitHub Actions OIDC mentioned in CLAUDE.md is not yet configured.

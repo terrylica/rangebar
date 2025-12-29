@@ -14,6 +14,7 @@
 **Business Goal**: Eliminate data loss risk and establish foundation for modernization
 
 **Technical Goal**:
+
 1. Restore volume conservation validation (currently disabled)
 2. Fix processor volume tracking correctness
 3. Remove technical debt (archived code)
@@ -21,6 +22,7 @@
 5. Document architectural decisions for future developers
 
 **Success Criteria**:
+
 - Volume conservation tests pass with real data (BTCUSDT, ETHUSDT)
 - Processor correctly tracks all trade volumes
 - src-archived/ removed, accessible via Git tag
@@ -32,21 +34,25 @@
 ## SLOs
 
 **Availability**: 100%
+
 - All existing tests continue passing
 - No functionality regression
 - Git history preserved
 
 **Correctness**: 100%
+
 - Volume conservation validated mathematically
 - All trades accounted for in final bars
 - Zero data loss
 
 **Observability**: 100%
+
 - Volume discrepancies reported with context (expected, actual, diff)
 - Processor state visible in error messages
 - Benchmark results include memory and parse time
 
 **Maintainability**: 100%
+
 - Code changes documented in commit messages
 - ADR explains why decisions made
 - Plan updated with learnings
@@ -62,12 +68,14 @@
 **File**: `crates/rangebar/tests/integration_test.rs`
 
 **Current State**: Line ~92
+
 ```rust
 // TODO: Re-enable when processor handles all trades correctly
 // assert_volume_conservation(&bars, &trades);
 ```
 
 **Target State**:
+
 ```rust
 assert_volume_conservation(&bars, &trades);
 ```
@@ -91,14 +99,16 @@ assert_volume_conservation(&bars, &trades);
 The "volume conservation violation" is NOT a bug - it's BY DESIGN.
 
 **Explanation**:
+
 1. `process_agg_trade_records()` returns ONLY completed bars (bars that breached threshold)
 2. Incomplete bar at end of data stream is NOT included (by design - not a valid range bar yet)
 3. Volume conservation test compares:
-   - Total bar volume (from completed bars only)
-   - Total trade volume (from ALL trades, including incomplete bar)
+    - Total bar volume (from completed bars only)
+    - Total trade volume (from ALL trades, including incomplete bar)
 4. Discrepancy = volume in final incomplete bar
 
 **Example**:
+
 ```
 Trades: [1, 2, 3, 4, 5, 6, 7, 8]
 Breaches at: trade 3, trade 6 (two completed bars)
@@ -113,16 +123,19 @@ Discrepancy: trades 7-8 volume (in incomplete bar)
 **Solution Options**:
 
 **Option A: Change Test Expectation** (RECOMMENDED)
+
 - Accept that volume conservation only applies to completed bars
 - This is algorithmically correct - incomplete bars aren't valid range bars
 - Update test comment to explain this is expected behavior
 
 **Option B: Use Analysis Mode for Volume Check**
+
 - Use `process_agg_trade_records_with_incomplete()` for tests
 - Include incomplete bars in volume conservation check
 - WARNING: This violates range bar algorithm (bars should close on breach only)
 
 **Option C: Validate Differently**
+
 - Only count volume from trades that END UP in completed bars
 - Exclude trades in incomplete bar from total trade volume
 - More complex, less intuitive
@@ -130,12 +143,14 @@ Discrepancy: trades 7-8 volume (in incomplete bar)
 **Decision**: Option B (use analysis mode) - REVISED
 
 **Rationale**:
+
 - Volume conservation is an ALGORITHM INVARIANT - no volume should be lost or gained
 - Must validate with ALL bars (completed + incomplete) to catch volume loss bugs
 - Production behavior (excluding incomplete) is separate concern from algorithm correctness
 - User requirement: "On any error, raise and propagate" - volume loss is an error
 
 **Implementation**:
+
 ```rust
 // In validate_algorithm_invariants()
 // Use process_agg_trade_records_with_incomplete() to get ALL bars
@@ -158,6 +173,7 @@ assert_eq!(
 ```
 
 **Why This is Correct**:
+
 - Algorithm invariant: ALL trades must have their volume counted SOMEWHERE
 - Including incomplete bar ensures we catch volume loss bugs in algorithm
 - Does NOT affect production (production uses `process_agg_trade_records()` without incomplete)
@@ -175,6 +191,7 @@ assert_eq!(
 **Status**: completed ✅
 
 **Work Completed**:
+
 1. Git tag v4.0.0-archive created with full history ✅
 2. Tag pushed to remote (git push origin v4.0.0-archive) ✅
 3. Directory removed (rm -rf src-archived/) ✅
@@ -189,6 +206,7 @@ assert_eq!(
 **Blockers**: None - all issues resolved ✅
 
 **Resolution Summary**:
+
 - Root cause: v3.0.0 breaking change (threshold_bps: 1bps → 0.1bps units)
 - Fixed 5 threshold values in integration_test.rs (25→250, 10→100, 50→500)
 - Fixed 2 manual range contains in exness_eurusd_integration_test.rs
@@ -197,6 +215,7 @@ assert_eq!(
 - Removed unused imports from 3 test files
 
 **Commit Details**:
+
 - Commit: 0923fe4
 - Message: "refactor: archive v4.0.0 monolithic structure and fix v3.0.0 threshold units"
 - Files changed: 93 files, +2637 insertions, -15036 deletions
@@ -212,6 +231,7 @@ assert_eq!(
 **Original Intent**: Validate performance claims (5-10x improvement with polars native CSV)
 
 **Rejection Rationale** (2025-10-16):
+
 - **CSV is NOT a production format** - Only Parquet/Arrow matter for output
 - **CSV is testing/debugging only** - Human-readable inspection, not performance-critical
 - **No evidence of bottleneck** - Speculative optimization without profiling data
@@ -232,6 +252,7 @@ assert_eq!(
 **Created**: `docs/architecture/ADR-001-modular-workspace.md` ✅
 
 **Template** (ADR format):
+
 ```markdown
 # ADR-001: Modular Workspace Architecture (8 Crates)
 
@@ -247,6 +268,7 @@ v5.0.0 migrated to 8 specialized crates.
 ## Decision
 
 Adopt modular workspace with 8 crates:
+
 1. rangebar-core (algorithm, types)
 2. rangebar-providers (data sources)
 3. rangebar-config (configuration)
@@ -259,6 +281,7 @@ Adopt modular workspace with 8 crates:
 ## Rationale
 
 **Benefits**:
+
 - Clear separation of concerns
 - Independent versioning possible
 - Faster compilation (parallel)
@@ -266,11 +289,13 @@ Adopt modular workspace with 8 crates:
 - Easier testing (isolated modules)
 
 **Costs**:
+
 - More Cargo.toml files to maintain
 - Workspace coordination overhead
 - Learning curve for contributors
 
 **Alternatives Considered**:
+
 1. Monolithic (rejected: compilation time, coupling)
 2. Microservices (rejected: unnecessary complexity)
 3. 3 crates only (rejected: insufficient granularity)
@@ -278,18 +303,21 @@ Adopt modular workspace with 8 crates:
 ## Consequences
 
 **Positive**:
+
 - Compile time reduced ~40% (parallel crate compilation)
 - Binary size reduced ~30% (feature flags)
 - Test isolation improved (per-crate tests)
 
 **Negative**:
+
 - More files to navigate
 - Cross-crate changes require coordination
 
 **Mitigation**:
+
 - CODEBASE_SURVEY.md documents structure
 - SURVEY_QUICK_REFERENCE.md for navigation
-- Clear naming (rangebar-* prefix)
+- Clear naming (rangebar-\* prefix)
 
 ## Compliance
 
@@ -304,6 +332,7 @@ Adopt modular workspace with 8 crates:
 **Actual Duration**: 1 hour
 
 **Work Completed**:
+
 1. Created comprehensive ADR-001 (700+ lines) ✅
 2. Documented all 8 crates with rationale ✅
 3. Explained benefits (40% faster compilation, 30% smaller binaries) ✅
@@ -313,6 +342,7 @@ Adopt modular workspace with 8 crates:
 7. Documented future evolution path (v6.0.0, independent versioning) ✅
 
 **Key Sections**:
+
 - Context: Why v4.0.0 monolithic structure was problematic
 - Decision: 8 crates with clear responsibilities
 - Rationale: Benefits vs costs analysis
@@ -325,13 +355,13 @@ Adopt modular workspace with 8 crates:
 
 ## Progress Tracking
 
-| Action | Status | Days Spent | Days Estimated | Blockers |
-|--------|--------|------------|----------------|----------|
-| 1. Re-enable volume conservation | completed ✅ | 0.1 | 0.1 | None |
-| 2. Fix processor volume tracking | completed ✅ | 0.5 | 2-3 | None |
-| 3. Archive src-archived/ | completed ✅ | 0.4 | 1 | None |
-| 4. Benchmark CSV | rejected ❌ | 0 | 2-3 | Premature optimization |
-| 5. Document ADR-001 | completed ✅ | 0.1 | 1 | None |
+| Action                           | Status       | Days Spent | Days Estimated | Blockers               |
+| -------------------------------- | ------------ | ---------- | -------------- | ---------------------- |
+| 1. Re-enable volume conservation | completed ✅ | 0.1        | 0.1            | None                   |
+| 2. Fix processor volume tracking | completed ✅ | 0.5        | 2-3            | None                   |
+| 3. Archive src-archived/         | completed ✅ | 0.4        | 1              | None                   |
+| 4. Benchmark CSV                 | rejected ❌  | 0          | 2-3            | Premature optimization |
+| 5. Document ADR-001              | completed ✅ | 0.1        | 1              | None                   |
 
 **Total Estimated**: 4-5 days (revised from 6-7 after rejecting Action 4)
 **Total Spent**: 1.1 days (Actions 1-3: 1.0 days, Action 5: 0.1 days)
@@ -339,6 +369,7 @@ Adopt modular workspace with 8 crates:
 **Status**: COMPLETE ✅ - Finished 5.9 days ahead of schedule!
 
 **Final Results**:
+
 - 4 actions completed (1, 2, 3, 5)
 - 1 action rejected (4 - premature optimization)
 - Time saved: 5.9 days (83% faster than estimated)
@@ -349,24 +380,27 @@ Adopt modular workspace with 8 crates:
 ## Learnings & Updates
 
 ### 2025-10-16: Plan Created
+
 - Initial 5 actions defined
 - Dependencies identified (Action 1 blocked by Action 2)
 - SLOs established
 
 ### 2025-10-16: Actions 1-3 Completed
+
 - **Action 1**: Volume conservation re-enabled using `process_agg_trade_records_with_incomplete()`
 - **Action 2**: Root cause identified - "volume loss" was by design (incomplete bars excluded)
-  - Solution: Use analysis mode for validation (includes all bars)
-  - Algorithm invariant: ALL trade volumes must be accounted for
+    - Solution: Use analysis mode for validation (includes all bars)
+    - Algorithm invariant: ALL trade volumes must be accounted for
 - **Action 3**: Archive completed with comprehensive test fixes
-  - **Critical discovery**: v3.0.0 breaking change in threshold units (1bps → 0.1bps)
-  - Fixed 5 test files with incorrect threshold values (10x off)
-  - Root cause of `test_non_lookahead_bias_compliance` failure: 50 (5bps) instead of 500 (50bps)
-  - All 144 tests passing, clippy clean
-  - Git tag v4.0.0-archive created and pushed
-  - 59 legacy files removed (-15,036 lines)
+    - **Critical discovery**: v3.0.0 breaking change in threshold units (1bps → 0.1bps)
+    - Fixed 5 test files with incorrect threshold values (10x off)
+    - Root cause of `test_non_lookahead_bias_compliance` failure: 50 (5bps) instead of 500 (50bps)
+    - All 144 tests passing, clippy clean
+    - Git tag v4.0.0-archive created and pushed
+    - 59 legacy files removed (-15,036 lines)
 
 **Key Learning**: v3.0.0 migration requires systematic audit of all threshold_bps values
+
 - Old: `RangeBarProcessor::new(50)` = 50bps = 0.5%
 - New: `RangeBarProcessor::new(50)` = 5bps = 0.05% ❌
 - Fix: `RangeBarProcessor::new(500)` = 50bps = 0.5% ✅
@@ -374,6 +408,7 @@ Adopt modular workspace with 8 crates:
 **Time Efficiency**: Completed 3 actions in 1.0 days vs 2.1-3.1 days estimated (3x faster)
 
 ### 2025-10-16: Action 4 Rejected (Critical Learning)
+
 - **Rejected**: CSV benchmarking (Action 4)
 - **Reason**: Speculative optimization without evidence
 - **Root cause**: Strategic plan incorrectly labeled CSV as "HIGH PRIORITY"
@@ -382,23 +417,27 @@ Adopt modular workspace with 8 crates:
 
 **Key Learning: Optimization Validation Checklist**
 Before benchmarking/optimizing, require:
+
 1. ✅ **Evidence**: Profiling data showing actual bottleneck
 2. ✅ **Impact**: On critical path (production output, not testing utilities)
 3. ✅ **ROI**: Clear benefit > cost
 4. ✅ **User need**: Solves real user problem, not theoretical
 
 **CSV Role Clarified**:
+
 - ❌ NOT production output (use Parquet/Arrow)
 - ✅ Testing/debugging only (human inspection)
 - ✅ Already exists (polars_benchmark.rs line 84 uses `csv` crate)
 - ✅ Performance is adequate for testing needs
 
 ### 2025-10-16: Action 5 Completed - Phase 1 DONE
+
 - **Completed**: ADR-001 modular workspace documentation (700+ lines)
 - **Time**: 1 hour (estimated 1 day - 87% faster)
 - **Outcome**: Comprehensive architecture documentation created
 
 **ADR-001 Contents**:
+
 - 8 crates documented with rationale (why each exists)
 - Performance metrics: 40% faster compilation, 30% smaller binaries
 - Alternatives considered: monolithic, microservices, 3 crates, 15+ crates
@@ -406,21 +445,23 @@ Before benchmarking/optimizing, require:
 - Compliance validated: Availability, Correctness, Observability, Maintainability
 
 **Phase 1 Summary**:
+
 - **Actions**: 4 completed (1, 2, 3, 5), 1 rejected (4)
 - **Time**: 1.1 days vs 4-5 days estimated (78% time saved)
 - **Success criteria**: All met ✅
-  - Volume conservation validated ✅
-  - Processor volume tracking fixed ✅
-  - src-archived/ removed (Git tag accessible) ✅
-  - Architecture documented (ADR-001) ✅
+    - Volume conservation validated ✅
+    - Processor volume tracking fixed ✅
+    - src-archived/ removed (Git tag accessible) ✅
+    - Architecture documented (ADR-001) ✅
 
 **Key Learnings Applied**:
+
 1. Evidence-based decision making (rejected speculative optimization)
 2. Focus on value (documentation > premature optimization)
 3. Systematic threshold audit (v3.0.0 migration)
 4. Plan-track-update discipline (maintained throughout)
 
-*(Phase 1 implementation complete - ready for Phase 2 planning)*
+_(Phase 1 implementation complete - ready for Phase 2 planning)_
 
 ---
 
@@ -429,7 +470,7 @@ Before benchmarking/optimizing, require:
 ### Action 2: Fix Processor Volume Tracking (In Progress)
 
 **Step 1: Investigation Started**
-*(To be filled as investigation proceeds)*
+_(To be filled as investigation proceeds)_
 
 ---
 

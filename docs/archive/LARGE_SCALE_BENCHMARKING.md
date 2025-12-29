@@ -72,13 +72,13 @@ cargo run --release --features gpu --bin large-scale-gpu-cpu-benchmark
 
 ### Data Volumes Tested
 
-| Scale | Trades | Use Case | Estimated Time |
-|-------|--------|----------|----------------|
-| Small | 1K-10K | Development validation | <1 minute |
-| Medium | 100K | Production validation | 1-5 minutes |
-| Large | 1M | High-frequency trading | 5-30 minutes |
-| Very Large | 10M | Daily aggregation | 30-120 minutes |
-| Extreme | 50M+ | Multi-day analysis | 2-8 hours |
+| Scale      | Trades | Use Case               | Estimated Time |
+| ---------- | ------ | ---------------------- | -------------- |
+| Small      | 1K-10K | Development validation | <1 minute      |
+| Medium     | 100K   | Production validation  | 1-5 minutes    |
+| Large      | 1M     | High-frequency trading | 5-30 minutes   |
+| Very Large | 10M    | Daily aggregation      | 30-120 minutes |
+| Extreme    | 50M+   | Multi-day analysis     | 2-8 hours      |
 
 ### Symbol Counts
 
@@ -102,6 +102,7 @@ cargo run --release --features gpu --bin large-scale-gpu-cpu-benchmark
 Validates performance scaling with increasing data volumes for single symbols.
 
 **Metrics**:
+
 - Processing time (CPU vs GPU)
 - Throughput (trades/second)
 - Memory usage
@@ -113,6 +114,7 @@ Validates performance scaling with increasing data volumes for single symbols.
 Tests GPU's advantage in parallel multi-symbol processing vs sequential CPU processing.
 
 **Configuration**:
+
 - 2, 5, 10, 18 symbols simultaneously
 - Various trades per symbol (10K, 100K, 1M)
 - Parallel GPU batch processing vs sequential CPU
@@ -122,6 +124,7 @@ Tests GPU's advantage in parallel multi-symbol processing vs sequential CPU proc
 Uses authentic Binance UM Futures aggTrades data for validation.
 
 **Data Sources**:
+
 - BTCUSDT, ETHUSDT, SOLUSDT, ADAUSDT, BNBUSDT
 - Real market volatility patterns
 - Production timestamp sequences
@@ -132,6 +135,7 @@ Uses authentic Binance UM Futures aggTrades data for validation.
 Simulates production workloads with realistic Tier-1 symbol volumes.
 
 **Scenarios**:
+
 - All 18 Tier-1 USDT pairs
 - 6-month realistic trade volumes
 - Peak trading period simulation
@@ -142,6 +146,7 @@ Simulates production workloads with realistic Tier-1 symbol volumes.
 Analyzes memory usage patterns and scaling behavior.
 
 **Analysis**:
+
 - Memory usage per trade
 - Peak memory consumption
 - Memory efficiency improvements
@@ -176,18 +181,21 @@ Analyzes memory usage patterns and scaling behavior.
 ### Key Metrics
 
 #### Performance Metrics
+
 - **Speedup Factor**: GPU time / CPU time
 - **Throughput Improvement**: (GPU throughput - CPU throughput) / CPU throughput
 - **Memory Efficiency**: GPU memory usage vs CPU memory usage
 - **Cost Efficiency**: Performance improvement vs resource cost
 
 #### Validation Metrics
+
 - **Algorithmic Parity**: 100% = perfect GPU/CPU algorithm match
 - **Precision Validation**: OHLC values within ≤1bp tolerance
 - **Bar Count Validation**: Identical number of bars generated
 - **Temporal Consistency**: Identical bar timing and sequence
 
 #### System Metrics
+
 - **Peak Memory Usage**: Maximum memory consumption
 - **Processing Time**: Total benchmark execution time
 - **Cloud Cost Estimate**: Estimated AWS/GCP compute cost
@@ -198,34 +206,40 @@ Analyzes memory usage patterns and scaling behavior.
 ### Interpreting Results
 
 #### Speedup Factor
+
 - **>2.0x**: Significant GPU advantage
 - **1.1-2.0x**: Moderate GPU advantage
 - **<1.1x**: Minimal or no GPU advantage
 
 #### Validation Success Rates
+
 - **100%**: Perfect algorithmic parity
 - **>99%**: Acceptable with investigation
 - **<99%**: Algorithmic issues requiring fixes
 
 #### Precision Tolerance
+
 - **≤1bp**: Financial-grade precision maintained
 - **>1bp**: Precision degradation - investigate
 
 ### Troubleshooting Common Issues
 
 #### Low GPU Performance
+
 1. Check GPU memory availability
 2. Verify GPU feature compilation (`--features gpu`)
 3. Ensure proper GPU drivers
 4. Check for thermal throttling
 
 #### Precision Violations
+
 1. Review threshold calculations
 2. Check fixed-point arithmetic precision
 3. Validate breach detection logic
 4. Examine edge case handling
 
 #### Memory Issues
+
 1. Reduce `max_memory_mb` in configuration
 2. Use smaller data volumes
 3. Enable memory monitoring
@@ -239,26 +253,26 @@ Analyzes memory usage patterns and scaling behavior.
 name: Large-Scale GPU Benchmark
 
 on:
-  schedule:
-    - cron: '0 2 * * 0'  # Weekly on Sunday 2 AM
+    schedule:
+        - cron: "0 2 * * 0" # Weekly on Sunday 2 AM
 
 jobs:
-  benchmark:
-    runs-on: gpu-runner
-    steps:
-    - uses: actions/checkout@v3
-    - name: Setup Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-        override: true
-    - name: Run Quick Benchmark
-      run: cargo run --release --features gpu --bin large-scale-gpu-cpu-benchmark -- --quick
-    - name: Upload Results
-      uses: actions/upload-artifact@v3
-      with:
-        name: benchmark-results
-        path: ./output/large_scale_benchmark/
+    benchmark:
+        runs-on: gpu-runner
+        steps:
+            - uses: actions/checkout@v3
+            - name: Setup Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: stable
+                  override: true
+            - name: Run Quick Benchmark
+              run: cargo run --release --features gpu --bin large-scale-gpu-cpu-benchmark -- --quick
+            - name: Upload Results
+              uses: actions/upload-artifact@v3
+              with:
+                  name: benchmark-results
+                  path: ./output/large_scale_benchmark/
 ```
 
 ### Performance Regression Detection
@@ -279,14 +293,14 @@ Create `benchmark_config.json`:
 
 ```json
 {
-  "data_volumes": [1000, 50000, 100000],
-  "symbol_counts": [1, 5],
-  "thresholds_bps": [800],
-  "repetitions": 3,
-  "max_memory_mb": 8000,
-  "precision_tolerance_bps": 1,
-  "use_real_data": true,
-  "output_dir": "./output/custom_benchmark"
+    "data_volumes": [1000, 50000, 100000],
+    "symbol_counts": [1, 5],
+    "thresholds_bps": [800],
+    "repetitions": 3,
+    "max_memory_mb": 8000,
+    "precision_tolerance_bps": 1,
+    "use_real_data": true,
+    "output_dir": "./output/custom_benchmark"
 }
 ```
 
@@ -307,21 +321,21 @@ export RUST_LOG=debug
 
 ### Expected Results (MacBook Pro M3 Max)
 
-| Test Type | Volume | CPU (trades/sec) | GPU (trades/sec) | Speedup |
-|-----------|--------|------------------|------------------|---------|
-| Single Symbol | 100K | 50,000 | 500,000 | 10x |
-| Single Symbol | 1M | 45,000 | 1,200,000 | 26x |
-| Multi-Symbol (5) | 500K | 40,000 | 800,000 | 20x |
-| Multi-Symbol (18) | 1.8M | 35,000 | 1,000,000 | 28x |
+| Test Type         | Volume | CPU (trades/sec) | GPU (trades/sec) | Speedup |
+| ----------------- | ------ | ---------------- | ---------------- | ------- |
+| Single Symbol     | 100K   | 50,000           | 500,000          | 10x     |
+| Single Symbol     | 1M     | 45,000           | 1,200,000        | 26x     |
+| Multi-Symbol (5)  | 500K   | 40,000           | 800,000          | 20x     |
+| Multi-Symbol (18) | 1.8M   | 35,000           | 1,000,000        | 28x     |
 
 ### Expected Results (NVIDIA RTX 4090)
 
-| Test Type | Volume | CPU (trades/sec) | GPU (trades/sec) | Speedup |
-|-----------|--------|------------------|------------------|---------|
-| Single Symbol | 100K | 35,000 | 800,000 | 22x |
-| Single Symbol | 1M | 32,000 | 2,500,000 | 78x |
-| Multi-Symbol (5) | 500K | 30,000 | 1,500,000 | 50x |
-| Multi-Symbol (18) | 1.8M | 28,000 | 2,000,000 | 71x |
+| Test Type         | Volume | CPU (trades/sec) | GPU (trades/sec) | Speedup |
+| ----------------- | ------ | ---------------- | ---------------- | ------- |
+| Single Symbol     | 100K   | 35,000           | 800,000          | 22x     |
+| Single Symbol     | 1M     | 32,000           | 2,500,000        | 78x     |
+| Multi-Symbol (5)  | 500K   | 30,000           | 1,500,000        | 50x     |
+| Multi-Symbol (18) | 1.8M   | 28,000           | 2,000,000        | 71x     |
 
 ## Best Practices
 
@@ -385,7 +399,6 @@ For issues with the large-scale benchmarking framework:
 
 ## Related Documentation
 
-- [GPU Implementation Guide](./GPU_IMPLEMENTATION.md)
-- [Range Bar Algorithm Specification](./ALGORITHM.md)
-- [Performance Optimization Guide](./PERFORMANCE.md)
-- [Precision Validation Documentation](./PRECISION.md)
+- [Comprehensive GPU/CPU Analysis](./COMPREHENSIVE_GPU_CPU_ANALYSIS.md)
+- [Performance Test Report](./PERFORMANCE-TEST-REPORT-MILLIONS-OF-TRADES.md)
+- [Adversarial Testing Report](./adversarial-testing-report.md)

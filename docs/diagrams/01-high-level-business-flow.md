@@ -111,11 +111,13 @@ graph TB
 **Business Purpose**: Identify which financial instruments are available for analysis
 
 **Key Actions**:
+
 - Discover Tier-1 crypto symbols (18+ instruments across 3 Binance markets)
 - Identify available forex pairs (EURUSD variants)
 - Generate market availability matrix
 
 **Business Outputs**:
+
 - Symbol lists categorized by market type
 - Multi-market availability indicators
 - Data availability date ranges
@@ -129,12 +131,14 @@ graph TB
 **Business Purpose**: Verify data quality before expensive processing
 
 **Key Actions**:
+
 - Validate CSV/Parquet schema correctness
 - Verify column naming conventions
 - Check timestamp format consistency
 - Detect data corruption early
 
 **Business Outputs**:
+
 - Schema validation reports (pass/fail per file)
 - Format verification confirmations
 - Data quality scores
@@ -148,16 +152,19 @@ graph TB
 **Business Purpose**: Obtain raw market data from multiple sources
 
 **Data Sources**:
+
 - **Binance (Crypto)**: Spot, UM Futures (USDT), CM Futures (Coin-margined)
 - **Exness (Forex)**: EURUSD_Raw_Spread with 8× higher spread variability
 
 **Key Actions**:
+
 - Fetch historical tick data (CSV/ZIP archives)
 - Normalize timestamps to microseconds (16-digit)
 - Convert to unified `AggTrade` format
 - Handle multi-market data differences
 
 **Business Outputs**:
+
 - Normalized tick data (price, volume, timestamp)
 - Unified format regardless of source
 - Temporal integrity guaranteed
@@ -171,12 +178,14 @@ graph TB
 **Business Purpose**: Optimize data storage and access speed
 
 **Key Actions**:
+
 - Convert CSV (slow reads) to Parquet (10× faster)
 - Validate schema during conversion
 - Compress data for storage efficiency
 - Enable columnar access patterns
 
 **Business Outputs**:
+
 - Validated Parquet files (compressed, fast)
 - Schema-verified datasets
 - Optimized for analytical queries
@@ -190,12 +199,14 @@ graph TB
 **Business Purpose**: Transform tick data into range bars with non-lookahead guarantee
 
 **Key Actions**:
+
 - Apply threshold-based bar closing algorithm
 - Use fixed-point arithmetic (8-decimal precision, no float errors)
 - Ensure breach tick always included in closing bar
 - Generate OHLCV + market microstructure metadata
 
 **Business Outputs**:
+
 - Range bar sequences (open, high, low, close, volume)
 - Bar timestamps (open_time, close_time)
 - Market microstructure data (buy/sell volume, trade counts)
@@ -212,12 +223,14 @@ graph TB
 **Business Purpose**: Extract actionable insights from range bars
 
 **Key Actions**:
+
 - Calculate price statistics (mean, std dev, min, max)
 - Calculate volume statistics (total, mean, distribution)
 - Calculate bar duration statistics (avg time per bar)
 - Multi-symbol parallel analysis (compare across markets)
 
 **Business Outputs**:
+
 - Analysis reports with comparative metrics
 - Cross-symbol rankings (liquidity, volatility)
 - Time-series statistics
@@ -232,17 +245,20 @@ graph TB
 **Business Purpose**: Deliver processed data to trading systems or analysis tools
 
 **Export Formats**:
+
 - **CSV**: Human-readable, universal compatibility
 - **Parquet**: Compressed, fast analytical queries
 - **Arrow**: Zero-copy interoperability
 - **IPC**: Cross-language data exchange
 
 **Key Actions**:
+
 - Choose format based on downstream use case
 - Export via Polars (high-performance DataFrame library)
 - Maintain data integrity during export
 
 **Business Outputs**:
+
 - Structured bar data files
 - Ready for backtesting engines
 - Compatible with trading platforms
@@ -257,18 +273,21 @@ graph TB
 ### Critical Decision: Need Statistics?
 
 **When to choose "Yes"**:
+
 - Multi-symbol comparison required
 - Need volatility/liquidity rankings
 - Research or strategy development
 - Historical analysis
 
 **When to choose "No"**:
+
 - Live trading (minimize latency)
 - Simple bar export for external analysis
 - Memory-constrained environments
 - Already have external analytics
 
 **Business Impact**:
+
 - **Yes path**: Adds 10-30% processing time, generates insights
 - **No path**: Faster export, minimal memory, raw bars only
 
@@ -295,11 +314,13 @@ The data evolves through each stage:
 The system supports **2 processing modes** depending on your business needs:
 
 ### Streaming Mode
+
 - **Use When**: Real-time trading, memory limits, live data
 - **Characteristics**: Bounded memory (O(1)), processes one tick at a time
 - **Trade-off**: Slower throughput, but never runs out of memory
 
 ### Batch Mode
+
 - **Use When**: Historical analysis, multi-symbol research, statistics needed
 - **Characteristics**: High throughput (Rayon parallelism), in-memory processing
 - **Trade-off**: Faster processing, but memory usage = O(N bars)
@@ -311,21 +332,25 @@ The system supports **2 processing modes** depending on your business needs:
 ## Business Guarantees
 
 ### Non-Lookahead Guarantee
+
 Every bar is constructed using **only past and current information**. No future tick data influences bar decisions.
 
 **Why This Matters**: Prevents overfitting in backtests. If your backtest shows 80% win rate, it's real - not data peeking.
 
 ### Deterministic Output
+
 Same input data + same threshold = **identical output bars** every time, on any platform.
 
 **Why This Matters**: Reproducible research, auditable trading systems, regulatory compliance.
 
 ### Temporal Integrity
+
 All timestamps are monotonic (strictly increasing). No time travel, no out-of-order data.
 
 **Why This Matters**: Reliable event sequencing, accurate causality analysis.
 
 ### Precision Guarantee
+
 8-decimal fixed-point arithmetic = **zero floating-point errors**.
 
 **Why This Matters**: $0.00000001 difference in price can matter at scale. We guarantee exact math.
@@ -338,6 +363,7 @@ All timestamps are monotonic (strictly increasing). No time travel, no out-of-or
 **Output**: Clean, validated, non-lookahead range bars ready for trading
 
 **Key Business Benefits**:
+
 - ✅ **Time Saved**: Automated pipeline (vs. manual Excel processing)
 - ✅ **Quality**: Validated at every stage (garbage in → detected early)
 - ✅ **Trust**: Non-lookahead guarantee (backtests are honest)
@@ -358,7 +384,7 @@ All timestamps are monotonic (strictly increasing). No time travel, no out-of-or
 
 ## Related Diagrams
 
-- [Business Use Cases](02-business-use-cases.md) - Who uses each stage *(coming soon)*
-- [Data Acquisition Decisions](03-data-acquisition-decisions.md) - How to choose data sources *(coming soon)*
-- [Processing Mode Decisions](04-processing-mode-decisions.md) - Streaming vs Batch logic *(coming soon)*
-- [Error Recovery Logic](07-error-recovery-logic.md) - What happens when stages fail *(coming soon)*
+- [Business Use Cases](02-business-use-cases.md) - Who uses each stage _(coming soon)_
+- [Data Acquisition Decisions](03-data-acquisition-decisions.md) - How to choose data sources _(coming soon)_
+- [Processing Mode Decisions](04-processing-mode-decisions.md) - Streaming vs Batch logic _(coming soon)_
+- [Error Recovery Logic](07-error-recovery-logic.md) - What happens when stages fail _(coming soon)_

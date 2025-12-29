@@ -29,6 +29,7 @@
 **Location**: `crates/rangebar-core/src/types.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct AggTrade {
     pub agg_trade_id: i64,           // Unique trade identifier
@@ -43,11 +44,13 @@ pub struct AggTrade {
 ```
 
 **Critical Invariants**:
+
 - `timestamp` MUST be in microseconds (16-digit, not milliseconds)
 - `price` and `volume` MUST be positive
 - Trades MUST be sorted by `(timestamp, agg_trade_id)`
 
 **Construction**:
+
 ```rust
 use rangebar_core::{AggTrade, FixedPoint, DataSource};
 
@@ -72,6 +75,7 @@ let trade = AggTrade {
 **Location**: `crates/rangebar-core/src/types.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct RangeBar {
     // OHLCV fields
@@ -105,6 +109,7 @@ pub struct RangeBar {
 ```
 
 **Critical Invariants**:
+
 - `high >= low` ALWAYS
 - `open_time < close_time` ALWAYS
 - `(close == high) OR (close == low)` ALWAYS (breach tick closes bar)
@@ -119,6 +124,7 @@ pub struct RangeBar {
 **Location**: `crates/rangebar-core/src/fixed_point.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct FixedPoint(i64);  // Internal: value × 100,000,000
 
@@ -134,6 +140,7 @@ impl FixedPoint {
 ```
 
 **Pattern - String Parsing** (RECOMMENDED):
+
 ```rust
 use rangebar_core::FixedPoint;
 
@@ -145,6 +152,7 @@ let price = FixedPoint::from_str("50000.12345678")?;
 ```
 
 **Pattern - Arithmetic**:
+
 ```rust
 let a = FixedPoint::from_str("100.5")?;
 let b = FixedPoint::from_str("2.5")?;
@@ -166,6 +174,7 @@ let quotient = a / b;      // 40.2
 **Location**: `crates/rangebar-core/src/processor.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct RangeBarProcessor {
     threshold_bps: u32,  // In 0.1 BPS units (v3.0.0+)
@@ -183,6 +192,7 @@ impl RangeBarProcessor {
 ```
 
 **Critical - Threshold Units** (v3.0.0 breaking change):
+
 ```rust
 // v3.0.0+: Threshold in 0.1 BPS units
 let processor = RangeBarProcessor::new(250)?;  // 250 × 0.1 = 25 BPS = 0.25%
@@ -192,6 +202,7 @@ let processor = RangeBarProcessor::new(250)?;  // 250 × 0.1 = 25 BPS = 0.25%
 ```
 
 **Pattern - Basic Processing**:
+
 ```rust
 use rangebar_core::{RangeBarProcessor, AggTrade};
 
@@ -212,6 +223,7 @@ println!("Generated {} bars from {} trades", bars.len(), trades.len());
 **Location**: `crates/rangebar-providers/src/binance/mod.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct HistoricalDataLoader {
     symbol: String,
@@ -232,6 +244,7 @@ pub fn get_tier1_usdt_pairs() -> Vec<String>;  // ["BTCUSDT", "ETHUSDT", ...]
 ```
 
 **Pattern - Load Spot Data**:
+
 ```rust
 use rangebar_providers::binance::HistoricalDataLoader;
 
@@ -240,6 +253,7 @@ let trades = loader.load_recent_day().await?;
 ```
 
 **Pattern - Load Futures Data**:
+
 ```rust
 use rangebar_providers::binance::HistoricalDataLoader;
 
@@ -248,6 +262,7 @@ let trades = loader.load_historical_range(7).await?;  // Last 7 days
 ```
 
 **Pattern - Tier-1 Symbol Discovery**:
+
 ```rust
 use rangebar_providers::binance::get_tier1_symbols;
 
@@ -258,6 +273,7 @@ for symbol in symbols {
 ```
 
 **Critical - Market Types**:
+
 - `"spot"` - Spot market (default, 16-digit μs timestamps)
 - `"um"` - USD-M futures (13-digit ms → normalized to 16-digit μs)
 - `"cm"` - Coin-M futures (13-digit ms → normalized to 16-digit μs)
@@ -269,6 +285,7 @@ for symbol in symbols {
 **Location**: `crates/rangebar-providers/src/exness/mod.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct ExnessFetcher {
     variant: String,  // "EURUSD", "EURUSD_Plus", etc.
@@ -304,6 +321,7 @@ impl ExnessRangeBarBuilder {
 ```
 
 **Pattern - Fetch Exness Data**:
+
 ```rust
 use rangebar_providers::exness::{ExnessFetcher, ExnessRangeBarBuilder, ValidationStrictness};
 
@@ -337,6 +355,7 @@ for tick in ticks {
 **Location**: `crates/rangebar-io/src/formats/polars.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct PolarsExporter;
 
@@ -364,6 +383,7 @@ impl PolarsExporter {
 ```
 
 **Pattern - Export to Parquet** (70%+ compression):
+
 ```rust
 use rangebar_io::PolarsExporter;
 
@@ -372,6 +392,7 @@ exporter.export_parquet(&bars, "output.parquet")?;
 ```
 
 **Pattern - Export to Arrow IPC** (zero-copy Python):
+
 ```rust
 use rangebar_io::ArrowExporter;
 
@@ -380,6 +401,7 @@ exporter.export(&bars, "output.arrow")?;
 ```
 
 **Python Integration** (Arrow zero-copy):
+
 ```python
 import pyarrow as pa
 
@@ -399,6 +421,7 @@ with pa.ipc.open_file("output.arrow") as f:
 **Location**: `crates/rangebar-streaming/src/lib.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct StreamingProcessor;
 
@@ -428,6 +451,7 @@ pub struct StreamingMetrics {
 ```
 
 **Pattern - Stream Processing**:
+
 ```rust
 use rangebar_streaming::StreamingProcessor;
 use futures::stream::StreamExt;
@@ -454,6 +478,7 @@ println!("Processed {} trades → {} bars",
 **Location**: `crates/rangebar-batch/src/lib.rs`
 
 **Type Signature**:
+
 ```rust
 pub struct BatchAnalysisEngine;
 
@@ -482,6 +507,7 @@ pub struct AnalysisReport {
 ```
 
 **Pattern - Multi-Symbol Analysis**:
+
 ```rust
 use rangebar_batch::BatchAnalysisEngine;
 use std::collections::HashMap;
@@ -533,6 +559,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Dependencies**:
+
 ```toml
 rangebar-core = "5.0.0"
 rangebar-providers = { version = "5.0.0", features = ["binance"] }
@@ -608,6 +635,7 @@ if metrics.circuit_breaker_active {
 ### Error Types
 
 **rangebar-core**:
+
 ```rust
 pub enum ProcessingError {
     InvalidThreshold(String),
@@ -618,6 +646,7 @@ pub enum ProcessingError {
 ```
 
 **rangebar-providers**:
+
 ```rust
 pub enum ProviderError {
     NetworkError(String),
@@ -628,6 +657,7 @@ pub enum ProviderError {
 ```
 
 **rangebar-io**:
+
 ```rust
 pub enum IoError {
     FileWriteError(String),
@@ -669,14 +699,14 @@ async fn load_data(symbol: &str) -> Result<Vec<AggTrade>, Box<dyn std::error::Er
 
 **Location**: `crates/rangebar-cli/src/bin/`
 
-| Tool | Purpose | Example |
-|------|---------|---------|
-| `tier1-symbol-discovery` | Discover Tier-1 symbols | `--format comprehensive` |
-| `data-structure-validator` | Validate aggTrades schema | `--markets spot,um` |
-| `rangebar-export` | Export range bars to CSV | `BTCUSDT 2024-01-01 2024-01-31 250 ./output` |
-| `spot-tier1-processor` | Batch process all Tier-1 | `--threshold-bps 25 --workers 16` |
-| `polars-benchmark` | Benchmark Polars performance | `--input data.csv --output-dir ./bench` |
-| `temporal-integrity-test-only` | Validate temporal ordering | `--input data.csv` |
+| Tool                           | Purpose                      | Example                                      |
+| ------------------------------ | ---------------------------- | -------------------------------------------- |
+| `tier1-symbol-discovery`       | Discover Tier-1 symbols      | `--format comprehensive`                     |
+| `data-structure-validator`     | Validate aggTrades schema    | `--markets spot,um`                          |
+| `rangebar-export`              | Export range bars to CSV     | `BTCUSDT 2024-01-01 2024-01-31 250 ./output` |
+| `spot-tier1-processor`         | Batch process all Tier-1     | `--threshold-bps 25 --workers 16`            |
+| `polars-benchmark`             | Benchmark Polars performance | `--input data.csv --output-dir ./bench`      |
+| `temporal-integrity-test-only` | Validate temporal ordering   | `--input data.csv`                           |
 
 ---
 
@@ -703,6 +733,7 @@ async fn load_data(symbol: &str) -> Result<Vec<AggTrade>, Box<dyn std::error::Er
 7. **Dependencies listed for each pattern** - immediate Cargo.toml generation
 
 **Recommended AI Agent Workflow**:
+
 1. Start with "Common Patterns" section for typical use cases
 2. Reference "Core Types" for type signatures and invariants
 3. Check "Error Handling" for proper Result propagation

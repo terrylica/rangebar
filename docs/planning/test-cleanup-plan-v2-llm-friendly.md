@@ -12,6 +12,7 @@
 > "Consolidating into larger files is harder for large language models and coding agents to handle and to sort out."
 
 **100% correct!** LLMs work better with:
+
 - Smaller files (easier to fit entire file in context)
 - Single responsibility per file
 - Clear, focused scope
@@ -27,6 +28,7 @@
 ### The 3 Large Test Files
 
 **File sizes and actual test counts**:
+
 - `large_boundary_tests.rs`: 802 lines, **5 tests**, 25 helper functions
 - `multi_month_memory_tests.rs`: 787 lines, **4 tests**, 25 helper functions
 - `cross_year_speed_comparison.rs`: 565 lines, **2 tests**, 3 helper functions
@@ -34,6 +36,7 @@
 **Problem**: ~195 lines per test (way too bloated!)
 
 **Why so bloated?**:
+
 - Each file reimplements its own helper functions
 - Tons of duplicate data generation code
 - No code sharing between files
@@ -41,6 +44,7 @@
 ### What Makes Them Different (Separate Concerns)
 
 **`large_boundary_tests.rs`** - Edge cases with large datasets:
+
 - Massive dataset boundary consistency
 - Multi-day boundary transitions
 - Market session boundaries (Asian/European/US)
@@ -48,12 +52,14 @@
 - Stress conditions (precision limits, volume extremes)
 
 **`multi_month_memory_tests.rs`** - Memory efficiency:
+
 - Multi-month boundary consistency
 - Progressive memory scaling
 - Year boundary edge cases
 - Memory leak detection
 
 **`cross_year_speed_comparison.rs`** - Performance benchmarks:
+
 - Year boundary transitions
 - Batch vs streaming performance comparison
 
@@ -68,6 +74,7 @@
 **Create**: `crates/rangebar-core/src/test_utils/generators.rs`
 
 **Move all 32+ helper functions** to one place:
+
 - `create_test_trade()` (duplicate in 2 files)
 - `process_batch_style()` (duplicate in 2 files)
 - `process_streaming_style()` (duplicate in 2 files)
@@ -76,6 +83,7 @@
 **Result**: Single source of truth for test data generation
 
 **Impact**:
+
 - test_utils/generators.rs: ~400 lines (consolidated helpers)
 - All test files import from `use rangebar_core::test_utils::generators::*;`
 
@@ -84,6 +92,7 @@
 After centralizing helpers, each file becomes:
 
 **large_boundary_tests.rs** (802 → ~150 lines):
+
 ```rust
 //! Edge case testing with large datasets and session boundaries
 //!
@@ -112,6 +121,7 @@ async fn test_multi_day_boundary_transitions() {
 ```
 
 **multi_month_memory_tests.rs** (787 → ~120 lines):
+
 ```rust
 //! Memory efficiency testing across long time periods
 //!
@@ -133,6 +143,7 @@ async fn test_multi_month_boundary_consistency() {
 ```
 
 **cross_year_speed_comparison.rs** (565 → ~60 lines):
+
 ```rust
 //! Performance benchmarks across year boundaries
 //!
@@ -156,6 +167,7 @@ async fn test_year_boundary_transition() {
 ## Net Impact: Better in Every Way
 
 ### Before (Current)
+
 ```
 large_boundary_tests.rs       802 lines  (5 tests, 25 helpers)
 multi_month_memory_tests.rs   787 lines  (4 tests, 25 helpers)
@@ -166,6 +178,7 @@ TOTAL                         2,354 lines
 ```
 
 ### After (Refactored)
+
 ```
 large_boundary_tests.rs        ~150 lines  (5 tests, 0 helpers)
 multi_month_memory_tests.rs   ~120 lines  (4 tests, 0 helpers)
@@ -180,18 +193,21 @@ TOTAL                          ~730 lines
 ### Why This Is Better for LLMs
 
 **Before**:
+
 - Each file 565-802 lines (hard to fit in context)
 - Mixed concerns (tests + helpers + data generation)
 - Duplicate code everywhere
 - Hard to understand what's being tested
 
 **After**:
+
 - Each file 60-150 lines (easy to fit in context)
 - Single responsibility (tests only, helpers elsewhere)
 - Zero duplication
 - Clear, focused scope per file
 
 **LLM Benefits**:
+
 - Can load entire test file in one context window
 - Understands test intent immediately
 - Easy to modify individual tests
@@ -202,12 +218,15 @@ TOTAL                          ~730 lines
 ## Revised Phases
 
 ### Phase 0: Remove Redundant Files ✅ COMPLETED
+
 - Deleted `tests/bps_conversion_tests.rs` (147 lines, broken)
 - Deleted `tests/statistics_v2_validation.rs` (279 lines, misplaced)
 - **Status**: ✅ DONE (commit `4a663f3`)
 
 ### Phase 1: Add CSV Loader (Foundation) ✅ COMPLETED
+
 **Created**: `crates/rangebar-core/src/test_data_loader.rs` (245 lines)
+
 - load_btcusdt_test_data() → 5,000 trades with validation
 - load_ethusdt_test_data() → 10,000 trades with validation
 - Workspace-relative path resolution via CARGO_MANIFEST_DIR
@@ -216,15 +235,18 @@ TOTAL                          ~730 lines
 - **Status**: ✅ DONE (commit `1924586`)
 
 ### Phase 1.5: Centralize All Helpers ✅ COMPLETED
+
 **Created**: `crates/rangebar-core/src/test_utils/generators.rs` (513 lines)
 
 **Consolidated all 40+ helper functions** from test files:
+
 - `create_test_trade()` (from 3 files - removed duplicates)
 - `process_batch_style()` (from 2 files - removed duplicates)
 - `process_streaming_style()` (from 2 files - removed duplicates)
 - 40+ data generation functions (massive datasets, multi-day, sessions, frequencies, stress tests)
 
 **Updated test_utils/mod.rs**:
+
 ```rust
 pub mod generators;  // Large-scale data generation for integration tests
 ```
@@ -238,6 +260,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 **Update each file** to use centralized helpers:
 
 **2a. Refactor `large_boundary_tests.rs`** ✅ DONE (commit `e20db90`):
+
 - Actual: 802 → 383 lines (-419 lines, -52.2%)
 - Removed ALL data generation and processing helper functions
 - Added `use rangebar_core::test_utils::generators::*;`
@@ -245,6 +268,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 - **Result**: Much larger file than estimated because we kept essential validation helpers
 
 **2b. Refactor `multi_month_memory_tests.rs`** ✅ DONE (commit `e288283`):
+
 - Actual: 787 → 746 lines (-41 lines, -5.2%)
 - Removed only duplicate helpers (create_test_trade, process_batch_style, process_streaming_style)
 - Added selective import: `use rangebar_core::test_utils::generators::{...};`
@@ -254,6 +278,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 - **Result**: Minimal reduction because most functions are test-specific, not duplicates
 
 **2c. Refactor `cross_year_speed_comparison.rs`** ✅ DONE (commit `f2309e9`):
+
 - Actual: 565 → 553 lines (-12 lines, -2.1%)
 - Removed only duplicate create_test_trade helper
 - Added selective import: `use rangebar_core::test_utils::generators::create_test_trade;`
@@ -263,6 +288,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 - **Result**: Minimal reduction because most functions are test-specific benchmarking infrastructure
 
 **Phase 2 Summary**:
+
 - **Total reduction**: 2,154 → 1,682 lines (-472 lines, -21.9%)
 - **Original estimate**: -1,624 lines (-69%) ❌ INCORRECT
 - **Why different**: Original estimate assumed all helpers would be moved, but we correctly identified that many helpers are test-specific infrastructure (memory monitoring, benchmarking, formatting) that should NOT be centralized
@@ -273,6 +299,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 ### Phase 3: Replace Fake Data with Real Data ✅ COMPLETED
 
 **Updated `tests/integration_test.rs`** ✅ DONE (commit `9db84ef`):
+
 - Replaced `create_test_trades()` synthetic generator → `load_btcusdt_test_data()` real CSV loader
 - Updated threshold: 80 bps (0.8%) → 25 bps (0.25%) for real market data
 - Removed unused `create_test_trades()` helper function (-18 lines)
@@ -281,11 +308,13 @@ pub mod generators;  // Large-scale data generation for integration tests
 - **Result**: Integration test now uses 5,000 real BTCUSDT trades from CSV
 
 **Infrastructure Limitation Discovered** (commit `9db84ef`):
+
 - ❌ Workspace-level `tests/` directory not recognized by Cargo or Nextest
 - ❌ Integration tests in workspace root (`tests/*.rs`) do not execute
 - Impact: Phase 3 code complete but execution blocked by infrastructure
 
 **Infrastructure Fixed** ✅ DONE (commit `e4fc449`):
+
 - Relocated 8 test files from workspace `tests/` → `crates/rangebar/tests/`
 - Added tokio, serde_json as dev-dependencies to rangebar crate
 - Fixed feature flag: `streaming-v2` → `streaming` in cross_year_speed_comparison.rs
@@ -298,15 +327,18 @@ pub mod generators;  // Large-scale data generation for integration tests
 ### Phase 4: Create New Real Data Tests ✅ COMPLETED
 
 **Created**: 2 new focused test files:
+
 - `crates/rangebar/tests/binance_btcusdt_real_data_test.rs` (218 lines) ✅
 - `crates/rangebar/tests/binance_ethusdt_real_data_test.rs` (218 lines) ✅
 
 **Test Coverage**:
+
 - BTCUSDT: 5 tests (data integrity, 3 thresholds, threshold scaling)
 - ETHUSDT: 5 tests (data integrity, 3 thresholds, threshold scaling)
 - Total: 10 new integration tests
 
 **Test Scenarios**:
+
 1. Data integrity validation (temporal ordering, positive prices/volumes)
 2. Standard threshold (25 bps / 0.25%)
 3. Medium threshold (50 bps / 0.5%)
@@ -314,6 +346,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 5. Threshold scaling (verify bar count decreases with wider thresholds)
 
 **Validation Functions**:
+
 - `validate_ohlcv_integrity()`: OHLC relationships and positive volume
 - `validate_temporal_ordering()`: Monotonic timestamps
 
@@ -326,6 +359,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 **Created**: `docs/testing/test-data-guide.md` (334 lines)
 
 **Documentation Sections**:
+
 1. Overview and test data types
 2. Real market data (CSV) usage guide
 3. Synthetic generated data usage guide
@@ -337,6 +371,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 9. File locations and test execution
 
 **Coverage**:
+
 - Real data: When to use, available datasets, loading patterns, characteristics, limitations
 - Synthetic data: When to use, 40+ generator functions, edge cases, parametric testing
 - Decision matrix: 12 test scenarios with data type recommendations
@@ -351,30 +386,33 @@ pub mod generators;  // Large-scale data generation for integration tests
 ## Success Criteria
 
 **Code Quality**:
+
 - [x] Each test file < 800 lines (improved, though larger than initial 200-line goal)
 - [x] Single responsibility per file (tests with their specific infrastructure)
 - [x] Zero code duplication (all duplicate helpers removed)
 - [x] All shared helpers centralized in test_utils::generators
 
 **Metrics** (Phases 0-5 completed):
+
 - [x] Delete 2 redundant files (-426 lines) ✅ Phase 0 complete
 - [x] Reduce large files by 21.9% (-472 lines) ✅ Phase 2 complete
-  - Note: Original 69% estimate was based on incorrect assumption that ALL helpers would be moved
-  - Actual result is correct: only duplicate helpers removed, test-specific infrastructure retained
+    - Note: Original 69% estimate was based on incorrect assumption that ALL helpers would be moved
+    - Actual result is correct: only duplicate helpers removed, test-specific infrastructure retained
 - [x] Replace fake data with real CSV data ✅ Phase 3 complete
-  - integration_test.rs: Synthetic data → real BTCUSDT CSV (5,000 trades)
-  - Removed create_test_trades() helper (-18 lines)
+    - integration_test.rs: Synthetic data → real BTCUSDT CSV (5,000 trades)
+    - Removed create_test_trades() helper (-18 lines)
 - [x] Add focused real data test coverage ✅ Phase 4 complete
-  - Created 2 test files (436 lines total)
-  - Added 10 new integration tests (BTCUSDT + ETHUSDT)
-  - Test coverage: data integrity, 3 threshold scenarios, threshold scaling
+    - Created 2 test files (436 lines total)
+    - Added 10 new integration tests (BTCUSDT + ETHUSDT)
+    - Test coverage: data integrity, 3 threshold scenarios, threshold scaling
 - [x] Add test data usage documentation ✅ Phase 5 complete
-  - Created test-data-guide.md (334 lines)
-  - Decision matrix, examples, best practices, SLOs
-  - Complete documentation for real vs synthetic data usage
+    - Created test-data-guide.md (334 lines)
+    - Decision matrix, examples, best practices, SLOs
+    - Complete documentation for real vs synthetic data usage
 - [x] Net impact: +612 lines (infrastructure + test coverage + documentation)
 
 **LLM Benefits** (achieved):
+
 - [x] Clear separation of concerns (shared helpers vs test-specific infrastructure)
 - [x] Easy to understand test intent (tests focus on testing, helpers in separate module)
 - [x] Easy to modify individual tests (test-specific infrastructure still colocated)
@@ -385,11 +423,13 @@ pub mod generators;  // Large-scale data generation for integration tests
 ## Why This Approach Is Better
 
 **Original plan**: Merge 3 files → 1 large file (600 lines)
+
 - ❌ Harder for LLMs to process
 - ❌ Mixed concerns in one file
 - ❌ Difficult to navigate
 
 **Revised plan**: Refactor 3 files → 3 small files (60-150 lines each)
+
 - ✅ Easier for LLMs to process (entire file in context)
 - ✅ Single responsibility per file
 - ✅ Clear, focused tests
@@ -402,11 +442,13 @@ pub mod generators;  // Large-scale data generation for integration tests
 ## Risk Mitigation
 
 **Per-phase validation**:
+
 1. After Phase 1.5 (centralize helpers): `cargo test --workspace` must pass ✅
 2. After each refactor (Phase 2a/2b/2c): Tests must produce identical results ✅
 3. After real data replacement: Document assertion changes ✅
 
 **Rollback strategy**:
+
 - Each phase is a separate commit ✅
 - Can revert individual phases without affecting others ✅
 - Git history preserved for all changes ✅
@@ -416,12 +458,14 @@ pub mod generators;  // Large-scale data generation for integration tests
 **Problem Identified**: Workspace-level `tests/` directory not executed by Cargo or Nextest
 
 **Root Cause**:
+
 - Rust workspaces do not support workspace-level integration tests
 - Integration tests must be in `crates/*/tests/` directories
 - Workspace root `tests/` directory ignored by Cargo test discovery
 - Affected: 8 test files (~127KB), 33 integration tests total
 
 **Solution Implemented** ✅ (commit `e4fc449`):
+
 1. **Relocated tests**: Moved `tests/` → `crates/rangebar/tests/` (preserving git history)
 2. **Added dependencies**: tokio, serde_json as dev-dependencies in rangebar/Cargo.toml
 3. **Fixed feature flags**: `streaming-v2` → `streaming` in cross_year_speed_comparison.rs
@@ -429,6 +473,7 @@ pub mod generators;  // Large-scale data generation for integration tests
 5. **Verified execution**: 31/33 tests passing (94.2% success rate)
 
 **Outcome**:
+
 - Integration test coverage now validated
 - CI will catch integration test regressions
 - Test execution time: ~7.1s for full suite
@@ -439,10 +484,12 @@ pub mod generators;  // Large-scale data generation for integration tests
 ## Files Impact Summary
 
 **Deleted** (Phase 0 complete):
+
 - tests/bps_conversion_tests.rs (147 lines) ✅
 - tests/statistics_v2_validation.rs (279 lines) ✅
 
 **Created** (Phases 1-5):
+
 - crates/rangebar-core/src/test_data_loader.rs (245 lines) ✅ Phase 1
 - crates/rangebar-core/src/test_utils/generators.rs (513 lines) ✅ Phase 1.5
 - crates/rangebar/tests/binance_btcusdt_real_data_test.rs (218 lines) ✅ Phase 4
@@ -450,15 +497,18 @@ pub mod generators;  // Large-scale data generation for integration tests
 - docs/testing/test-data-guide.md (334 lines) ✅ Phase 5
 
 **Refactored** (Phase 2 - COMPLETED):
+
 - tests/large_boundary_tests.rs (802 → 383 lines, -419 lines) ✅
 - tests/multi_month_memory_tests.rs (787 → 746 lines, -41 lines) ✅
 - tests/cross_year_speed_comparison.rs (565 → 553 lines, -12 lines) ✅
 - **Phase 2 total**: -472 lines (-21.9%)
 
 **Updated** (Phase 3):
+
 - tests/integration_test.rs (minimal changes, replace fake data)
 
 **Net Impact** (Phases 0-5 completed):
+
 - Lines deleted: -426 (Phase 0) + -472 (Phase 2) + -18 (Phase 3) = **-916 lines**
 - Lines added: +245 (test_data_loader.rs) + +513 (generators.rs) + +436 (Phase 4 tests) + +334 (documentation) = **+1,528 lines**
 - Net change: **+612 lines** (infrastructure + test coverage + documentation)

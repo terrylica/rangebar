@@ -14,6 +14,7 @@
 **User Requirement**: 480 bars/day from EURUSD data
 
 **Math Analysis**:
+
 ```
 EURUSD typical daily volatility: 0.5-1.0% (50-100 pips)
 Target bars/day: 480
@@ -32,28 +33,33 @@ Gap: Need 10x finer granularity
 ### Change Threshold Unit Definition
 
 **Current Interpretation**:
+
 - `threshold_bps: u32` where 1 unit = 1bps = 0.01%
 - Example: `new(25, ...)` → 25bps = 0.25%
 
 **New Interpretation**:
+
 - `threshold_bps: u32` where 1 unit = 0.1bps = 0.001%
 - Example: `new(250, ...)` → 250 × 0.1bps = 25bps = 0.25%
 
 ### Calculation Change
 
 **Current Formula**:
+
 ```rust
 let threshold_fraction = threshold_bps as f64 / 10_000.0;
 // Example: 25 / 10000 = 0.0025 = 0.25%
 ```
 
 **New Formula**:
+
 ```rust
 let threshold_fraction = threshold_bps as f64 / 100_000.0;
 // Example: 250 / 100000 = 0.0025 = 0.25%
 ```
 
 **Alternative (clearer)**:
+
 ```rust
 let threshold_fraction = (threshold_bps as f64 * 0.1) / 10_000.0;
 // Example: (250 * 0.1) / 10000 = 25 / 10000 = 0.0025 = 0.25%
@@ -66,6 +72,7 @@ let threshold_fraction = (threshold_bps as f64 * 0.1) / 10_000.0;
 ### Breaking Changes
 
 **1. API Signature** (no change, but semantics change):
+
 ```rust
 // Before: threshold_bps in 1bps units
 pub fn new(threshold_bps: u32, ...) -> Self
@@ -75,6 +82,7 @@ pub fn new(threshold_bps: u32, ...) -> Self
 ```
 
 **2. User Code Migration**:
+
 ```rust
 // Before (v2.x):
 RangeBarProcessor::new(25)  // 25bps = 0.25%
@@ -88,22 +96,26 @@ RangeBarProcessor::new(250) // 250 × 0.1bps = 25bps = 0.25%
 ### Files Requiring Changes
 
 **Core Library** (`src/`):
+
 1. `src/core/processor.rs` - RangeBarProcessor threshold calculation
 2. `src/providers/dukascopy/builder.rs` - DukascopyRangeBarBuilder (pass-through)
 3. `src/providers/dukascopy/types.rs` - Documentation updates
 4. `src/lib.rs` - Public API documentation
 
 **Tests** (`tests/`):
+
 1. `tests/dukascopy_eurusd_adversarial_audit.rs` - All threshold values × 10
 2. `tests/integration_tests.rs` - If exists, update thresholds
 3. Unit tests in `src/core/processor.rs` - Update threshold values
 
 **Documentation** (`docs/`, root):
+
 1. `CLAUDE.md` - Update examples with new threshold values
 2. `CHANGELOG.md` - Breaking change entry
 3. `docs/planning/` - Update all referenced threshold values
 
 **Examples/Binaries** (`src/bin/`):
+
 1. Any CLI tools using thresholds - Update default values
 
 ---
@@ -113,6 +125,7 @@ RangeBarProcessor::new(250) // 250 × 0.1bps = 25bps = 0.25%
 ### Backward Compatibility Verification
 
 **Test Suite**:
+
 ```rust
 // Old behavior (v2.x): new(25) → 25bps
 // New behavior (v3.x): new(250) → 25bps
@@ -120,6 +133,7 @@ RangeBarProcessor::new(250) // 250 × 0.1bps = 25bps = 0.25%
 ```
 
 **Approach**:
+
 1. Run current test suite, capture bar counts
 2. Apply changes (multiply thresholds by 10)
 3. Run new test suite, verify identical bar counts
@@ -128,6 +142,7 @@ RangeBarProcessor::new(250) // 250 × 0.1bps = 25bps = 0.25%
 ### New Capability Verification
 
 **Ultra-Low Threshold Tests**:
+
 ```rust
 // v3.x only: 0.1bps = 1 unit
 DukascopyRangeBarBuilder::new(1, "EURUSD", ...)  // 0.1bps
@@ -136,6 +151,7 @@ DukascopyRangeBarBuilder::new(10, "EURUSD", ...) // 1bps (old minimum)
 ```
 
 **Expected Results** (from previous analysis):
+
 - 1 unit (0.1bps): ~500 bars/day (EURUSD moderate volatility)
 - 5 units (0.5bps): ~100 bars/day
 - 10 units (1bps): ~50 bars/day (current minimum)
@@ -149,6 +165,7 @@ DukascopyRangeBarBuilder::new(10, "EURUSD", ...) // 1bps (old minimum)
 **File**: `src/core/processor.rs`
 
 **Change**:
+
 ```rust
 // BEFORE:
 impl RangeBarProcessor {
@@ -169,6 +186,7 @@ impl RangeBarProcessor {
 ```
 
 **Documentation Change**:
+
 ```rust
 /// Creates a new range bar processor
 ///
@@ -190,6 +208,7 @@ impl RangeBarProcessor {
 **Strategy**: Global search-replace with validation
 
 **Pattern**:
+
 ```bash
 # Find all RangeBarProcessor::new and DukascopyRangeBarBuilder::new calls
 rg "::new\(\s*(\d+)\s*," --type rust
@@ -201,6 +220,7 @@ rg "::new\(\s*(\d+)\s*," --type rust
 ```
 
 **Example Migrations**:
+
 ```rust
 // Before:
 RangeBarProcessor::new(3)   → RangeBarProcessor::new(30)   // 3bps → 3bps
@@ -209,6 +229,7 @@ builder = Builder::new(25, ...) → builder = Builder::new(250, ...) // 25bps �
 ```
 
 **Files to Update**:
+
 - `tests/dukascopy_eurusd_adversarial_audit.rs`
 - `src/core/processor.rs` (unit tests)
 - `src/providers/dukascopy/builder.rs` (unit tests)
@@ -219,6 +240,7 @@ builder = Builder::new(25, ...) → builder = Builder::new(250, ...) // 25bps �
 **File**: `tests/dukascopy_eurusd_adversarial_audit.rs`
 
 **New Test Cases**:
+
 ```rust
 // Test ultra-low thresholds (0.1bps - 1bps)
 let mut builder_01bps = DukascopyRangeBarBuilder::new(1, "EURUSD", ...);   // 0.1bps
@@ -234,23 +256,25 @@ let mut builder_1bps = DukascopyRangeBarBuilder::new(10, "EURUSD", ...);   // 1b
 ### Phase 4: Update Documentation
 
 **Files**:
+
 1. `CLAUDE.md` - Update all threshold examples
 2. `CHANGELOG.md` - Add breaking change entry
 3. `docs/planning/dukascopy-eurusd-audit-plan.md` - Update threshold values
 4. `README.md` (if exists) - Update examples
 
 **CHANGELOG Entry**:
-```markdown
+
+````markdown
 ## [3.0.0] - 2025-10-03
 
 ### Breaking Changes
 
 - **Threshold Granularity**: Changed `threshold_bps` parameter interpretation from 1bps units to 0.1bps units
-  - **Migration Required**: Multiply all threshold values by 10
-  - Example: `new(25, ...)` (v2.x) → `new(250, ...)` (v3.x) for same 25bps threshold
-  - **Rationale**: Enable ultra-low thresholds (0.1-0.9bps) for forex instruments with 5 decimal precision
-  - **Minimum threshold**: Now 0.1bps (1 unit) vs 1bps (1 unit) previously
-  - **Impact**: All RangeBarProcessor and DukascopyRangeBarBuilder usage
+    - **Migration Required**: Multiply all threshold values by 10
+    - Example: `new(25, ...)` (v2.x) → `new(250, ...)` (v3.x) for same 25bps threshold
+    - **Rationale**: Enable ultra-low thresholds (0.1-0.9bps) for forex instruments with 5 decimal precision
+    - **Minimum threshold**: Now 0.1bps (1 unit) vs 1bps (1 unit) previously
+    - **Impact**: All RangeBarProcessor and DukascopyRangeBarBuilder usage
 
 ### Added
 
@@ -272,7 +296,9 @@ let builder = DukascopyRangeBarBuilder::new(100, "EURUSD", Strict); // 10bps (sa
 let builder = DukascopyRangeBarBuilder::new(1, "EURUSD", Strict);  // 0.1bps (NEW)
 let builder = DukascopyRangeBarBuilder::new(5, "EURUSD", Strict);  // 0.5bps (NEW)
 ```
-```
+````
+
+````
 
 ### Phase 5: Version Bump
 
@@ -383,26 +409,33 @@ let builder = DukascopyRangeBarBuilder::new(5, "EURUSD", Strict);  // 0.5bps (NE
 ```rust
 pub fn new(threshold_bps: u32, granularity: BpsGranularity) -> Self
 // where BpsGranularity = OneBps | TenthBps
-```
+````
+
 **Rejected**: API clutter, confusing for users
 
 ### Alternative 2: Use f64 for threshold_bps (Rejected)
+
 ```rust
 pub fn new(threshold_bps: f64, ...) -> Self
 ```
+
 **Rejected**: Breaking change anyway, f64 less clear than scaled u32
 
 ### Alternative 3: New Threshold Type (Rejected)
+
 ```rust
 pub struct Threshold { tenths_of_bps: u32 }
 impl Threshold {
     pub fn from_bps(bps: f64) -> Self { ... }
 }
 ```
+
 **Rejected**: Over-engineered for simple use case
 
 ### Selected Approach: Reinterpret u32 Units
+
 **Rationale**:
+
 - Minimal API surface change
 - Clear migration path (× 10)
 - Enables ultra-low thresholds without type complexity

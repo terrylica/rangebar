@@ -1,4 +1,5 @@
 # Phase 6 Data Flow Architecture
+
 ## Enhanced Range Bars → Web Visualization
 
 **Version**: 1.0.0
@@ -13,6 +14,7 @@
 ## 📊 Data Flow Sequence
 
 ### **Stage 1: Range Bar Generation**
+
 ```
 Raw aggTrades (CSV)
   ↓ [rangebar-export binary]
@@ -22,6 +24,7 @@ Enhanced Range Bars (JSON)
 ```
 
 ### **Stage 2: Web Asset Preparation**
+
 ```
 Enhanced Range Bars (JSON)
   ↓ [GitHub Actions Pipeline]
@@ -32,6 +35,7 @@ Web-Ready Data Assets
 ```
 
 ### **Stage 3: Interactive Visualization**
+
 ```
 Web-Ready Data Assets
   ↓ [D3.js/Chart.js Frontend]
@@ -47,35 +51,39 @@ Interactive Range Bar Charts
 ## 🏗️ Architecture Components
 
 ### **Data Processing Layer**
+
 - **Input**: Binance UM Futures aggTrades CSV files
 - **Processing**: `rangebar-export` binary (48ms/1M trades performance)
 - **Output**: Enhanced JSON with 17 fields per range bar
 
 **Sample Enhanced Range Bar JSON**:
+
 ```json
 {
-  "open_time": 1756710004240,
-  "close_time": 1756710016248,
-  "open": 50029.52,
-  "high": 50029.52,
-  "low": 49587.10,
-  "close": 49587.10,
-  "volume": 4.79463563,
-  "vwap": 49766.04,
-  "buy_volume": 3.33877844,    // ← Microstructure
-  "sell_volume": 1.45585719,   // ← Microstructure
-  "buy_trade_count": 5,        // ← Microstructure
-  "sell_trade_count": 3        // ← Microstructure
+    "open_time": 1756710004240,
+    "close_time": 1756710016248,
+    "open": 50029.52,
+    "high": 50029.52,
+    "low": 49587.1,
+    "close": 49587.1,
+    "volume": 4.79463563,
+    "vwap": 49766.04,
+    "buy_volume": 3.33877844, // ← Microstructure
+    "sell_volume": 1.45585719, // ← Microstructure
+    "buy_trade_count": 5, // ← Microstructure
+    "sell_trade_count": 3 // ← Microstructure
 }
 ```
 
 ### **Web Infrastructure Layer**
+
 - **Hosting**: GitHub Pages (free, reliable, CDN-backed)
 - **Deployment**: GitHub Actions automated workflow
 - **Performance**: Static site generation for maximum speed
 - **Scalability**: CDN distribution for global access
 
 ### **Visualization Layer**
+
 - **Core Framework**: D3.js for maximum flexibility
 - **Chart Library**: Chart.js for standard chart types
 - **UI Framework**: Vanilla JS for minimal overhead
@@ -86,22 +94,24 @@ Interactive Range Bar Charts
 ## 🎯 Visualization Features
 
 ### **Primary Visualizations**
+
 1. **Range Bar Candlestick Chart**
-   - OHLC representation with range bar intervals
-   - Color-coded by price direction
-   - Zoom/pan functionality
+    - OHLC representation with range bar intervals
+    - Color-coded by price direction
+    - Zoom/pan functionality
 
 2. **Order Flow Heatmap**
-   - Buy volume vs sell volume visualization
-   - Color intensity based on volume ratio
-   - Tooltip showing exact buy/sell values
+    - Buy volume vs sell volume visualization
+    - Color intensity based on volume ratio
+    - Tooltip showing exact buy/sell values
 
 3. **VWAP Trend Analysis**
-   - VWAP line overlay on price chart
-   - Price deviation indicators
-   - Fair value assessment
+    - VWAP line overlay on price chart
+    - Price deviation indicators
+    - Fair value assessment
 
 ### **Interactive Features**
+
 - **Time Navigation**: Scroll through historical data
 - **Zoom Controls**: Detailed analysis of specific periods
 - **Data Tooltips**: Hover for exact values
@@ -112,12 +122,14 @@ Interactive Range Bar Charts
 ## ⚡ Performance Optimization
 
 ### **Data Efficiency**
+
 - **Streaming Load**: Progressive data loading for large datasets
 - **Compression**: Gzip compression for JSON assets
 - **Caching**: Browser caching with versioned assets
 - **Lazy Loading**: Load visualizations on demand
 
 ### **Rendering Performance**
+
 - **Canvas Rendering**: Hardware-accelerated graphics for smooth interaction
 - **Data Decimation**: Intelligent sampling for zoom levels
 - **Virtual Scrolling**: Efficient handling of large time series
@@ -128,6 +140,7 @@ Interactive Range Bar Charts
 ## 🔧 Technical Implementation
 
 ### **Technology Stack**
+
 ```
 Frontend: HTML5 + CSS3 + Vanilla JS
 Charting: D3.js v7 + Chart.js v4
@@ -137,6 +150,7 @@ Performance: Service Workers + CDN
 ```
 
 ### **File Structure**
+
 ```
 web/
 ├── index.html              # Main visualization page
@@ -160,18 +174,21 @@ web/
 ## 🎮 User Experience Design
 
 ### **Landing Page**
+
 - Symbol selector (BTCUSDT, ETHUSDT, etc.)
 - Date range picker
 - Threshold selection (0.5%, 0.8%, 1.0%)
 - Quick preset buttons (1D, 1W, 1M)
 
 ### **Chart Interface**
+
 - Full-screen chart view
 - Sidebar with controls
 - Bottom panel with microstructure metrics
 - Top navigation with export options
 
 ### **Mobile Responsiveness**
+
 - Touch-optimized interactions
 - Responsive chart sizing
 - Simplified mobile UI
@@ -182,12 +199,14 @@ web/
 ## 📈 Data Integration Pipeline
 
 ### **Automated Workflow**
+
 1. **Data Generation**: `rangebar-export` processes new aggTrades data
 2. **Asset Build**: GitHub Actions converts JSON to web assets
 3. **Deployment**: Automatic deployment to GitHub Pages
 4. **Cache Invalidation**: CDN refresh for new data
 
 ### **Real-time Updates**
+
 - Scheduled data refreshes (daily/hourly)
 - Incremental updates for new range bars
 - Progressive loading for large datasets
@@ -198,18 +217,21 @@ web/
 ## ✅ Success Metrics
 
 ### **Performance Targets**
+
 - **Initial Load**: <3 seconds for chart display
 - **Interaction Response**: <100ms for zoom/pan operations
 - **Data Loading**: <1 second per 1000 range bars
 - **Mobile Performance**: Smooth 60fps interactions
 
 ### **User Experience Targets**
+
 - **Intuitive Navigation**: Self-explanatory interface
 - **Data Clarity**: Clear representation of microstructure data
 - **Responsive Design**: Consistent experience across devices
 - **Accessibility**: WCAG 2.1 compliance
 
 ### **Technical Targets**
+
 - **Uptime**: 99.9% availability (GitHub Pages SLA)
 - **Performance Score**: Lighthouse score >90
 - **Load Time**: First contentful paint <1.5s
@@ -220,24 +242,28 @@ web/
 ## 🔄 Development Phases
 
 ### **Phase 6.1: Foundation** (Current)
+
 - Architecture design ✅
 - Directory structure ✅
 - Technical specification ✅
 - Development environment setup
 
 ### **Phase 6.2: Core Implementation**
+
 - Basic OHLC chart rendering
 - JSON data loading pipeline
 - GitHub Pages deployment
 - Basic interactivity
 
 ### **Phase 6.3: Microstructure Integration**
+
 - Order flow heatmap overlay
 - VWAP trend line integration
 - Buy/sell volume indicators
 - Interactive microstructure tooltips
 
 ### **Phase 6.4: Enhancement & Polish**
+
 - Mobile optimization
 - Performance tuning
 - Advanced features

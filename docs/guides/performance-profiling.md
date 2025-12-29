@@ -43,13 +43,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ```
 
 **Expected Performance** (Apple M1 Pro, Ryzen 9 5950X):
+
 - **1M trades**: 50-100ms (~10-20M trades/sec)
 - **10M trades**: 200-400ms (~25-50M trades/sec)
 - **100M trades**: 2-4s (~25-50M trades/sec)
 
 **Performance Targets**:
+
 - ✅ **Good**: >5M trades/sec
-- ⚠️  **Acceptable**: 1-5M trades/sec
+- ⚠️ **Acceptable**: 1-5M trades/sec
 - ❌ **Slow**: <1M trades/sec (investigate bottlenecks)
 
 ## Profiling Tools
@@ -57,11 +59,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### 1. cargo-flamegraph (CPU Profiling)
 
 **Installation**:
+
 ```bash
 cargo install flamegraph
 ```
 
 **Usage**:
+
 ```bash
 # Profile your binary (example: tier1-symbol-discovery)
 cargo flamegraph --bin tier1_symbol_discovery -- --format comprehensive
@@ -71,16 +75,18 @@ open flamegraph.svg
 ```
 
 **Interpreting Flamegraphs**:
+
 - **Wide bars**: Time-consuming functions (hot paths)
 - **Tall stacks**: Deep call chains (potential optimization targets)
 - **Look for**:
-  - Heavy I/O operations (file reads, network)
-  - Fixed-point arithmetic (should be fast)
-  - Unnecessary allocations (clones, Vec growth)
+    - Heavy I/O operations (file reads, network)
+    - Fixed-point arithmetic (should be fast)
+    - Unnecessary allocations (clones, Vec growth)
 
 ### 2. cargo-criterion (Microbenchmarking)
 
 **Setup** (`Cargo.toml`):
+
 ```toml
 [dev-dependencies]
 criterion = "0.5"
@@ -91,6 +97,7 @@ harness = false
 ```
 
 **Benchmark File** (`benches/processor_bench.rs`):
+
 ```rust
 use criterion::{black_box, criterion_group, criterion_main, Criterion, Throughput};
 use rangebar_core::{RangeBarProcessor, test_utils::generators};
@@ -120,6 +127,7 @@ criterion_main!(benches);
 ```
 
 **Run Benchmarks**:
+
 ```bash
 cargo bench
 
@@ -129,6 +137,7 @@ cargo bench
 ```
 
 **Benefits**:
+
 - Statistical analysis (mean, stddev, outliers)
 - Regression detection (compares to baseline)
 - Throughput reporting (elements/sec)
@@ -136,11 +145,13 @@ cargo bench
 ### 3. perf (Linux-only, Deep CPU Analysis)
 
 **Installation**:
+
 ```bash
 sudo apt-get install linux-tools-common linux-tools-generic
 ```
 
 **Record Profile**:
+
 ```bash
 # Build with debug symbols
 cargo build --release --bin tier1_symbol_discovery
@@ -153,6 +164,7 @@ perf report
 ```
 
 **Key Metrics**:
+
 - **Cycles**: Total CPU cycles
 - **Instructions**: Total instructions executed
 - **Cache misses**: L1/L2/L3 cache inefficiencies
@@ -161,6 +173,7 @@ perf report
 ### 4. Instruments (macOS-only, Comprehensive Profiling)
 
 **Launch**:
+
 ```bash
 # Open Xcode Instruments
 open -a Instruments
@@ -170,6 +183,7 @@ xcrun xctrace record --template "Time Profiler" --launch target/release/YOUR_BIN
 ```
 
 **Templates**:
+
 - **Time Profiler**: CPU usage over time
 - **Allocations**: Memory allocation tracking
 - **System Trace**: I/O, network, system calls
@@ -179,11 +193,13 @@ xcrun xctrace record --template "Time Profiler" --launch target/release/YOUR_BIN
 ### Bottleneck 1: Data Loading (I/O Bound)
 
 **Symptoms**:
+
 - Flamegraph dominated by `std::fs::read`, `csv::Reader`
 - CPU usage <50% during processing
 - Long wait times before processing starts
 
 **Diagnosis**:
+
 ```bash
 # Time data loading separately (example with hypothetical --load-only flag)
 time cargo run --release --bin YOUR_BINARY -- [YOUR_ARGS]
@@ -192,6 +208,7 @@ time cargo run --release --bin YOUR_BINARY -- [YOUR_ARGS]
 **Solutions**:
 
 **Option A: Parallel Data Loading** (Best for multi-symbol)
+
 ```rust
 use rayon::prelude::*;
 
@@ -204,6 +221,7 @@ let data: Vec<_> = symbols.par_iter()
 ```
 
 **Option B: Memory-Mapped Files** (Best for single large file)
+
 ```rust
 use memmap2::Mmap;
 
@@ -216,6 +234,7 @@ let reader = csv::Reader::from_reader(cursor);
 ```
 
 **Option C: Streaming** (Best for memory constraints)
+
 ```rust
 // Don't load all data upfront
 for chunk in data_loader.iter_chunks(chunk_size) {
@@ -226,11 +245,13 @@ for chunk in data_loader.iter_chunks(chunk_size) {
 ### Bottleneck 2: Memory Allocations
 
 **Symptoms**:
+
 - Flamegraph shows time in `alloc`, `realloc`
 - High memory usage
 - Frequent garbage collection pauses
 
 **Diagnosis**:
+
 ```bash
 # macOS: Allocations instrument
 xcrun xctrace record --template Allocations --launch target/release/YOUR_BINARY ...
@@ -243,6 +264,7 @@ ms_print massif.out
 **Solutions**:
 
 **Pre-allocate Vectors**:
+
 ```rust
 // ❌ Bad: Grows incrementally
 let mut bars = Vec::new();
@@ -258,6 +280,7 @@ for trade in trades {
 ```
 
 **Use Streaming**:
+
 ```rust
 // ❌ Bad: Loads everything in memory
 let all_trades = loader.load_all().await?;
@@ -274,10 +297,12 @@ for trade in loader.iter_trades().await? {
 ### Bottleneck 3: Unnecessary Cloning
 
 **Symptoms**:
+
 - Flamegraph shows time in `clone`
 - High memory bandwidth usage
 
 **Diagnosis**:
+
 ```rust
 // Add #[derive(Clone)] only where needed
 // Use cargo-clippy to detect unnecessary clones
@@ -285,6 +310,7 @@ cargo clippy -- -W clippy::clone_on_copy -W clippy::redundant_clone
 ```
 
 **Solutions**:
+
 ```rust
 // ❌ Bad: Unnecessary clone
 let bar_copy = bar.clone();
@@ -308,10 +334,12 @@ for _ in 0..n {
 ### Bottleneck 4: Fixed-Point Arithmetic
 
 **Symptoms**:
+
 - Flamegraph shows time in `FixedPoint::from_str`, arithmetic ops
 - Should be <5% of total time
 
 **Diagnosis**:
+
 ```rust
 // Benchmark fixed-point operations
 #[bench]
@@ -331,12 +359,14 @@ fn bench_fixed_point_ops(b: &mut Bencher) {
 ### Bottleneck 5: String Parsing
 
 **Symptoms**:
+
 - Flamegraph dominated by `from_str`, `parse`
 - Slow CSV parsing
 
 **Solutions**:
 
 **Use serde deserialize directly** (fastest):
+
 ```rust
 #[derive(Deserialize)]
 struct AggTradeRecord {
@@ -358,6 +388,7 @@ let trades: Vec<AggTrade> = records.into_iter()
 ```
 
 **Cache parsed values**:
+
 ```rust
 // ❌ Bad: Parse same value repeatedly
 for _ in 0..n {
@@ -401,6 +432,7 @@ let results: Vec<_> = symbols.par_iter()
 ### Strategy 3: Reduce Allocations
 
 **Reuse Buffers**:
+
 ```rust
 struct ProcessorState {
     processor: RangeBarProcessor,
@@ -425,6 +457,7 @@ impl ProcessorState {
 ### Strategy 4: Profile-Guided Optimization (PGO)
 
 **Enable PGO** (`Cargo.toml`):
+
 ```toml
 [profile.release]
 lto = "fat"           # Link-time optimization
@@ -432,6 +465,7 @@ codegen-units = 1     # Single codegen unit for better optimization
 ```
 
 **Benchmark Impact**:
+
 ```bash
 # Before
 cargo bench --bench processor_bench
@@ -488,6 +522,7 @@ done
 ```
 
 **Run**:
+
 ```bash
 chmod +x benchmark.sh
 ./benchmark.sh > benchmark_results.csv
@@ -530,6 +565,7 @@ open allocations.trace
 ```
 
 **Look For**:
+
 - **Memory leaks**: Allocations never freed
 - **Growth**: Linear growth suggests batching needed
 - **Spikes**: Large temporary allocations (optimize or stream)
@@ -544,6 +580,7 @@ cargo stack-sizes --release --bin YOUR_BINARY | head -20
 ```
 
 **Watch For**:
+
 - Functions using >100KB stack (risk of overflow)
 - Large stack arrays (move to heap)
 
@@ -561,14 +598,14 @@ Before deploying to production, verify:
 
 ## Quick Reference
 
-| Tool | Platform | Use Case | Output |
-|------|----------|----------|--------|
-| `cargo bench` | All | Microbenchmarks | Statistical analysis |
-| `flamegraph` | Linux, macOS | CPU profiling | SVG flamegraph |
-| `perf` | Linux | Deep CPU analysis | CLI report |
-| `Instruments` | macOS | Comprehensive | GUI traces |
-| `Valgrind massif` | Linux | Memory profiling | Heap snapshots |
-| `cargo-stack-sizes` | All | Stack usage | Function sizes |
+| Tool                | Platform     | Use Case          | Output               |
+| ------------------- | ------------ | ----------------- | -------------------- |
+| `cargo bench`       | All          | Microbenchmarks   | Statistical analysis |
+| `flamegraph`        | Linux, macOS | CPU profiling     | SVG flamegraph       |
+| `perf`              | Linux        | Deep CPU analysis | CLI report           |
+| `Instruments`       | macOS        | Comprehensive     | GUI traces           |
+| `Valgrind massif`   | Linux        | Memory profiling  | Heap snapshots       |
+| `cargo-stack-sizes` | All          | Stack usage       | Function sizes       |
 
 ## Further Reading
 

@@ -15,6 +15,7 @@
 **Production Readiness**: **60%** - Core algorithm is production-ready, but operational/observability gaps exist
 
 **Critical Findings**:
+
 - ✅ **Algorithm correctness**: Excellent (100% test coverage, volume conservation validated)
 - ⚠️ **Error handling**: 150 unwrap() calls, mutex poisoning risk
 - ❌ **Observability**: No structured logging (only println!), no metrics
@@ -38,6 +39,7 @@
 **Root Cause**: No poisoned mutex handling
 
 **Current Code**:
+
 ```rust
 pub fn push(&self, trade: AggTrade) {
     let mut inner = self.inner.lock().unwrap();  // Line 40 - PANICS if poisoned!
@@ -46,6 +48,7 @@ pub fn push(&self, trade: AggTrade) {
 ```
 
 **Fix**:
+
 ```rust
 pub fn push(&self, trade: AggTrade) -> Result<(), ReplayBufferError> {
     let mut inner = self.inner.lock()
@@ -56,6 +59,7 @@ pub fn push(&self, trade: AggTrade) -> Result<(), ReplayBufferError> {
 ```
 
 **Recommendation**:
+
 - Replace all `.lock().unwrap()` with proper error handling
 - Return `Result<T, ReplayBufferError>` from all methods
 - Add `PoisonedMutex` variant to error enum
@@ -72,11 +76,13 @@ pub fn push(&self, trade: AggTrade) -> Result<(), ReplayBufferError> {
 **Issue**: `RangeBarProcessor::new()` accepts ANY u32 threshold without validation
 
 **Impact**: **CRITICAL** - Invalid thresholds (0, >100%) can cause:
+
 - Division by zero (threshold=0)
 - Integer overflow (threshold=MAX_U32)
 - Nonsensical results (threshold=100% = every tick closes bar)
 
 **Current Code**:
+
 ```rust
 pub fn new(threshold_bps: u32) -> Self {
     Self {
@@ -87,6 +93,7 @@ pub fn new(threshold_bps: u32) -> Self {
 ```
 
 **Fix**:
+
 ```rust
 pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
     // Validate threshold bounds (1 to 100,000 × 0.1bps = 0.001% to 100%)
@@ -111,6 +118,7 @@ pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
 ```
 
 **Recommendation**:
+
 - Use `AlgorithmConfig::validate_threshold()` (already exists!)
 - Return `Result<Self, ProcessingError>`
 - Update all callers to handle Result
@@ -123,11 +131,13 @@ pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
 ### P0-3: No Structured Logging (Production Debugging Impossible)
 
 **Survey Results**:
+
 - **println!**: 539 occurrences (mostly test code)
 - **log::**: 0 occurrences
 - **tracing::**: 0 occurrences
 
 **Impact**: **CRITICAL** - Cannot debug production issues:
+
 - No log levels (info/warn/error)
 - No structured fields (symbol, threshold, timestamps)
 - No correlation IDs for distributed tracing
@@ -135,22 +145,24 @@ pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
 - Logs mixed with test output
 
 **Recommendation**:
+
 - Add `tracing` crate (not `log` - better for async)
 - Add spans for operations (process_bar, fetch_data, export)
 - Add structured fields:
-  ```rust
-  #[instrument(skip(trades), fields(
-      trade_count = trades.len(),
-      threshold_bps = self.threshold_bps,
-      symbol = %symbol
-  ))]
-  pub fn process_agg_trade_records(&mut self, trades: &[AggTrade]) -> Result<Vec<RangeBar>, ProcessingError> {
-      tracing::info!("Processing trades");
-      // ...
-  }
-  ```
+    ```rust
+    #[instrument(skip(trades), fields(
+        trade_count = trades.len(),
+        threshold_bps = self.threshold_bps,
+        symbol = %symbol
+    ))]
+    pub fn process_agg_trade_records(&mut self, trades: &[AggTrade]) -> Result<Vec<RangeBar>, ProcessingError> {
+        tracing::info!("Processing trades");
+        // ...
+    }
+    ```
 
 **Files needing logging**:
+
 1. `rangebar-core/src/processor.rs` - Algorithm execution
 2. `rangebar-providers/src/binance/historical.rs` - Data fetching
 3. `rangebar-providers/src/exness/client.rs` - Data fetching
@@ -170,6 +182,7 @@ pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
 **Impact**: **HIGH** - Crashes entire process instead of graceful error
 
 **Current Code**:
+
 ```rust
 let market_path = match market.as_str() {
     "spot" => "spot",
@@ -180,6 +193,7 @@ let market_path = match market.as_str() {
 ```
 
 **Fix**:
+
 ```rust
 let market_path = match market.as_str() {
     "spot" => "spot",
@@ -209,6 +223,7 @@ let market_path = match market.as_str() {
 **Issue**: `.back().unwrap()` assumes buffer is non-empty after checking, but race condition possible
 
 **Current Code**:
+
 ```rust
 if inner.trades.is_empty() {
     return Vec::new();
@@ -219,6 +234,7 @@ let latest_timestamp = inner.trades.back().unwrap().timestamp;  // PANIC!
 ```
 
 **Fix**:
+
 ```rust
 let latest_timestamp = match inner.trades.back() {
     Some(trade) => trade.timestamp,
@@ -233,12 +249,14 @@ let latest_timestamp = match inner.trades.back() {
 ### P1-2: No Circuit Breakers for Network Operations
 
 **Files**:
+
 - `rangebar-providers/src/binance/historical.rs`
 - `rangebar-providers/src/exness/client.rs`
 
 **Issue**: Network operations have timeout (30s) but no circuit breaker pattern
 
 **Impact**: **HIGH** - Repeated failures can:
+
 - Exhaust connection pool
 - Trigger rate limiting (ban from API)
 - Waste resources retrying known-failing endpoints
@@ -265,6 +283,7 @@ circuit_breaker.call(|| async {
 ### P1-3: File Operations Lack Proper Cleanup
 
 **Files**:
+
 - `rangebar-io/src/polars_io.rs:77` - File::create without Drop guarantee
 - `rangebar-core/src/test_data_loader.rs:161` - File::open without proper cleanup
 
@@ -289,6 +308,7 @@ defer! {
 ### P1-4: No Retry Logic for Transient Network Failures
 
 **Current State**:
+
 - Binance: 30s timeout, NO retry
 - Exness: Configurable timeout, NO retry
 
@@ -317,6 +337,7 @@ Retry::spawn(retry_strategy, || async {
 **File**: `rangebar-providers/src/binance/historical.rs:136`
 
 **Issue**: No rate limiting despite Binance API limits:
+
 - Weight: 1200 requests/minute
 - Order: 50 requests/10 seconds
 
@@ -460,6 +481,7 @@ async fn graceful_shutdown(processor: Arc<Processor>) {
 **Recommendation**: Audit and replace with `?` operator or `unwrap_or_default()`
 
 **Strategy**:
+
 1. Focus on non-test files first
 2. Check if unwrap is after a guard (`is_some()` check) - safe but prefer pattern matching
 3. Replace panic-prone unwraps with proper error handling
@@ -551,12 +573,12 @@ async fn test_network_partition_recovery() {
 
 ### Phase 1: Critical Fixes (Week 1) - **MUST DO**
 
-| Issue | Priority | Effort | Impact |
-|-------|----------|--------|--------|
-| P0-1: Mutex poisoning | P0 | 4h | Production crashes |
-| P0-2: Threshold validation | P0 | 4h | Invalid input handling |
-| P0-3: Structured logging | P0 | 2d | Debugging capability |
-| P0-4: Binary panic | P0 | 1h | Graceful errors |
+| Issue                      | Priority | Effort | Impact                 |
+| -------------------------- | -------- | ------ | ---------------------- |
+| P0-1: Mutex poisoning      | P0       | 4h     | Production crashes     |
+| P0-2: Threshold validation | P0       | 4h     | Invalid input handling |
+| P0-3: Structured logging   | P0       | 2d     | Debugging capability   |
+| P0-4: Binary panic         | P0       | 1h     | Graceful errors        |
 
 **Total**: 3 days
 **Success Criteria**: No unwrap() in critical paths, proper error handling, structured logging
@@ -565,13 +587,13 @@ async fn test_network_partition_recovery() {
 
 ### Phase 2: Reliability (Week 2) - **HIGHLY RECOMMENDED**
 
-| Issue | Priority | Effort | Impact |
-|-------|----------|--------|--------|
-| P1-1: Empty buffer unwrap | P1 | 0.5h | Race condition fix |
-| P1-2: Circuit breakers | P1 | 1d | Network resilience |
-| P1-3: File cleanup | P1 | 2h | Resource leaks |
-| P1-4: Retry logic | P1 | 4h | Transient failure handling |
-| P1-5: Rate limiting | P1 | 2h | API quota management |
+| Issue                     | Priority | Effort | Impact                     |
+| ------------------------- | -------- | ------ | -------------------------- |
+| P1-1: Empty buffer unwrap | P1       | 0.5h   | Race condition fix         |
+| P1-2: Circuit breakers    | P1       | 1d     | Network resilience         |
+| P1-3: File cleanup        | P1       | 2h     | Resource leaks             |
+| P1-4: Retry logic         | P1       | 4h     | Transient failure handling |
+| P1-5: Rate limiting       | P1       | 2h     | API quota management       |
 
 **Total**: 2 days
 **Success Criteria**: Resilient to transient failures, proper resource management
@@ -580,12 +602,12 @@ async fn test_network_partition_recovery() {
 
 ### Phase 3: Observability (Week 3) - **RECOMMENDED**
 
-| Issue | Priority | Effort | Impact |
-|-------|----------|--------|--------|
-| P2-2: Health checks | P2 | 4h | K8s deployment |
-| P2-3: Metrics | P2 | 1d | Monitoring |
-| P2-4: Distributed tracing | P2 | 1d | Debugging |
-| P2-5: Graceful shutdown | P2 | 3h | Data loss prevention |
+| Issue                     | Priority | Effort | Impact               |
+| ------------------------- | -------- | ------ | -------------------- |
+| P2-2: Health checks       | P2       | 4h     | K8s deployment       |
+| P2-3: Metrics             | P2       | 1d     | Monitoring           |
+| P2-4: Distributed tracing | P2       | 1d     | Debugging            |
+| P2-5: Graceful shutdown   | P2       | 3h     | Data loss prevention |
 
 **Total**: 3 days
 **Success Criteria**: Production-ready monitoring and observability
@@ -594,12 +616,12 @@ async fn test_network_partition_recovery() {
 
 ### Phase 4: Hardening (Optional) - **NICE TO HAVE**
 
-| Issue | Priority | Effort | Impact |
-|-------|----------|--------|--------|
-| P3-1: Audit unwraps | P3 | 1w | Code quality |
-| P3-2: Benchmarking | P3 | 1d | Performance baseline |
-| P3-3: Fuzz testing | P3 | 2d | Edge case coverage |
-| P3-4: Chaos engineering | P3 | 3d | Resilience testing |
+| Issue                   | Priority | Effort | Impact               |
+| ----------------------- | -------- | ------ | -------------------- |
+| P3-1: Audit unwraps     | P3       | 1w     | Code quality         |
+| P3-2: Benchmarking      | P3       | 1d     | Performance baseline |
+| P3-3: Fuzz testing      | P3       | 2d     | Edge case coverage   |
+| P3-4: Chaos engineering | P3       | 3d     | Resilience testing   |
 
 **Total**: 2 weeks
 **Success Criteria**: Bulletproof production system
@@ -609,6 +631,7 @@ async fn test_network_partition_recovery() {
 ## Dependency Additions
 
 ### Required for Phase 1-2:
+
 ```toml
 [dependencies]
 # Observability
@@ -625,6 +648,7 @@ scopeguard = "1.2"
 ```
 
 ### Required for Phase 3:
+
 ```toml
 [dependencies]
 # Metrics
@@ -638,6 +662,7 @@ opentelemetry-jaeger = "0.21"
 ```
 
 ### Required for Phase 4:
+
 ```toml
 [dev-dependencies]
 # Benchmarking
@@ -652,24 +677,28 @@ cargo-fuzz = "0.11"
 ## Success Metrics
 
 ### Phase 1 Completion:
+
 - ✅ Zero unwrap() in critical paths (processor, replay_buffer)
 - ✅ All public constructors return Result<T, E>
 - ✅ Structured logging in all production code
 - ✅ Zero panic!() in production binaries
 
 ### Phase 2 Completion:
+
 - ✅ Circuit breakers on all network operations
 - ✅ Exponential backoff retry (3 attempts)
 - ✅ Rate limiting enforced (within Binance quotas)
 - ✅ Proper resource cleanup (RAII pattern)
 
 ### Phase 3 Completion:
+
 - ✅ Health endpoint responding (<100ms)
 - ✅ Prometheus metrics exported
 - ✅ Distributed traces captured
 - ✅ Graceful shutdown (<5s)
 
 ### Phase 4 Completion:
+
 - ✅ Performance benchmarks tracked in CI
 - ✅ Fuzz testing runs nightly
 - ✅ Chaos tests pass (network partition, resource exhaustion)
@@ -681,18 +710,22 @@ cargo-fuzz = "0.11"
 ### Production Readiness SLOs:
 
 **Availability**:
+
 - Current: 60% (no circuit breakers, panics possible)
 - Target: 99.9% (Phase 2 complete)
 
 **Correctness**:
+
 - Current: 100% (algorithm validated)
 - Target: 100% (maintain)
 
 **Observability**:
+
 - Current: 20% (only println!)
 - Target: 95% (Phase 3 complete)
 
 **Maintainability**:
+
 - Current: 85% (good architecture, but unwraps)
 - Target: 95% (Phase 4 complete)
 
@@ -700,12 +733,12 @@ cargo-fuzz = "0.11"
 
 ## Estimated Total Effort
 
-| Phase | Duration | Priority | Blockers |
-|-------|----------|----------|----------|
-| Phase 1 (Critical) | 3 days | MUST DO | None |
-| Phase 2 (Reliability) | 2 days | HIGH | Phase 1 |
-| Phase 3 (Observability) | 3 days | MEDIUM | Phase 1 |
-| Phase 4 (Hardening) | 2 weeks | LOW | Phase 1-3 |
+| Phase                   | Duration | Priority | Blockers  |
+| ----------------------- | -------- | -------- | --------- |
+| Phase 1 (Critical)      | 3 days   | MUST DO  | None      |
+| Phase 2 (Reliability)   | 2 days   | HIGH     | Phase 1   |
+| Phase 3 (Observability) | 3 days   | MEDIUM   | Phase 1   |
+| Phase 4 (Hardening)     | 2 weeks  | LOW      | Phase 1-3 |
 
 **Minimum viable production** (Phase 1+2): **1 week**
 **Production-ready** (Phase 1+2+3): **2 weeks**

@@ -5,23 +5,26 @@ This guide clarifies the three-level hierarchy of trading data used in the range
 ## Three-Level Data Hierarchy
 
 ### Level 1: Individual Market Executions (Exchange Level)
+
 - **What**: Actual buy/sell orders executed on Binance exchange
 - **Example**: Trade ID 4426785115 - someone bought 0.1 BTC at $42,313.90
 - **Access**: We only see these as ID ranges in AggTrade records, not individual records
 - **Characteristics**:
-  - Each has unique `trade_id` (sequential)
-  - Executed at specific price and timestamp
-  - Has buyer/seller maker/taker roles
+    - Each has unique `trade_id` (sequential)
+    - Executed at specific price and timestamp
+    - Has buyer/seller maker/taker roles
 
 ### Level 2: AggTrade Records (Data Format)
+
 - **What**: Binance aggregates multiple individual executions at same price within ~100ms
 - **Example**: AggTrade ID 1965151410 contains individual trades 4426785115-4426785123 (9 trades)
 - **Purpose**: Reduces data volume while preserving market microstructure information
 - **Fields**:
-  - **Spot Markets (8 fields)**: Including `is_best_match` field
-  - **Futures Markets (7 fields)**: Without `is_best_match` field
+    - **Spot Markets (8 fields)**: Including `is_best_match` field
+    - **Futures Markets (7 fields)**: Without `is_best_match` field
 
 ### Level 3: Range Bars (Analysis Output)
+
 - **What**: Price-movement based aggregation we produce for analysis
 - **Contains**: Multiple AggTrade records aggregated by price movement thresholds
 - **Tracks**: Both individual execution count AND AggTrade record count
@@ -32,6 +35,7 @@ This guide clarifies the three-level hierarchy of trading data used in the range
 ### Binance AggTrade Record Structure
 
 #### Spot Market AggTrades (8 columns, no headers)
+
 ```
 Column  | Field Name      | Description
 --------|----------------|--------------------------------------------------
@@ -46,6 +50,7 @@ Column  | Field Name      | Description
 ```
 
 #### UM Futures AggTrades (7 columns, with headers)
+
 ```
 Column  | Field Name      | Description
 --------|----------------|--------------------------------------------------
@@ -61,6 +66,7 @@ Column  | Field Name      | Description
 ### Range Bar Structure (Enhanced in v1.0.0)
 
 #### New Primary Fields
+
 - `individual_trade_count: u32` - Number of actual exchange executions
 - `agg_record_count: u32` - Number of AggTrade records processed
 - `first_trade_id: i64` - First individual trade ID in range bar
@@ -68,6 +74,7 @@ Column  | Field Name      | Description
 - `data_source: DataSource` - Market type (spot/futures)
 
 #### Deprecated Fields (Removed in v1.0.0)
+
 - ~~`trade_count: i64`~~ - **REMOVED**: Use `individual_trade_count` instead
 - ~~`first_id: i64`~~ - **REMOVED**: Use `first_trade_id` instead
 - ~~`last_id: i64`~~ - **REMOVED**: Use `last_trade_id` instead
@@ -75,6 +82,7 @@ Column  | Field Name      | Description
 ## Counting Methodology
 
 ### Individual Trade Count Calculation
+
 ```rust
 // From AggTrade record
 let individual_trades = agg_trade.last_trade_id - agg_trade.first_trade_id + 1;
@@ -84,6 +92,7 @@ let individual_trades = agg_trade.last_trade_id - agg_trade.first_trade_id + 1;
 ```
 
 ### Range Bar Aggregation
+
 ```rust
 // Range bar accumulates across multiple AggTrade records
 for agg_record in agg_records {
@@ -93,6 +102,7 @@ for agg_record in agg_records {
 ```
 
 ### Aggregation Efficiency Metric
+
 ```rust
 // New method in v1.0.0
 let efficiency = range_bar.aggregation_efficiency();
@@ -103,23 +113,28 @@ let efficiency = range_bar.aggregation_efficiency();
 ## Method Naming Conventions (v1.0.0)
 
 ### New Primary Methods
+
 - `process_agg_trade_records(&[AggTrade])` - Clear input type
 - `individual_trade_count()` - Clear counting semantics
 - `aggregation_efficiency()` - New metric
 
 ### Deprecated Methods (Removed in v1.0.0)
+
 - ~~`process_trades(&[AggTrade])`~~ - **REMOVED**: Use `process_agg_trade_records` instead
 - ~~`trade_count()`~~ - **REMOVED**: Use `individual_trade_count` instead
 
 ## Common Confusion Points Clarified
 
 ### ❌ INCORRECT Understanding
+
 "We process individual trades and count them"
 
 ### ✅ CORRECT Understanding
+
 "We process AggTrade records (which contain multiple individual trades) and count both the records and the individual executions within them"
 
 ### Real Example from Data
+
 ```
 AggTrade ID: 1965151412
 Price: 42313.9
@@ -134,15 +149,17 @@ This ONE AggTrade record represents 22 actual market executions
 ## Market Differences
 
 ### Spot vs Futures Data
-| Aspect | Spot Market | UM Futures |
-|--------|-------------|------------|
-| Columns | 8 | 7 |
-| Headers | None | Present |
-| Best Match | Yes (`is_best_match`) | No |
-| Boolean Format | `True/False` | `true/false` |
-| Timestamp Field | Column 6 | `transact_time` |
+
+| Aspect          | Spot Market           | UM Futures      |
+| --------------- | --------------------- | --------------- |
+| Columns         | 8                     | 7               |
+| Headers         | None                  | Present         |
+| Best Match      | Yes (`is_best_match`) | No              |
+| Boolean Format  | `True/False`          | `true/false`    |
+| Timestamp Field | Column 6              | `transact_time` |
 
 ### Aggregation Patterns
+
 - **Futures**: Higher aggregation ratios (more individual trades per AggTrade)
 - **Spot**: Lower aggregation ratios (fewer individual trades per AggTrade)
 - **Reason**: Futures have more frequent, smaller-size algorithmic trading
@@ -150,6 +167,7 @@ This ONE AggTrade record represents 22 actual market executions
 ## Implementation Guidelines
 
 ### When Creating AggTrade Records
+
 ```rust
 // Always include is_best_match for compatibility
 AggTrade {
@@ -162,6 +180,7 @@ AggTrade {
 ```
 
 ### When Processing in Range Bars
+
 ```rust
 // Use new method names
 let bars = processor.process_agg_trade_records(&agg_records)?;
@@ -173,6 +192,7 @@ println!("Aggregation efficiency: {:.2}", bar.aggregation_efficiency());
 ```
 
 ### Migration Path (Completed in v1.0.0)
+
 1. **v0.x**: Old methods and field names
 2. **v1.0.0**: New methods and field names - old methods removed entirely
 

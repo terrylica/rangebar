@@ -176,6 +176,7 @@ crates/
 ### Benchmarks
 
 Current performance targets:
+
 - **Range Bar Processing**: 137M+ trades/second
 - **Memory Usage**: Minimal allocations in hot paths
 - **Latency**: Sub-microsecond per trade processing
@@ -202,6 +203,7 @@ cargo run --release --bin rangebar-export -- BTCUSDT 2024-01-01 2024-01-02 800 .
 ### Bug Reports
 
 Include:
+
 - Rust version and platform
 - Minimal reproduction case
 - Expected vs actual behavior
@@ -210,6 +212,7 @@ Include:
 ### Feature Requests
 
 Include:
+
 - Use case description
 - API design proposal
 - Performance considerations
@@ -218,6 +221,7 @@ Include:
 ## 🎉 Recognition
 
 Contributors will be:
+
 - Listed in `Cargo.toml` authors for significant contributions
 - Acknowledged in release notes
 - Credited in documentation for major features

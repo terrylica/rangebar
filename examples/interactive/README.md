@@ -5,9 +5,11 @@ Real-time demonstrations and interactive tools for visualizing range bar formati
 ## Examples in this category:
 
 ### `historical_replay.rs`
+
 **Purpose**: Interactive historical range bar visualization with time-aware playback
 **Usage**: `cargo run --example interactive/historical_replay [SYMBOL] [MARKET_TYPE]`
 **Features**:
+
 - Real-time range bar formation visualization
 - Keyboard controls (q=quit, +=faster, -=slower, p=pause)
 - Colored directional arrows (↑/↓)
@@ -15,6 +17,7 @@ Real-time demonstrations and interactive tools for visualizing range bar formati
 - 2-day historical data playback
 
 **Examples**:
+
 ```bash
 # Default: DOGEUSDT spot market
 cargo run --example interactive/historical_replay
@@ -24,16 +27,19 @@ cargo run --example interactive/historical_replay BTCUSDT um
 ```
 
 ### `test_historical_replay.rs`
+
 **Purpose**: Faster test version of historical replay (1-day data)
 **Usage**: `cargo run --example interactive/test_historical_replay [SYMBOL] [MARKET_TYPE]`
 **Use when**: Testing or demonstrating with shorter datasets
 
 ### `format_demo.rs`
+
 **Purpose**: Demonstrates the new aligned output formatting
 **Usage**: `cargo run --example interactive/format_demo`
 **Shows**: Before/after formatting improvements with realistic data
 
 ### `market_comparison_demo.rs`
+
 **Purpose**: Shows usage examples for different market types
 **Usage**: `cargo run --example interactive/market_comparison_demo`
 **Output**: Command-line examples and market type explanations
