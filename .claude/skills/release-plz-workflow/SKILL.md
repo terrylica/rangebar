@@ -76,7 +76,7 @@ release-plz automatically publishes in dependency order:
 
 ## Troubleshooting
 
-See [Troubleshooting Guide](./references/troubleshooting.md) for common issues.
+See [Troubleshooting Guide](/.claude/skills/release-plz-workflow/references/troubleshooting.md) for common issues.
 
 ### Quick Fixes
 
