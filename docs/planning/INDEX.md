@@ -11,7 +11,7 @@
 - [Active Plans](#-active-plans) - Currently being implemented
 - [Completed Plans](#-completed-plans) - Finished and delivered
 - [Reference Documents](#-reference-documents) - Quick reference guides
-- [Archived Plans](#️-archived-plans) - Historical/superseded plans
+- [Archived Plans](#-archived-plans) - Historical/superseded plans
 - [By Category](#-by-category) - Organized by type
 
 ---
