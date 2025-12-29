@@ -39,7 +39,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Dev**: `cargo build --release`, `cargo test`, `cargo clippy`, `./scripts/update-deps.sh`
 
-**Release**: `./scripts/release.sh` - Automated versioning, changelog, and GitHub release
+**Release**: `release-plz release` - Rust-native SSoT versioning with API compatibility checks
 
 **Deploy**: `doppler run -- shuttle deploy`
 
@@ -123,9 +123,9 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Publishing**: See [`/docs/guides/publishing.md`](/docs/guides/publishing.md) for complete workflow
 
+- **Tool**: release-plz handles dependency-ordered publishing automatically
 - **Credentials**: Doppler secret `CRATES_IO_CLAUDE_CODE` in `claude-config/dev`
-- **Command**: `export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain) && cargo publish -p <crate-name>`
-- **Order**: Publish in dependency order (core → providers/io → streaming/batch → cli → meta-crate)
+- **Command**: `export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain) && release-plz release`
 
 ## Dependency Management
 
@@ -133,24 +133,27 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 ## Release Workflow
 
-**Automation**: git-cliff + Commitizen for automated release management
+**Tool**: [release-plz](https://release-plz.dev/) - Rust-native release automation with SSoT versioning
 
-**Process**: `./scripts/release.sh` executes:
+**SSoT**: `Cargo.toml` workspace version is the single source of truth (no dual version files)
 
-1. Version bump (Commitizen with SemVer)
-2. CHANGELOG.md generation (git-cliff with detailed commit history)
-3. RELEASE_NOTES.md generation (git-cliff with user-friendly format)
-4. Git push with tags
-5. GitHub release creation
+**Process**: `release-plz release` executes:
+
+1. Analyze commits since last tag (conventional commits)
+2. Run cargo-semver-checks for API breaking change detection
+3. Determine version bump (MAJOR/MINOR/PATCH)
+4. Update CHANGELOG.md via git-cliff integration
+5. Create git tag and GitHub release
+6. Publish to crates.io in dependency order
 
 **Configuration**:
 
-- `.cz.toml` - Commitizen config (version tracking, conventional commits)
+- `release-plz.toml` - Release automation config (SSoT, semver checks, publishing)
 - `cliff.toml` - Detailed changelog template (developer-focused)
 - `cliff-release-notes.toml` - Release notes template (user-focused)
 
-**Manual Commands**:
+**Commands**:
 
-- `uvx --from commitizen cz bump --yes` - Version bump only
-- `git-cliff --config cliff.toml --output CHANGELOG.md` - Generate changelog
-- `git-cliff --config cliff-release-notes.toml --latest --output RELEASE_NOTES.md` - Generate release notes
+- `release-plz release --dry-run` - Preview release without changes
+- `release-plz release` - Execute full release (requires CARGO_REGISTRY_TOKEN)
+- `release-plz update` - Update Cargo.toml, Cargo.lock, and CHANGELOG.md

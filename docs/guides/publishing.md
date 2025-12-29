@@ -1,8 +1,10 @@
 # Publishing Guide
 
-Complete guide for publishing rangebar crates to crates.io with Doppler credential management.
+Complete guide for publishing rangebar crates to crates.io using release-plz with Doppler credential management.
 
 ## Quick Reference
+
+**Tool**: [release-plz](https://release-plz.dev/) - Rust-native release automation
 
 **Doppler Configuration**:
 
@@ -15,7 +17,13 @@ Complete guide for publishing rangebar crates to crates.io with Doppler credenti
 ```bash
 export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE \
   --project claude-config --config dev --plain)
-cargo publish -p <crate-name>
+release-plz release
+```
+
+**Dry Run** (preview without changes):
+
+```bash
+release-plz release --dry-run
 ```
 
 ---
@@ -85,57 +93,64 @@ cargo publish -p rangebar            # depends: all 7 above
 
 1. **Clean git state**:
 
-    ```bash
-    git status
-    # Ensure no uncommitted changes in Cargo.toml or README files
-    ```
+   ```bash
+   git status
+   # Ensure no uncommitted changes
+   ```
 
-2. **Version specifications**:
+2. **API compatibility check**:
 
-    ```bash
-    # All internal dependencies must specify versions:
-    # rangebar-core = { path = "../rangebar-core", version = "5.0" }
-    grep -r 'path = "../rangebar-' crates/*/Cargo.toml
-    ```
+   ```bash
+   # release-plz runs cargo-semver-checks automatically
+   # Manual check if needed:
+   cargo semver-checks
+   ```
 
-3. **Cargo checks**:
+3. **Dry run** (preview release):
 
-    ```bash
-    cargo test --workspace
-    cargo clippy --workspace
-    cargo build --release
-    ```
-
-4. **Dry run** (test without publishing):
-    ```bash
-    cargo publish -p rangebar-core --dry-run
-    ```
+   ```bash
+   release-plz release --dry-run
+   ```
 
 ### Automated Full Publication
 
-```bash
-#!/bin/bash
-# Publish all 8 crates in dependency order
+release-plz handles dependency-ordered publishing automatically:
 
+```bash
+# Set credentials
 export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE \
   --project claude-config --config dev --plain)
 
-# Layer 1
+# Execute release (version bump, changelog, tag, publish)
+release-plz release
+```
+
+**What release-plz does automatically**:
+
+1. Analyzes commits since last tag (conventional commits)
+2. Runs cargo-semver-checks for API breaking change detection
+3. Determines version bump (MAJOR/MINOR/PATCH)
+4. Updates CHANGELOG.md via git-cliff
+5. Creates git tag (v<version>)
+6. Publishes all 8 crates in dependency order
+7. Creates GitHub release
+
+### Manual Publication (if needed)
+
+If you need to publish individual crates manually:
+
+```bash
+export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE \
+  --project claude-config --config dev --plain)
+
+# Publish in dependency order with wait time
 cargo publish -p rangebar-core && sleep 10
 cargo publish -p rangebar-config && sleep 10
-
-# Layer 2
 cargo publish -p rangebar-providers && sleep 10
 cargo publish -p rangebar-io && sleep 10
-
-# Layer 3
 cargo publish -p rangebar-streaming && sleep 10
 cargo publish -p rangebar-batch && sleep 10
-
-# Layer 4
 cargo publish -p rangebar-cli && sleep 10
-
-# Layer 5
 cargo publish -p rangebar && echo "✅ All crates published!"
 ```
 
@@ -158,7 +173,7 @@ Please try again after [timestamp] or email help@crates.io
 **Solutions**:
 
 1. Wait until the specified timestamp
-2. Email help@crates.io to request limit increase (include project details)
+2. Email <help@crates.io> to request limit increase (include project details)
 
 ---
 
@@ -246,7 +261,7 @@ cargo build
 **Token Scope**:
 
 - The `CRATES_IO_CLAUDE_CODE` token has publish permissions
-- Rotate token if compromised: https://crates.io/settings/tokens
+- Rotate token if compromised: <https://crates.io/settings/tokens>
 
 **Git Hygiene**:
 
@@ -258,23 +273,47 @@ cargo build
 
 ## CI/CD Integration
 
-**GitHub Actions** (future):
+**GitHub Actions** (optional backup - see `.github/workflows/release-plz.yml`):
 
 ```yaml
-env:
-    CARGO_REGISTRY_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+name: Release-plz
 
-steps:
-    - name: Publish to crates.io
-      run: cargo publish -p rangebar-core
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-plz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: taiki-e/install-action@release-plz
+
+      - name: Run release-plz
+        uses: release-plz/action@v0.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          cargo_token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 ```
 
-**Note**: Currently using manual Doppler-based workflow. GitHub Actions OIDC mentioned in CLAUDE.md is not yet configured.
+**Note**: Primary workflow is local-first with Doppler credentials. GitHub Actions serves as optional backup automation.
 
 ---
 
 ## References
 
+- [release-plz Documentation](https://release-plz.dev/docs)
+- [cargo-semver-checks](https://github.com/obi1kenobi/cargo-semver-checks)
 - [crates.io Publishing Guide](https://doc.rust-lang.org/cargo/reference/publishing.html)
 - [Doppler CLI Documentation](https://docs.doppler.com/docs/cli)
 - [Cargo Workspaces](https://doc.rust-lang.org/book/ch14-03-cargo-workspaces.html)
@@ -283,5 +322,6 @@ steps:
 
 ## Changelog
 
+- **2025-12-28**: Migrated to release-plz for SSoT versioning (eliminated dual .cz.toml/Cargo.toml sync)
 - **2025-11-12**: Initial publication of 6/8 crates (rate limited on cli + meta-crate)
 - **2025-11-12**: Documented Doppler credential access pattern

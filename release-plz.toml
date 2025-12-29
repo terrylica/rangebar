@@ -1,0 +1,39 @@
+# release-plz configuration
+# SSoT: Cargo.toml workspace version is the single source of truth
+# Documentation: https://release-plz.dev/docs/config
+
+[workspace]
+# Reuse existing git-cliff configuration for changelog generation
+changelog_config = "cliff.toml"
+
+# Enable changelog updates on release
+changelog_update = true
+
+# Create git tags (format: v<version> for unified workspace versioning)
+git_tag_enable = true
+
+# Create GitHub releases
+git_release_enable = true
+
+# Run cargo-semver-checks for API compatibility validation
+semver_check = true
+
+# Publish to crates.io
+publish = true
+
+# Require clean working directory before releasing
+allow_dirty = false
+
+# Update dependencies before releasing
+dependencies_update = true
+
+# PR labels for release PRs (if using PR workflow)
+pr_labels = ["release", "automated"]
+
+# Tag name format: uses workspace version for unified releases
+# Default: "<package_name>-v<version>" per-crate
+# With workspace versioning: "v<version>" for all crates
+git_tag_name = "v{{ version }}"
+
+# Release name format for GitHub releases
+git_release_name = "RangeBar v{{ version }}"
