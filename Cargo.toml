@@ -12,7 +12,7 @@ members = [
 ]
 
 [workspace.package]
-version = "5.0.0"
+version = "5.0.1"
 authors = ["Terry Li <terry@eonlabs.com>"]
 categories = ["algorithms", "data-structures", "finance"]
 documentation = "https://docs.rs/rangebar"
