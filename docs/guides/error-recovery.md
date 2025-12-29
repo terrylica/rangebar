@@ -731,7 +731,7 @@ where
 
 ## Further Reading
 
-- **Streaming Processing**: [`../../crates/rangebar-streaming/README.md`](../../crates/rangebar-streaming/README.md)
-- **Parallel Analysis**: [`../../crates/rangebar-batch/README.md`](../../crates/rangebar-batch/README.md)
-- **Data Providers**: [`../../crates/rangebar-providers/README.md`](../../crates/rangebar-providers/README.md)
-- **Example Scripts**: [`../../examples/`](../../examples/) (needs v5.0.0 migration)
+- **Streaming Processing**: [`/crates/rangebar-streaming/README.md`](/crates/rangebar-streaming/README.md)
+- **Parallel Analysis**: [`/crates/rangebar-batch/README.md`](/crates/rangebar-batch/README.md)
+- **Data Providers**: [`/crates/rangebar-providers/README.md`](/crates/rangebar-providers/README.md)
+- **Example Scripts**: [`/examples/`](/examples/) (needs v5.0.0 migration)

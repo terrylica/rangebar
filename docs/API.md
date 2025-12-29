@@ -712,11 +712,11 @@ async fn load_data(symbol: &str) -> Result<Vec<AggTrade>, Box<dyn std::error::Er
 
 ## Cross-References
 
-**Architecture**: [`ARCHITECTURE.md`](ARCHITECTURE.md)
-**Migration Guide**: [`development/MIGRATION-v4-to-v5.md`](development/MIGRATION-v4-to-v5.md)
-**Planning Docs**: [`planning/INDEX.md`](planning/INDEX.md)
-**Crate READMEs**: `../../crates/*/README.md`
-**Examples**: `../../examples/`
+**Architecture**: [`/docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md)
+**Migration Guide**: [`/docs/development/MIGRATION-v4-to-v5.md`](/docs/development/MIGRATION-v4-to-v5.md)
+**Planning Docs**: [`/docs/planning/INDEX.md`](/docs/planning/INDEX.md)
+**Crate READMEs**: `/crates/*/README.md`
+**Examples**: `/examples/`
 
 ---
 

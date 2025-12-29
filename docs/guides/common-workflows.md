@@ -656,7 +656,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Further Reading
 
-- **Algorithm Details**: [`../specifications/algorithm-spec.md`](../specifications/algorithm-spec.md)
-- **Error Recovery**: [`error-recovery.md`](error-recovery.md)
-- **API Documentation**: [`../ARCHITECTURE.md`](../ARCHITECTURE.md)
-- **Integration Tests**: [`../../crates/rangebar/tests/algorithm_invariants.rs`](../../crates/rangebar/tests/algorithm_invariants.rs)
+- **Algorithm Details**: [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md)
+- **Error Recovery**: [`/docs/guides/error-recovery.md`](/docs/guides/error-recovery.md)
+- **API Documentation**: [`/docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md)
+- **Integration Tests**: [`/crates/rangebar/tests/algorithm_invariants.rs`](/crates/rangebar/tests/algorithm_invariants.rs)

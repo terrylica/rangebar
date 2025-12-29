@@ -79,9 +79,9 @@ open flamegraph.svg
 - **Wide bars**: Time-consuming functions (hot paths)
 - **Tall stacks**: Deep call chains (potential optimization targets)
 - **Look for**:
-    - Heavy I/O operations (file reads, network)
-    - Fixed-point arithmetic (should be fast)
-    - Unnecessary allocations (clones, Vec growth)
+  - Heavy I/O operations (file reads, network)
+  - Fixed-point arithmetic (should be fast)
+  - Unnecessary allocations (clones, Vec growth)
 
 ### 2. cargo-criterion (Microbenchmarking)
 
@@ -609,7 +609,7 @@ Before deploying to production, verify:
 
 ## Further Reading
 
-- **Rust Performance Book**: https://nnethercote.github.io/perf-book/
-- **Criterion Documentation**: https://bheisler.github.io/criterion.rs/book/
-- **Flamegraph Tutorial**: https://www.brendangregg.com/flamegraphs.html
-- **Common Workflows**: [`common-workflows.md`](common-workflows.md)
+- **Rust Performance Book**: <https://nnethercote.github.io/perf-book/>
+- **Criterion Documentation**: <https://bheisler.github.io/criterion.rs/book/>
+- **Flamegraph Tutorial**: <https://www.brendangregg.com/flamegraphs.html>
+- **Common Workflows**: [`/docs/guides/common-workflows.md`](/docs/guides/common-workflows.md)

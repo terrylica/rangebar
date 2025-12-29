@@ -253,26 +253,26 @@ Analyzes memory usage patterns and scaling behavior.
 name: Large-Scale GPU Benchmark
 
 on:
-    schedule:
-        - cron: "0 2 * * 0" # Weekly on Sunday 2 AM
+  schedule:
+    - cron: "0 2 * * 0" # Weekly on Sunday 2 AM
 
 jobs:
-    benchmark:
-        runs-on: gpu-runner
-        steps:
-            - uses: actions/checkout@v3
-            - name: Setup Rust
-              uses: actions-rs/toolchain@v1
-              with:
-                  toolchain: stable
-                  override: true
-            - name: Run Quick Benchmark
-              run: cargo run --release --features gpu --bin large-scale-gpu-cpu-benchmark -- --quick
-            - name: Upload Results
-              uses: actions/upload-artifact@v3
-              with:
-                  name: benchmark-results
-                  path: ./output/large_scale_benchmark/
+  benchmark:
+    runs-on: gpu-runner
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - name: Run Quick Benchmark
+        run: cargo run --release --features gpu --bin large-scale-gpu-cpu-benchmark -- --quick
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: ./output/large_scale_benchmark/
 ```
 
 ### Performance Regression Detection
@@ -293,14 +293,14 @@ Create `benchmark_config.json`:
 
 ```json
 {
-    "data_volumes": [1000, 50000, 100000],
-    "symbol_counts": [1, 5],
-    "thresholds_bps": [800],
-    "repetitions": 3,
-    "max_memory_mb": 8000,
-    "precision_tolerance_bps": 1,
-    "use_real_data": true,
-    "output_dir": "./output/custom_benchmark"
+  "data_volumes": [1000, 50000, 100000],
+  "symbol_counts": [1, 5],
+  "thresholds_bps": [800],
+  "repetitions": 3,
+  "max_memory_mb": 8000,
+  "precision_tolerance_bps": 1,
+  "use_real_data": true,
+  "output_dir": "./output/custom_benchmark"
 }
 ```
 
@@ -399,6 +399,6 @@ For issues with the large-scale benchmarking framework:
 
 ## Related Documentation
 
-- [Comprehensive GPU/CPU Analysis](./COMPREHENSIVE_GPU_CPU_ANALYSIS.md)
-- [Performance Test Report](./PERFORMANCE-TEST-REPORT-MILLIONS-OF-TRADES.md)
-- [Adversarial Testing Report](./adversarial-testing-report.md)
+- [Comprehensive GPU/CPU Analysis](/docs/archive/COMPREHENSIVE_GPU_CPU_ANALYSIS.md)
+- [Performance Test Report](/docs/archive/PERFORMANCE-TEST-REPORT-MILLIONS-OF-TRADES.md)
+- [Adversarial Testing Report](/docs/archive/adversarial-testing-report.md)

@@ -374,17 +374,17 @@ All timestamps are monotonic (strictly increasing). No time travel, no out-of-or
 
 ## Next Steps
 
-**New Users**: Follow this flow step-by-step using [Common Workflows Guide](../guides/common-workflows.md)
+**New Users**: Follow this flow step-by-step using [Common Workflows Guide](/docs/guides/common-workflows.md)
 
-**Researchers**: Deep dive into [Algorithm Specification](../specifications/algorithm-spec.md) to understand Stage 5 guarantees
+**Researchers**: Deep dive into [Algorithm Specification](/docs/specifications/algorithm-spec.md) to understand Stage 5 guarantees
 
-**Developers**: See [Architecture Overview](../ARCHITECTURE.md) for technical implementation details
+**Developers**: See [Architecture Overview](/docs/ARCHITECTURE.md) for technical implementation details
 
 ---
 
 ## Related Diagrams
 
-- [Business Use Cases](02-business-use-cases.md) - Who uses each stage _(coming soon)_
-- [Data Acquisition Decisions](03-data-acquisition-decisions.md) - How to choose data sources _(coming soon)_
-- [Processing Mode Decisions](04-processing-mode-decisions.md) - Streaming vs Batch logic _(coming soon)_
-- [Error Recovery Logic](07-error-recovery-logic.md) - What happens when stages fail _(coming soon)_
+- [Business Use Cases](/docs/diagrams/02-business-use-cases.md) - Who uses each stage _(coming soon)_
+- [Data Acquisition Decisions](/docs/diagrams/03-data-acquisition-decisions.md) - How to choose data sources _(coming soon)_
+- [Processing Mode Decisions](/docs/diagrams/04-processing-mode-decisions.md) - Streaming vs Batch logic _(coming soon)_
+- [Error Recovery Logic](/docs/diagrams/07-error-recovery-logic.md) - What happens when stages fail _(coming soon)_

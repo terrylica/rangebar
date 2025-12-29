@@ -11,22 +11,22 @@ This diagram will show **who uses the rangebar system for what business objectiv
 ### User Personas
 
 1. **Researchers**
-    - Historical backtesting
-    - Multi-symbol comparison
-    - Threshold optimization
-    - Strategy development
+   - Historical backtesting
+   - Multi-symbol comparison
+   - Threshold optimization
+   - Strategy development
 
 2. **Live Traders**
-    - Real-time bar generation
-    - Market stress detection
-    - Entry/exit signals
-    - Position sizing
+   - Real-time bar generation
+   - Market stress detection
+   - Entry/exit signals
+   - Position sizing
 
 3. **Portfolio Managers**
-    - Cross-market analysis
-    - Liquidity assessment
-    - Volatility forecasting
-    - Asset allocation
+   - Cross-market analysis
+   - Liquidity assessment
+   - Volatility forecasting
+   - Asset allocation
 
 ### Planned Diagram Type
 
@@ -51,8 +51,8 @@ Mermaid graph showing:
 
 ## Temporary Alternative
 
-For now, see [Common Workflows Guide](../guides/common-workflows.md) which covers similar use cases in text format.
+For now, see [Common Workflows Guide](/docs/guides/common-workflows.md) which covers similar use cases in text format.
 
 ---
 
-**Back to Index**: [diagrams/INDEX.md](INDEX.md)
+**Back to Index**: [diagrams/INDEX.md](/docs/diagrams/INDEX.md)

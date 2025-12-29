@@ -54,4 +54,4 @@ Current Diagram 01 provides the essential flow. This would add detail for advanc
 
 ---
 
-**Back to Index**: [diagrams/INDEX.md](INDEX.md)
+**Back to Index**: [diagrams/INDEX.md](/docs/diagrams/INDEX.md)

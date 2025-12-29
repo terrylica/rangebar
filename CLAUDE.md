@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Non-lookahead bias range bar construction from tick data (crypto: Binance aggTrades, forex: Exness EURUSD Raw_Spread).
 
-**Core Algorithm**: See authoritative specification → [`docs/specifications/algorithm-spec.md`](docs/specifications/algorithm-spec.md)
+**Core Algorithm**: See authoritative specification → [`docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md)
 
 **Architecture**: Pure Rust implementation for performance and reliability (processes 1B+ ticks). All components native Rust: symbol discovery, data processing, and analysis.
 
@@ -72,14 +72,14 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 ## Critical Algorithm Invariants
 
-**Specification**: [`docs/specifications/algorithm-spec.md`](docs/specifications/algorithm-spec.md) (authoritative)
+**Specification**: [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md) (authoritative)
 **Breach Consistency**: `(high_breach → close_breach) AND (low_breach → close_breach)`
 
 ### Data Source Requirements
 
 #### Binance (Primary - Crypto)
 
-- **Source**: https://github.com/stas-prokopiev/binance_historical_data
+- **Source**: <https://github.com/stas-prokopiev/binance_historical_data>
 - **Primary Asset Class**: `"spot"` (Default) for standard spot trading pairs
 - **Optional Markets**: `"um"` (USD-M Futures) for USDT/USDC perpetuals, `"cm"` (Coin-M Futures)
 - **Data Type**: `"aggTrades"` **ONLY**
@@ -121,7 +121,7 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 **Testing**: `cargo test`, `cargo bench` - validates non-lookahead, performance <100ms/1M ticks
 
-**Publishing**: See [`docs/guides/publishing.md`](docs/guides/publishing.md) for complete workflow
+**Publishing**: See [`/docs/guides/publishing.md`](/docs/guides/publishing.md) for complete workflow
 
 - **Credentials**: Doppler secret `CRATES_IO_CLAUDE_CODE` in `claude-config/dev`
 - **Command**: `export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain) && cargo publish -p <crate-name>`

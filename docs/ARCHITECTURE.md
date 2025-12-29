@@ -507,7 +507,7 @@ println!("Mean price: {}", report.price_statistics.mean);
 
 ### Algorithm Correctness
 
-**Specification**: [`specifications/algorithm-spec.md`](specifications/algorithm-spec.md) (authoritative)
+**Specification**: [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md) (authoritative)
 
 **Validation**:
 

@@ -10,7 +10,7 @@ This folder contains business logic diagrams organized by complexity and focus a
 
 **01 - High-Level Business Flow** ✅
 
-- [01-high-level-business-flow.md](01-high-level-business-flow.md)
+- [01-high-level-business-flow.md](/docs/diagrams/01-high-level-business-flow.md)
 - **Purpose**: Complete end-to-end business journey from raw data to trading insights
 - **Stages**: 7 major business stages with detailed sub-processes
 - **Audience**: All users - start here for the big picture
@@ -19,56 +19,56 @@ This folder contains business logic diagrams organized by complexity and focus a
 
 **02 - Business Use Cases by User Type** 📋
 
-- [02-business-use-cases.md](02-business-use-cases.md)
+- [02-business-use-cases.md](/docs/diagrams/02-business-use-cases.md)
 - **Purpose**: Who uses this system and for what business objectives?
 - **Coverage**: Researchers, Live Traders, Portfolio Managers
 - **Status**: Placeholder - awaiting implementation
 
 **03 - Data Acquisition Decision Tree** 📋
 
-- [03-data-acquisition-decisions.md](03-data-acquisition-decisions.md)
+- [03-data-acquisition-decisions.md](/docs/diagrams/03-data-acquisition-decisions.md)
 - **Purpose**: Business logic for choosing data sources and markets
 - **Coverage**: Crypto (Spot/UM/CM) vs Forex (Exness variants)
 - **Status**: Placeholder - awaiting implementation
 
 **04 - Processing Mode Decision Logic** 📋
 
-- [04-processing-mode-decisions.md](04-processing-mode-decisions.md)
+- [04-processing-mode-decisions.md](/docs/diagrams/04-processing-mode-decisions.md)
 - **Purpose**: When to use streaming vs batch processing
 - **Coverage**: Use case, memory, size, statistics needs
 - **Status**: Placeholder - awaiting implementation
 
 **05 - Threshold Selection Guide** 📋
 
-- [05-threshold-selection-guide.md](05-threshold-selection-guide.md)
+- [05-threshold-selection-guide.md](/docs/diagrams/05-threshold-selection-guide.md)
 - **Purpose**: Choosing optimal threshold based on trading strategy
 - **Coverage**: HFT, Intraday, Swing, Position trading
 - **Status**: Placeholder - awaiting implementation
 
 **06 - Complete Business Workflow** 📋
 
-- [06-complete-business-workflow.md](06-complete-business-workflow.md)
+- [06-complete-business-workflow.md](/docs/diagrams/06-complete-business-workflow.md)
 - **Purpose**: Detailed end-to-end process with all decision points
 - **Coverage**: All stages, all branches, all outputs
 - **Status**: Placeholder - awaiting implementation
 
 **07 - Error Recovery Business Logic** 📋
 
-- [07-error-recovery-logic.md](07-error-recovery-logic.md)
+- [07-error-recovery-logic.md](/docs/diagrams/07-error-recovery-logic.md)
 - **Purpose**: Business decisions when failures occur
 - **Coverage**: Network, disk, OOM, data errors, recovery paths
 - **Status**: Placeholder - awaiting implementation
 
 **08 - Cross-Market Comparison Workflow** 📋
 
-- [08-cross-market-comparison.md](08-cross-market-comparison.md)
+- [08-cross-market-comparison.md](/docs/diagrams/08-cross-market-comparison.md)
 - **Purpose**: Parallel analysis across Spot/UM/CM markets
 - **Coverage**: Liquidity ranking, volatility patterns, market selection
 - **Status**: Placeholder - awaiting implementation
 
 **09 - Algorithm Business Rules** 📋
 
-- [09-algorithm-business-rules.md](09-algorithm-business-rules.md)
+- [09-algorithm-business-rules.md](/docs/diagrams/09-algorithm-business-rules.md)
 - **Purpose**: Core business guarantees (non-lookahead, determinism)
 - **Coverage**: Breach detection, state transitions, trust factors
 - **Status**: Placeholder - awaiting implementation
@@ -79,21 +79,21 @@ This folder contains business logic diagrams organized by complexity and focus a
 
 ### For First-Time Users
 
-1. **Start here**: [01-high-level-business-flow.md](01-high-level-business-flow.md) - Understand the complete journey
-2. Then: [02-business-use-cases.md](02-business-use-cases.md) - See who uses it for what _(coming soon)_
-3. Then: [05-threshold-selection-guide.md](05-threshold-selection-guide.md) - Make practical decisions _(coming soon)_
+1. **Start here**: [01-high-level-business-flow.md](/docs/diagrams/01-high-level-business-flow.md) - Understand the complete journey
+2. Then: [02-business-use-cases.md](/docs/diagrams/02-business-use-cases.md) - See who uses it for what _(coming soon)_
+3. Then: [05-threshold-selection-guide.md](/docs/diagrams/05-threshold-selection-guide.md) - Make practical decisions _(coming soon)_
 
 ### For Data Researchers
 
-1. [01-high-level-business-flow.md](01-high-level-business-flow.md) - Overview
-2. [03-data-acquisition-decisions.md](03-data-acquisition-decisions.md) - Data sources _(coming soon)_
-3. [04-processing-mode-decisions.md](04-processing-mode-decisions.md) - Optimize workflow _(coming soon)_
+1. [01-high-level-business-flow.md](/docs/diagrams/01-high-level-business-flow.md) - Overview
+2. [03-data-acquisition-decisions.md](/docs/diagrams/03-data-acquisition-decisions.md) - Data sources _(coming soon)_
+3. [04-processing-mode-decisions.md](/docs/diagrams/04-processing-mode-decisions.md) - Optimize workflow _(coming soon)_
 
 ### For Live Traders
 
-1. [01-high-level-business-flow.md](01-high-level-business-flow.md) - Overview
-2. [09-algorithm-business-rules.md](09-algorithm-business-rules.md) - Understand guarantees _(coming soon)_
-3. [07-error-recovery-logic.md](07-error-recovery-logic.md) - Handle failures _(coming soon)_
+1. [01-high-level-business-flow.md](/docs/diagrams/01-high-level-business-flow.md) - Overview
+2. [09-algorithm-business-rules.md](/docs/diagrams/09-algorithm-business-rules.md) - Understand guarantees _(coming soon)_
+3. [07-error-recovery-logic.md](/docs/diagrams/07-error-recovery-logic.md) - Handle failures _(coming soon)_
 
 ---
 
@@ -130,7 +130,7 @@ To add a new diagram:
 2. **Update this INDEX.md**: Add entry with purpose and status
 3. **Use Mermaid syntax**: Follow existing diagram style
 4. **Test rendering**: Verify on GitHub or Mermaid Live Editor
-5. **Link from main docs**: Update [DOCUMENTATION.md](../../DOCUMENTATION.md) if needed
+5. **Link from main docs**: Update [DOCUMENTATION.md](/DOCUMENTATION.md) if needed
 
 ---
 
@@ -162,7 +162,7 @@ Ask yourself: "Can a non-technical user understand the business logic from this 
 
 ## Quick Links
 
-- **Main Documentation Hub**: [DOCUMENTATION.md](../../DOCUMENTATION.md)
-- **Architecture Overview**: [docs/ARCHITECTURE.md](../ARCHITECTURE.md)
-- **Algorithm Specification**: [docs/specifications/algorithm-spec.md](../specifications/algorithm-spec.md)
-- **Common Workflows**: [docs/guides/common-workflows.md](../guides/common-workflows.md)
+- **Main Documentation Hub**: [DOCUMENTATION.md](/DOCUMENTATION.md)
+- **Architecture Overview**: [docs/ARCHITECTURE.md](/docs/ARCHITECTURE.md)
+- **Algorithm Specification**: [docs/specifications/algorithm-spec.md](/docs/specifications/algorithm-spec.md)
+- **Common Workflows**: [docs/guides/common-workflows.md](/docs/guides/common-workflows.md)

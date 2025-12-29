@@ -183,7 +183,7 @@ pub struct RangeBar {
 
 **Primary Asset Class**: Spot (default)
 **Optional Markets**: UM Futures (USDT/USDC), CM Futures (Coin-margined)
-**Source**: https://github.com/stas-prokopiev/binance_historical_data
+**Source**: <https://github.com/stas-prokopiev/binance_historical_data>
 
 **Data Type**: `aggTrades` (aggregate trades) ONLY
 
@@ -403,23 +403,23 @@ pub enum ProcessingError {
 
 **Source Code**:
 
-- Core Algorithm: [`../../crates/rangebar-core/src/processor.rs`](../../crates/rangebar-core/src/processor.rs)
-- Fixed-Point: [`../../crates/rangebar-core/src/fixed_point.rs`](../../crates/rangebar-core/src/fixed_point.rs)
-- Types: [`../../crates/rangebar-core/src/types.rs`](../../crates/rangebar-core/src/types.rs)
-- Binance Provider: [`../../crates/rangebar-providers/src/binance/mod.rs`](../../crates/rangebar-providers/src/binance/mod.rs)
-- Exness Provider: [`../../crates/rangebar-providers/src/exness/mod.rs`](../../crates/rangebar-providers/src/exness/mod.rs)
+- Core Algorithm: [`/crates/rangebar-core/src/processor.rs`](/crates/rangebar-core/src/processor.rs)
+- Fixed-Point: [`/crates/rangebar-core/src/fixed_point.rs`](/crates/rangebar-core/src/fixed_point.rs)
+- Types: [`/crates/rangebar-core/src/types.rs`](/crates/rangebar-core/src/types.rs)
+- Binance Provider: [`/crates/rangebar-providers/src/binance/mod.rs`](/crates/rangebar-providers/src/binance/mod.rs)
+- Exness Provider: [`/crates/rangebar-providers/src/exness/mod.rs`](/crates/rangebar-providers/src/exness/mod.rs)
 
 **Migration Guides**:
 
-- v4→v5 Workspace: [`../development/MIGRATION-v4-to-v5.md`](../development/MIGRATION-v4-to-v5.md)
+- v4→v5 Workspace: [`/docs/development/MIGRATION-v4-to-v5.md`](/docs/development/MIGRATION-v4-to-v5.md)
 
 **Architecture**:
 
-- Overview: [`../ARCHITECTURE.md`](../ARCHITECTURE.md)
+- Overview: [`/docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md)
 
 **Superseded Documents**:
 
-- [`../planning/architecture/algorithm-spec.md`](../planning/architecture/algorithm-spec.md) (v1.0.0, archived)
+- [`/docs/planning/architecture/algorithm-spec.md`](/docs/planning/architecture/algorithm-spec.md) (v1.0.0, archived)
 
 ---
 

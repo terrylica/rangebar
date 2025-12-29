@@ -50,7 +50,7 @@ cargo run --example validate-custom-threshold
 
 ## 📊 Example Categories
 
-### 🔬 [Analysis](analysis/README.md)
+### 🔬 [Analysis](/examples/analysis/README.md)
 
 Market research tools and statistical comparisons
 
@@ -59,7 +59,7 @@ Market research tools and statistical comparisons
 - Tier-1 instrument comparisons
 - Trading pattern insights
 
-### 🎮 [Interactive](interactive/README.md)
+### 🎮 [Interactive](/examples/interactive/README.md)
 
 Real-time demonstrations and visualizations
 
@@ -68,7 +68,7 @@ Real-time demonstrations and visualizations
 - Visual range bar formation
 - Market comparison demos
 
-### 📚 [Educational](educational/README.md)
+### 📚 [Educational](/examples/educational/README.md)
 
 Learning materials and concept explanations
 
@@ -77,7 +77,7 @@ Learning materials and concept explanations
 - Reference examples
 - Conceptual demonstrations
 
-### ✅ [Validation](validation/README.md)
+### ✅ [Validation](/examples/validation/README.md)
 
 Testing and verification tools
 

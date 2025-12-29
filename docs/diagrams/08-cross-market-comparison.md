@@ -11,32 +11,32 @@ This diagram will show **business logic for comparing liquidity and volatility a
 ### Workflow Stages
 
 1. **Symbol Selection**
-    - Choose target symbol (e.g., BTCUSDT)
+   - Choose target symbol (e.g., BTCUSDT)
 
 2. **Parallel Data Fetching**
-    - Fetch Spot data
-    - Fetch UM Futures data
-    - Fetch CM Futures data
-    - All 3 in parallel (efficiency)
+   - Fetch Spot data
+   - Fetch UM Futures data
+   - Fetch CM Futures data
+   - All 3 in parallel (efficiency)
 
 3. **Parallel Processing**
-    - Generate bars: Spot
-    - Generate bars: UM Futures
-    - Generate bars: CM Futures
-    - Same threshold for all (apples-to-apples)
+   - Generate bars: Spot
+   - Generate bars: UM Futures
+   - Generate bars: CM Futures
+   - Same threshold for all (apples-to-apples)
 
 4. **Statistics Calculation**
-    - Per market: Volume, Duration, Count
-    - Calculate for all 3 markets
+   - Per market: Volume, Duration, Count
+   - Calculate for all 3 markets
 
 5. **Comparison Analysis**
-    - Compare metrics across markets
-    - Generate insights
+   - Compare metrics across markets
+   - Generate insights
 
 6. **Business Insights**
-    - Liquidity ranking (which market most liquid)
-    - Volatility patterns (which market most volatile)
-    - Optimal market selection (recommendation)
+   - Liquidity ranking (which market most liquid)
+   - Volatility patterns (which market most volatile)
+   - Optimal market selection (recommendation)
 
 ### Planned Diagram Type
 
@@ -62,8 +62,8 @@ Mermaid graph TD showing:
 
 ## Temporary Alternative
 
-See [Common Workflows Guide](../guides/common-workflows.md) Workflow 7: "Spot vs Futures Comparison" for code example.
+See [Common Workflows Guide](/docs/guides/common-workflows.md) Workflow 7: "Spot vs Futures Comparison" for code example.
 
 ---
 
-**Back to Index**: [diagrams/INDEX.md](INDEX.md)
+**Back to Index**: [diagrams/INDEX.md](/docs/diagrams/INDEX.md)

@@ -46,7 +46,7 @@ for bar in bars {
 
 ## Algorithm
 
-See authoritative specification: [`docs/specifications/algorithm-spec.md`](docs/specifications/algorithm-spec.md)
+See authoritative specification: [`docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md)
 
 Key properties: non-lookahead bias, fixed thresholds from bar open, breach inclusion.
 
@@ -59,4 +59,4 @@ Key properties: non-lookahead bias, fixed thresholds from bar open, breach inclu
 
 ## License
 
-MIT license. See [LICENSE](LICENSE) for details.
+MIT license. See [LICENSE](/LICENSE) for details.
