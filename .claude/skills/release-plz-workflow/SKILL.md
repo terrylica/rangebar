@@ -29,6 +29,7 @@ RELEASE_EOF
 ### Phase 1: Preflight Validation
 
 ```bash
+/usr/bin/env bash << 'PREFLIGHT_EOF'
 # 1. Verify clean working directory
 git status --porcelain  # Should be empty
 
@@ -38,6 +39,27 @@ git branch --show-current  # Should be 'main'
 # 3. Verify credentials
 gh auth status  # Should show terrylica account
 doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain | head -c 10  # Should show token prefix
+
+# 4. Check for orphaned submodules (CRITICAL)
+git submodule status  # Should show nothing or valid submodules
+
+# 5. Check for conflicting tags on remote
+git fetch --tags
+git tag -l "v$(grep '^version' Cargo.toml | head -1 | cut -d'"' -f2)"  # Should be empty
+
+# 6. Verify current version in Cargo.toml
+grep '^version' Cargo.toml | head -1
+PREFLIGHT_EOF
+```
+
+**If submodule issues found**:
+
+```bash
+# Remove orphaned submodule completely
+git submodule deinit -f <path>
+rm -rf .git/modules/<path>
+rm .gitmodules  # If no other submodules
+git add -A && git commit -m "chore: remove orphaned submodule"
 ```
 
 ### Phase 2: Release Execution
@@ -52,6 +74,31 @@ release-plz release --git-token "$(gh auth token)"
 EXECUTE_EOF
 ```
 
+### Phase 2.5: Partial Release Recovery
+
+If release-plz fails midway (e.g., tag already exists), some crates may be published while others are not.
+
+**Check which crates need publishing**:
+
+```bash
+cargo search rangebar --limit 8  # Compare versions
+```
+
+**Manual publish for remaining crates** (in dependency order):
+
+```bash
+/usr/bin/env bash << 'RECOVER_EOF'
+export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain)
+
+# Publish remaining crates (adjust list as needed)
+for crate in rangebar-config rangebar-io rangebar-streaming rangebar-batch rangebar-cli rangebar; do
+  echo "Publishing $crate..."
+  cargo publish -p $crate --allow-dirty
+  sleep 10  # Wait for crates.io index
+done
+RECOVER_EOF
+```
+
 ### Phase 3: Verification
 
 ```bash
@@ -62,8 +109,8 @@ git tag -l --sort=-version:refname | head -3
 # Verify GitHub release
 gh release view $(git describe --tags --abbrev=0)
 
-# Verify crates.io
-cargo search rangebar
+# Verify ALL crates at same version
+cargo search rangebar --limit 8
 VERIFY_EOF
 ```
 
@@ -86,12 +133,16 @@ See [Troubleshooting Guide](./references/troubleshooting.md) for common issues.
 
 ### Quick Fixes
 
-| Error                              | Solution                                         |
-| ---------------------------------- | ------------------------------------------------ |
-| "can't determine registry indexes" | `rm -rf ~/.cargo/registry/index/github.com-*`    |
-| "git release not configured"       | Add `--git-token "$(gh auth token)"`             |
-| CHANGELOG.md warnings per-crate    | Cosmetic; workspace-level changelog works        |
-| "already published"                | Crates already on crates.io; create tag manually |
+| Error                                     | Solution                                          |
+| ----------------------------------------- | ------------------------------------------------- |
+| "can't determine registry indexes"        | `rm -rf ~/.cargo/registry/index/github.com-*`     |
+| "git release not configured"              | Add `--git-token "$(gh auth token)"`              |
+| CHANGELOG.md warnings per-crate           | Cosmetic; workspace-level changelog works         |
+| "already published"                       | Crates already on crates.io; create tag manually  |
+| "failed to retrieve git status from repo" | Orphaned submodule - see Phase 1 cleanup          |
+| "Reference already exists" (tag)          | Tag exists; use Phase 2.5 manual recovery         |
+| Partial release (some crates published)   | Use Phase 2.5 to publish remaining crates         |
+| cargo-deny CVSS 4.0 error                 | Use `--no-verify` for commits (advisory DB issue) |
 
 ## Configuration Files
 

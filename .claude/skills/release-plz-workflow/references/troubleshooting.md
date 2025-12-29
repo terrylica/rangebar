@@ -165,6 +165,88 @@ version = "5.0.0"
 
 ---
 
+### 8. Orphaned Git Submodule
+
+**Symptom**:
+
+```
+error: failed to retrieve git status from repo /path/.git/modules/repos/binance-public-data
+
+Caused by:
+  Worktree root at '/path/repos/binance-public-data' is not a directory
+```
+
+**Root Cause**: `.gitmodules` references a submodule whose directory was deleted but git metadata remains.
+
+**Solution**:
+
+```bash
+# Remove orphaned submodule completely
+git submodule deinit -f repos/binance-public-data
+rm -rf .git/modules/repos/binance-public-data
+rm .gitmodules  # If no other submodules remain
+git add -A && git commit --no-verify -m "chore: remove orphaned submodule"
+git push origin main
+```
+
+---
+
+### 9. Partial Release (Tag Already Exists)
+
+**Symptom**:
+
+```
+ERROR failed to create ref refs/tags/v5.0.1
+Response body: {"message":"Reference already exists","status":"422"}
+```
+
+**Root Cause**: release-plz created the tag but failed afterward; only some crates were published.
+
+**Diagnosis**:
+
+```bash
+# Check which crates were published
+cargo search rangebar --limit 8  # Compare versions - some may be old
+```
+
+**Solution**: Manually publish remaining crates:
+
+```bash
+/usr/bin/env bash << 'PARTIAL_EOF'
+export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain)
+
+# Publish remaining crates in dependency order (adjust list based on diagnosis)
+for crate in rangebar-config rangebar-io rangebar-streaming rangebar-batch rangebar-cli rangebar; do
+  echo "Publishing $crate..."
+  cargo publish -p $crate --allow-dirty
+  sleep 10  # Wait for crates.io index
+done
+PARTIAL_EOF
+```
+
+---
+
+### 10. cargo-deny Advisory DB Error (CVSS 4.0)
+
+**Symptom** (in pre-commit hook):
+
+```
+ERROR failed to load advisory database: parse error:
+unsupported CVSS version: 4.0
+```
+
+**Root Cause**: The RustSec advisory database has entries with CVSS 4.0 scores that cargo-deny doesn't support yet.
+
+**Solution**: Use `--no-verify` flag for commits until cargo-deny is updated:
+
+```bash
+git commit --no-verify -m "your commit message"
+```
+
+**Note**: This is a temporary workaround. The cargo-deny maintainers need to add CVSS 4.0 support.
+
+---
+
 ## Pre-Release Checklist
 
 Before running `release-plz release`:
@@ -175,6 +257,8 @@ Before running `release-plz release`:
 4. [ ] Doppler token works: `doppler secrets get CRATES_IO_CLAUDE_CODE --project claude-config --config dev --plain`
 5. [ ] All tests pass: `cargo test`
 6. [ ] No clippy warnings: `cargo clippy`
+7. [ ] No orphaned submodules: `git submodule status`
+8. [ ] Target version tag doesn't exist: `git tag -l "v<version>"`
 
 ---
 
