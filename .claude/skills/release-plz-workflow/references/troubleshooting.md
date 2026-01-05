@@ -247,6 +247,31 @@ git commit --no-verify -m "your commit message"
 
 ---
 
+### 11. README SSoT Issues
+
+**Symptom**: crates.io shows outdated documentation or version mismatch in README
+
+**Causes & Fixes**:
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `cargo rdme` not found | Tool not installed | `cargo install cargo-rdme` |
+| Markers missing | README lacks cargo-rdme markers | Add `<!-- cargo-rdme start/end -->` |
+| Doc test failures | Code examples in lib.rs don't compile | Fix examples with `# ` hidden lines |
+| version-sync failure | Version in docs doesn't match Cargo.toml | Update version in lib.rs docs |
+| README out of sync | lib.rs changed but README not regenerated | Run `cargo rdme --workspace-project rangebar --readme-path README.md` |
+
+**Prevention**:
+- `pre_release_hook` runs automatically before each release
+- `cargo test --test version_sync` validates versions in CI
+
+**Manual sync**:
+```bash
+cargo rdme --workspace-project rangebar --readme-path README.md
+```
+
+---
+
 ## Pre-Release Checklist
 
 Before running `release-plz release`:
@@ -259,6 +284,7 @@ Before running `release-plz release`:
 6. [ ] No clippy warnings: `cargo clippy`
 7. [ ] No orphaned submodules: `git submodule status`
 8. [ ] Target version tag doesn't exist: `git tag -l "v<version>"`
+9. [ ] README SSoT verified: `cargo rdme --workspace-project rangebar --readme-path README.md --check`
 
 ---
 

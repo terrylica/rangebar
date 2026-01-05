@@ -4,23 +4,55 @@
 [![Documentation](https://docs.rs/rangebar/badge.svg)](https://docs.rs/rangebar)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Non-lookahead range bar construction for cryptocurrency trading with temporal integrity guarantees.
+<!-- cargo-rdme start -->
 
-## Quick Start
+Non-lookahead range bar construction for cryptocurrency and forex trading.
 
-Add this to your `Cargo.toml`:
+[![Crates.io](https://img.shields.io/crates/v/rangebar.svg)](https://crates.io/crates/rangebar)
+[![Documentation](https://docs.rs/rangebar/badge.svg)](https://docs.rs/rangebar)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+This crate provides algorithms for constructing range bars from tick data
+with temporal integrity guarantees, ensuring no lookahead bias in financial backtesting.
+
+### Installation
+
+Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rangebar = "5.0"
+rangebar = "5.1"
 ```
 
-## Usage
+### Meta-Crate
+
+This is a meta-crate that re-exports all rangebar sub-crates for backward compatibility
+with v4.0.0. New code should depend on specific sub-crates directly:
+
+- `rangebar-core` - Core algorithm and types
+- `rangebar-providers` - Data providers (Binance, Exness)
+- `rangebar-config` - Configuration management
+- `rangebar-io` - I/O operations and Polars integration
+- `rangebar-streaming` - Real-time streaming processor
+- `rangebar-batch` - Batch analytics engine
+- `rangebar-cli` - Command-line tools
+
+### Features
+
+- `core` - Core algorithm (always enabled)
+- `providers` - Data providers (Binance, Exness)
+- `config` - Configuration management
+- `io` - I/O operations and Polars integration
+- `streaming` - Real-time streaming processor
+- `batch` - Batch analytics engine
+- `full` - Enable all features
+
+### Basic Usage
 
 ```rust
 use rangebar::{RangeBarProcessor, AggTrade, FixedPoint};
 
-// Create processor with 25 basis points (0.25%) threshold
+// Create processor with 250 basis points threshold (2.5%)
 let mut processor = RangeBarProcessor::new(250).unwrap();
 
 // Create sample aggTrade
@@ -32,30 +64,43 @@ let trade = AggTrade {
     last_trade_id: 1,
     timestamp: 1609459200000,
     is_buyer_maker: false,
+    is_best_match: None,
 };
 
 // Process aggTrade records into range bars
 let agg_trade_records = vec![trade];
 let bars = processor.process_agg_trade_records(&agg_trade_records).unwrap();
-
-for bar in bars {
-    println!("Bar: O={} H={} L={} C={} V={}",
-             bar.open, bar.high, bar.low, bar.close, bar.volume);
-}
 ```
 
-## Algorithm
+### Dual-Path Architecture
 
-See authoritative specification: [`docs/specifications/algorithm-spec.md`](https://github.com/terrylica/rangebar/blob/main/docs/specifications/algorithm-spec.md)
+#### Streaming Mode (Real-time)
+```rust
+use rangebar::streaming::StreamingProcessor;
 
-Key properties: non-lookahead bias, fixed thresholds from bar open, breach inclusion.
+let threshold_bps = 25; // 0.25% range bars
+let processor = StreamingProcessor::new(threshold_bps);
+// Real-time processing with bounded memory
+```
 
-## Features
+#### Batch Mode (Analytics)
+```rust
+use rangebar::batch::BatchAnalysisEngine;
+use rangebar::core::types::RangeBar;
 
-- Non-lookahead bias range bar construction
-- Fixed-point arithmetic for precision
-- Streaming and batch processing modes
-- Tier-1 cryptocurrency symbol discovery
+let range_bars: Vec<RangeBar> = vec![]; // Your range bar data
+let engine = BatchAnalysisEngine::new();
+// let result = engine.analyze_single_symbol(&range_bars, "BTCUSDT").unwrap();
+```
+
+### Links
+
+- [GitHub Repository](https://github.com/terrylica/rangebar)
+- [API Documentation](https://docs.rs/rangebar)
+- [Changelog](https://github.com/terrylica/rangebar/blob/main/CHANGELOG.md)
+- [Algorithm Specification](https://github.com/terrylica/rangebar/blob/main/docs/specifications/algorithm-spec.md)
+
+<!-- cargo-rdme end -->
 
 ## License
 

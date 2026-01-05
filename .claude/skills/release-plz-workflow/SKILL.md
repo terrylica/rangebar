@@ -1,7 +1,7 @@
 ---
 name: release-plz-workflow
 description: Automates semantic versioning and release publishing for rangebar Rust workspace using release-plz. TRIGGERS - release, publish, changelog, version bump, crates.io, GitHub release. (project)
-allowed-tools: Bash(cargo:*), Bash(git:*), Bash(release-plz:*), Bash(gh:*), Bash(doppler:*), Read, Grep, Glob
+allowed-tools: Bash(cargo:*), Bash(git:*), Bash(release-plz:*), Bash(gh:*), Bash(doppler:*), Bash(cargo-rdme:*), Read, Grep, Glob
 ---
 
 # Release-plz Workflow for Rangebar
@@ -49,8 +49,15 @@ git tag -l "v$(grep '^version' Cargo.toml | head -1 | cut -d'"' -f2)"  # Should 
 
 # 6. Verify current version in Cargo.toml
 grep '^version' Cargo.toml | head -1
+
+# 7. README SSoT Verification
+cargo rdme --version  # Verify installed
+cargo rdme --workspace-project rangebar --readme-path README.md --check  # Verify in sync
 PREFLIGHT_EOF
 ```
+
+> **Note**: README generation is automated via `pre_release_hook` in release-plz.toml.
+> The hook runs `cargo rdme` before publishing, ensuring crates.io always has current docs.
 
 **If submodule issues found**:
 
@@ -146,11 +153,13 @@ See [Troubleshooting Guide](./references/troubleshooting.md) for common issues.
 
 ## Configuration Files
 
-| File               | Purpose                                  |
-| ------------------ | ---------------------------------------- |
-| `release-plz.toml` | release-plz configuration                |
-| `cliff.toml`       | git-cliff changelog template             |
-| `Cargo.toml`       | SSoT for version (workspace inheritance) |
+| File               | Purpose                                               |
+| ------------------ | ----------------------------------------------------- |
+| `release-plz.toml` | release-plz configuration (includes pre_release_hook) |
+| `cliff.toml`       | git-cliff changelog template                          |
+| `Cargo.toml`       | SSoT for version (workspace inheritance)              |
+| `README.md`        | Generated from lib.rs via cargo-rdme markers          |
+| `lib.rs`           | SSoT for README content (doc comments)                |
 
 ## Version Determination
 

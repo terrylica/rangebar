@@ -1,7 +1,20 @@
-//! Non-lookahead range bar construction for cryptocurrency trading.
+//! Non-lookahead range bar construction for cryptocurrency and forex trading.
 //!
-//! This crate provides algorithms for constructing range bars from aggTrade data
+//! [![Crates.io](https://img.shields.io/crates/v/rangebar.svg)](https://crates.io/crates/rangebar)
+//! [![Documentation](https://docs.rs/rangebar/badge.svg)](https://docs.rs/rangebar)
+//! [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+//!
+//! This crate provides algorithms for constructing range bars from tick data
 //! with temporal integrity guarantees, ensuring no lookahead bias in financial backtesting.
+//!
+//! ## Installation
+//!
+//! Add to your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! rangebar = "5.1"
+//! ```
 //!
 //! ## Meta-Crate
 //!
@@ -31,8 +44,8 @@
 //! ```rust
 //! use rangebar::{RangeBarProcessor, AggTrade, FixedPoint};
 //!
-//! // Create processor with 250 basis points threshold
-//! let mut processor = RangeBarProcessor::new(250);
+//! // Create processor with 250 basis points threshold (2.5%)
+//! let mut processor = RangeBarProcessor::new(250).unwrap();
 //!
 //! // Create sample aggTrade
 //! let trade = AggTrade {
@@ -77,6 +90,13 @@
 //! // let result = engine.analyze_single_symbol(&range_bars, "BTCUSDT").unwrap();
 //! # }
 //! ```
+//!
+//! ## Links
+//!
+//! - [GitHub Repository](https://github.com/terrylica/rangebar)
+//! - [API Documentation](https://docs.rs/rangebar)
+//! - [Changelog](https://github.com/terrylica/rangebar/blob/main/CHANGELOG.md)
+//! - [Algorithm Specification](https://github.com/terrylica/rangebar/blob/main/docs/specifications/algorithm-spec.md)
 
 // Re-export core (always available)
 pub use rangebar_core as core;

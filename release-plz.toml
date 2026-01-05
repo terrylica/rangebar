@@ -27,6 +27,10 @@ allow_dirty = false
 # Update dependencies before releasing
 dependencies_update = true
 
+# README SSoT: Generate README from lib.rs doc comments before release
+# This ensures crates.io always shows up-to-date documentation
+pre_release_hook = "cargo rdme --workspace-project rangebar --readme-path README.md"
+
 # PR labels for release PRs (if using PR workflow)
 pr_labels = ["release", "automated"]
 
