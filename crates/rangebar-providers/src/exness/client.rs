@@ -19,7 +19,7 @@
 //! https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/2024/01/Exness_EURUSD_Raw_Spread_2024_01.zip
 //! ```
 
-use super::types::{ExnessError, ExnessTick};
+use super::types::{ExnessError, ExnessInstrument, ExnessTick};
 use chrono::{DateTime, NaiveDateTime};
 use reqwest::Client;
 use std::io::Read;
@@ -56,6 +56,26 @@ impl ExnessFetcher {
                 .expect("Failed to build Exness HTTP client"),
             symbol: symbol.to_string(),
         }
+    }
+
+    /// Create fetcher for a specific instrument (type-safe API)
+    ///
+    /// Preferred over `new()` for type safety and IDE autocomplete.
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// use rangebar_providers::exness::{ExnessFetcher, ExnessInstrument};
+    ///
+    /// # async fn example() -> Result<(), Box<dyn std::error::Error>> {
+    /// let fetcher = ExnessFetcher::for_instrument(ExnessInstrument::XAUUSD);
+    /// let ticks = fetcher.fetch_month(2024, 1).await?;
+    /// println!("Fetched {} XAUUSD ticks", ticks.len());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn for_instrument(instrument: ExnessInstrument) -> Self {
+        Self::new(&instrument.raw_spread_symbol())
     }
 
     /// Fetch monthly tick data

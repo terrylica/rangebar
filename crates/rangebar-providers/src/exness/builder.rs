@@ -5,7 +5,7 @@
 
 use crate::exness::conversion::tick_to_synthetic_trade;
 use crate::exness::types::{
-    ExnessError, ExnessRangeBar, ExnessTick, SpreadStats, ValidationStrictness,
+    ExnessError, ExnessInstrument, ExnessRangeBar, ExnessTick, SpreadStats, ValidationStrictness,
 };
 use rangebar_core::fixed_point::FixedPoint;
 use rangebar_core::processor::RangeBarProcessor;
@@ -83,6 +83,39 @@ impl ExnessRangeBarBuilder {
             validation_strictness,
             current_spread_stats: SpreadStats::new(),
         })
+    }
+
+    /// Create builder for a specific instrument (type-safe API)
+    ///
+    /// Preferred over `new()` for type safety and IDE autocomplete.
+    ///
+    /// # Arguments
+    ///
+    /// * `instrument` - Exness instrument enum
+    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    /// * `validation_strictness` - Validation level (Permissive/Strict/Paranoid)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use rangebar_providers::exness::{ExnessRangeBarBuilder, ExnessInstrument, ValidationStrictness};
+    ///
+    /// let builder = ExnessRangeBarBuilder::for_instrument(
+    ///     ExnessInstrument::XAUUSD,
+    ///     50,                           // 5bps = 0.05%
+    ///     ValidationStrictness::Strict,
+    /// ).unwrap();
+    /// ```
+    pub fn for_instrument(
+        instrument: ExnessInstrument,
+        threshold_bps: u32,
+        validation_strictness: ValidationStrictness,
+    ) -> Result<Self, rangebar_core::processor::ProcessingError> {
+        Self::new(
+            threshold_bps,
+            instrument.raw_spread_symbol(),
+            validation_strictness,
+        )
     }
 
     /// Process single tick, returning completed bar if threshold breached

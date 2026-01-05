@@ -122,3 +122,4 @@ RELEASE_NOTES_SHORT.md
 # .Sessions folder - never delete
 .sessions/
 !.sessions/.gitignore
+crates/rangebar/output/

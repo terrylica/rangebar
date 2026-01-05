@@ -26,7 +26,20 @@ rangebar-batch = { path = "../rangebar-batch", version = "5.0", optional = true 
 
 [dev-dependencies]
 tokio = { workspace = true }
+serde = { workspace = true }
 serde_json = { workspace = true }
+chrono = { workspace = true }
+
+# Snapshot testing (SOTA 2025)
+insta = { version = "1.43", features = ["json", "yaml"] }
+
+# Property-based testing
+proptest = "1.6"
+
+# Structured logging in tests
+tracing-test = "0.2"
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [features]
 default = ["core"]

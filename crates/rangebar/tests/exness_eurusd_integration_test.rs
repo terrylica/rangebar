@@ -345,3 +345,78 @@ fn export_results(ticks: &[ExnessTick], bars: &[rangebar::providers::exness::Exn
     println!("    - summary.json");
     println!("    - bars_sample.csv (first 100 bars)");
 }
+
+// ============================================================================
+// Type-Safe API Tests (v5.0.1+)
+// ============================================================================
+
+/// Test EURUSD using the new type-safe ExnessInstrument API
+///
+/// Verifies backward compatibility: type-safe API produces identical results
+/// to the legacy string-based API.
+#[tokio::test]
+#[ignore]
+async fn test_eurusd_type_safe_api() {
+    use rangebar::providers::exness::ExnessInstrument;
+
+    println!("\n=== EURUSD Type-Safe API Test ===\n");
+
+    // Fetch with type-safe API
+    let fetcher_typed = ExnessFetcher::for_instrument(ExnessInstrument::EURUSD);
+    let ticks_typed = fetcher_typed
+        .fetch_month(2024, 1)
+        .await
+        .expect("Type-safe fetch failed");
+
+    // Fetch with legacy string API
+    let fetcher_legacy = ExnessFetcher::new("EURUSD_Raw_Spread");
+    let ticks_legacy = fetcher_legacy
+        .fetch_month(2024, 1)
+        .await
+        .expect("Legacy fetch failed");
+
+    // Verify identical results
+    assert_eq!(
+        ticks_typed.len(),
+        ticks_legacy.len(),
+        "Type-safe and legacy APIs should produce identical tick counts"
+    );
+
+    println!("✅ Type-safe API: {} ticks", ticks_typed.len());
+    println!("✅ Legacy API: {} ticks", ticks_legacy.len());
+
+    // Verify first tick matches
+    let first_typed = &ticks_typed[0];
+    let first_legacy = &ticks_legacy[0];
+    assert_eq!(first_typed.timestamp_ms, first_legacy.timestamp_ms);
+    assert_eq!(first_typed.bid, first_legacy.bid);
+    assert_eq!(first_typed.ask, first_legacy.ask);
+
+    // Verify last tick matches
+    let last_typed = ticks_typed.last().unwrap();
+    let last_legacy = ticks_legacy.last().unwrap();
+    assert_eq!(last_typed.timestamp_ms, last_legacy.timestamp_ms);
+
+    println!("✅ API parity verified");
+
+    // Test builder with type-safe API
+    use rangebar::providers::exness::ExnessRangeBarBuilder;
+
+    let mut builder_typed = ExnessRangeBarBuilder::for_instrument(
+        ExnessInstrument::EURUSD,
+        5, // 0.5 bps
+        ValidationStrictness::Strict,
+    )
+    .expect("Type-safe builder failed");
+
+    let bars_typed: Vec<_> = ticks_typed
+        .iter()
+        .filter_map(|t| builder_typed.process_tick(t).ok().flatten())
+        .collect();
+
+    println!(
+        "✅ Generated {} bars with type-safe builder",
+        bars_typed.len()
+    );
+    assert!(!bars_typed.is_empty(), "Should generate at least one bar");
+}

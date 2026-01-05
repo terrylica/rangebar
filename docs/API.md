@@ -284,67 +284,83 @@ for symbol in symbols {
 
 **Location**: `crates/rangebar-providers/src/exness/mod.rs`
 
+**Supported Instruments** (10 total via `ExnessInstrument` enum):
+- Majors: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, NZDUSD
+- Crosses: EURGBP, EURJPY, GBPJPY
+- Commodities: XAUUSD
+
 **Type Signature**:
 
 ```rust
-pub struct ExnessFetcher {
-    variant: String,  // "EURUSD", "EURUSD_Plus", etc.
+/// Type-safe instrument enum (preferred)
+pub enum ExnessInstrument {
+    EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, NZDUSD,
+    EURGBP, EURJPY, GBPJPY, XAUUSD,
 }
+
+impl ExnessInstrument {
+    pub fn spread_tolerance(&self) -> f64;  // Instrument-specific validation
+    pub fn price_range(&self) -> (f64, f64);
+    pub fn all() -> &'static [Self];
+}
+
+pub struct ExnessFetcher { /* ... */ }
 
 impl ExnessFetcher {
-    pub fn new(variant: &str) -> Self;
-
-    pub async fn fetch_month(
-        &self,
-        year: u32,
-        month: u32
-    ) -> Result<Vec<ExnessTick>>;
+    pub fn for_instrument(instrument: ExnessInstrument) -> Self;  // Preferred
+    pub fn new(variant: &str) -> Self;  // Legacy (backward compat)
+    pub async fn fetch_month(&self, year: u32, month: u32) -> Result<Vec<ExnessTick>>;
 }
 
-pub struct ExnessRangeBarBuilder {
-    threshold_units: u32,
-    // ... internal state
-}
+pub struct ExnessRangeBarBuilder { /* ... */ }
 
 impl ExnessRangeBarBuilder {
-    pub fn new(
-        threshold_units: u32,
-        variant: &str,
+    pub fn for_instrument(  // Preferred
+        instrument: ExnessInstrument,
+        threshold_bps: u32,
         strictness: ValidationStrictness
     ) -> Result<Self, ProcessingError>;
 
-    pub fn process_tick(
-        &mut self,
-        tick: &ExnessTick
-    ) -> Result<Option<ExnessRangeBar>, ProcessingError>;
+    pub fn new(  // Legacy (backward compat)
+        threshold_units: u32,
+        variant: String,
+        strictness: ValidationStrictness
+    ) -> Result<Self, ProcessingError>;
+
+    pub fn process_tick(&mut self, tick: &ExnessTick) -> Result<Option<ExnessRangeBar>, ProcessingError>;
 }
 ```
 
-**Pattern - Fetch Exness Data**:
+**Pattern - Type-Safe API (Recommended)**:
 
 ```rust
-use rangebar_providers::exness::{ExnessFetcher, ExnessRangeBarBuilder, ValidationStrictness};
+use rangebar_providers::exness::{
+    ExnessFetcher, ExnessInstrument, ExnessRangeBarBuilder, ValidationStrictness
+};
 
-// Fetch tick data
-let fetcher = ExnessFetcher::new("EURUSD");
-let ticks = fetcher.fetch_month(2024, 10).await?;
+// Fetch XAUUSD tick data (type-safe)
+let fetcher = ExnessFetcher::for_instrument(ExnessInstrument::XAUUSD);
+let ticks = fetcher.fetch_month(2024, 6).await?;
 
-// Build range bars
-let mut builder = ExnessRangeBarBuilder::new(
+// Build range bars (type-safe)
+let mut builder = ExnessRangeBarBuilder::for_instrument(
+    ExnessInstrument::XAUUSD,
     5,  // 0.5 BPS threshold (5 × 0.1 BPS)
-    "EURUSD",
-    ValidationStrictness::Standard
+    ValidationStrictness::Strict,
 )?;
 
 for tick in ticks {
     if let Some(bar) = builder.process_tick(&tick)? {
-        // Process completed bar
         println!("Bar: {:?}", bar);
     }
 }
 ```
 
-**Critical - Exness Variant**: Use `"EURUSD"` Standard (best SNR=1.90, 1.26M ticks/month)
+**Spread Characteristics** (instrument-specific):
+- **Forex pairs**: Bimodal (98% zero spread at bid==ask, 2% stress events), CV=8.17
+- **XAUUSD (Gold)**: Consistent ~$0.06 spreads (NOT zero), 99.6% < $0.10
+
+**Validation**: Use `ExnessInstrument::spread_tolerance()` for correct thresholds
 
 ---
 

@@ -87,13 +87,21 @@ Non-lookahead bias range bar construction from tick data (crypto: Binance aggTra
 
 #### Exness (Primary - Forex)
 
-- **Variant**: `EURUSD_Raw_Spread` - **CHOSEN** for 8× higher spread variability (CV=8.17) encoding broker risk perception
-- **Why Raw_Spread**: Bimodal distribution (98% at 0.0 pips + 2% stress events 1-9 pips) = maximum signal-to-noise for market stress forecasting
-- **Rejected Alternatives**: Standard (CV=0.46, too constant), Standard_Plus (higher cost, lower CV), Cent/Mini (unnecessary contract sizes)
-- **API**: `https://ticks.ex2archive.com/ticks/EURUSD_Raw_Spread/{year}/{month}/Exness_EURUSD_Raw_Spread_{year}_{month}.zip`
-- **Format**: ZIP→CSV (Bid/Ask/Timestamp), ~925K-1.18M ticks/month, validated 2019-2025
-- **Data Characteristics**: No volume data (mid-price used for range bars), commission-based pricing model
+- **Instruments**: 10 supported pairs via `ExnessInstrument` enum:
+  - Majors: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, NZDUSD
+  - Crosses: EURGBP, EURJPY, GBPJPY
+  - Commodities: XAUUSD
+- **Variant**: Raw_Spread with instrument-specific spread characteristics:
+  - **Forex pairs**: Bimodal (98% zero spread at bid==ask, 2% stress events 1-9 pips), CV=8.17
+  - **XAUUSD (Gold)**: Consistent ~$0.06 spreads (NOT zero, NOT bimodal), 99.6% < $0.10
+- **Type-Safe API**: `ExnessFetcher::for_instrument(ExnessInstrument::XAUUSD)`
+- **Legacy API**: `ExnessFetcher::new("EURUSD_Raw_Spread")` (backward compatible)
+- **API Pattern**: `https://ticks.ex2archive.com/ticks/{SYMBOL}_Raw_Spread/{year}/{month}/...`
+- **Format**: ZIP→CSV (Bid/Ask/Timestamp), ~60K ticks/day, validated 2019-2025
+- **Data Characteristics**: No volume data (mid-price for range bars), commission-based pricing
+- **Spread Validation**: Use `ExnessInstrument::spread_tolerance()` for instrument-specific thresholds
 - **Thresholds**: 0.1bps (minimum), 0.2bps (HFT), 0.5bps (intraday), 1.0bps (swing)
+- **Validation Reference**: `~/eon/exness-data-preprocess` (453M+ ticks across 10 instruments)
 
 ### Tier-1 Instruments Definition
 

@@ -39,7 +39,7 @@ The workspace consists of 8 specialized crates:
 **rangebar-providers** - Data providers
 
 - Binance: `HistoricalDataLoader`, aggTrades CSV/Parquet, Tier-1 symbol discovery
-- Exness: `ExnessFetcher`, EURUSD Standard (forex)
+- Exness: `ExnessFetcher`, 10 instruments via `ExnessInstrument` enum (Raw_Spread variant)
 - Unified `AggTrade` interface for all providers
 
 **rangebar-config** - Configuration management
@@ -218,20 +218,28 @@ pub fn get_tier1_symbols() -> Vec<String>;
 pub fn get_tier1_usdt_pairs() -> Vec<String>;
 ```
 
-**Exness**:
+**Exness** (10 instruments: EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, NZDUSD, EURGBP, EURJPY, GBPJPY, XAUUSD):
 
 ```rust
+// Type-safe API (preferred)
 impl ExnessFetcher {
-    pub fn new(variant: &str) -> Self;
-    pub async fn fetch_month(year: u32, month: u32)
-        -> Result<Vec<ExnessTick>>;
+    pub fn for_instrument(instrument: ExnessInstrument) -> Self;
+    pub fn new(variant: &str) -> Self;  // Legacy
+    pub async fn fetch_month(year: u32, month: u32) -> Result<Vec<ExnessTick>>;
 }
 
 impl ExnessRangeBarBuilder {
-    pub fn new(threshold_units: u32, variant: &str, strictness: ValidationStrictness)
+    pub fn for_instrument(instrument: ExnessInstrument, threshold_bps: u32, strictness: ValidationStrictness)
         -> Result<Self, ProcessingError>;
+    pub fn new(threshold_units: u32, variant: String, strictness: ValidationStrictness)
+        -> Result<Self, ProcessingError>;  // Legacy
     pub fn process_tick(&mut self, tick: &ExnessTick)
         -> Result<Option<ExnessRangeBar>, ProcessingError>;
+}
+
+impl ExnessInstrument {
+    pub fn spread_tolerance(&self) -> f64;  // Forex: 0.000001, XAUUSD: 0.10
+    pub fn price_range(&self) -> (f64, f64);
 }
 ```
 

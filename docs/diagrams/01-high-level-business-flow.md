@@ -154,7 +154,9 @@ graph TB
 **Data Sources**:
 
 - **Binance (Crypto)**: Spot, UM Futures (USDT), CM Futures (Coin-margined)
-- **Exness (Forex)**: EURUSD_Raw_Spread with 8× higher spread variability
+- **Exness (Forex/Commodities)**: 10 instruments via `ExnessInstrument` enum (Raw_Spread variant)
+  - Forex pairs: Bimodal spread (98% zero, 2% stress events), CV=8.17
+  - XAUUSD (Gold): Consistent ~$0.06 spreads (NOT zero)
 
 **Key Actions**:
 

@@ -94,15 +94,148 @@ pub enum ValidationStrictness {
 }
 
 // ============================================================================
+// Instrument Types
+// ============================================================================
+
+/// Supported Exness forex instruments (Raw_Spread variant)
+///
+/// All 10 instruments validated against `~/eon/exness-data-preprocess` (453M+ ticks).
+///
+/// API pattern: `https://ticks.ex2archive.com/ticks/{SYMBOL}_Raw_Spread/{year}/{month}/...`
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ExnessInstrument {
+    // Major pairs
+    /// EUR/USD - Most liquid forex pair
+    EURUSD,
+    /// GBP/USD - British Pound / US Dollar
+    GBPUSD,
+    /// USD/JPY - US Dollar / Japanese Yen
+    USDJPY,
+    /// AUD/USD - Australian Dollar / US Dollar
+    AUDUSD,
+    /// USD/CAD - US Dollar / Canadian Dollar
+    USDCAD,
+    /// NZD/USD - New Zealand Dollar / US Dollar
+    NZDUSD,
+
+    // Cross pairs
+    /// EUR/GBP - Euro / British Pound
+    EURGBP,
+    /// EUR/JPY - Euro / Japanese Yen
+    EURJPY,
+    /// GBP/JPY - British Pound / Japanese Yen
+    GBPJPY,
+
+    // Commodities
+    /// XAU/USD - Gold / US Dollar
+    XAUUSD,
+}
+
+impl ExnessInstrument {
+    /// Returns the symbol string for API URLs
+    ///
+    /// Used in: `ExnessFetcher::for_instrument(instrument).fetch_month(...)`
+    pub fn symbol(&self) -> &'static str {
+        match self {
+            Self::EURUSD => "EURUSD",
+            Self::GBPUSD => "GBPUSD",
+            Self::USDJPY => "USDJPY",
+            Self::AUDUSD => "AUDUSD",
+            Self::USDCAD => "USDCAD",
+            Self::NZDUSD => "NZDUSD",
+            Self::EURGBP => "EURGBP",
+            Self::EURJPY => "EURJPY",
+            Self::GBPJPY => "GBPJPY",
+            Self::XAUUSD => "XAUUSD",
+        }
+    }
+
+    /// Returns the Raw_Spread symbol string for API URLs
+    ///
+    /// Example: "EURUSD_Raw_Spread"
+    pub fn raw_spread_symbol(&self) -> String {
+        format!("{}_Raw_Spread", self.symbol())
+    }
+
+    /// Returns all supported instruments
+    ///
+    /// Use for batch validation across all 10 instruments.
+    pub fn all() -> &'static [Self] {
+        &[
+            Self::EURUSD,
+            Self::GBPUSD,
+            Self::USDJPY,
+            Self::AUDUSD,
+            Self::USDCAD,
+            Self::NZDUSD,
+            Self::EURGBP,
+            Self::EURJPY,
+            Self::GBPJPY,
+            Self::XAUUSD,
+        ]
+    }
+
+    /// Returns the expected price range for validation
+    ///
+    /// Returns (min, max) tuple for price range validation.
+    pub fn price_range(&self) -> (f64, f64) {
+        match self {
+            Self::EURUSD => (0.90, 1.30),
+            Self::GBPUSD => (1.10, 1.50),
+            Self::USDJPY => (100.0, 180.0),
+            Self::AUDUSD => (0.55, 0.85),
+            Self::USDCAD => (1.20, 1.50),
+            Self::NZDUSD => (0.50, 0.75),
+            Self::EURGBP => (0.75, 0.95),
+            Self::EURJPY => (120.0, 200.0),
+            Self::GBPJPY => (150.0, 230.0),
+            Self::XAUUSD => (1500.0, 3000.0),
+        }
+    }
+
+    /// Returns true if this is a JPY pair (different pip value)
+    ///
+    /// JPY pairs use 0.01 pip value, others use 0.0001.
+    pub fn is_jpy_pair(&self) -> bool {
+        matches!(self, Self::USDJPY | Self::EURJPY | Self::GBPJPY)
+    }
+
+    /// Returns the spread tolerance for "tight spread" validation
+    ///
+    /// Used for validating Raw_Spread characteristic: >80% tight spread.
+    /// - XAUUSD (gold): $0.10 tolerance (spreads are ~$0.06, not zero)
+    /// - Forex pairs: 0.000001 tolerance (true zero spread)
+    pub fn spread_tolerance(&self) -> f64 {
+        match self {
+            Self::XAUUSD => 0.10, // Gold: ~$0.06 spreads, use 0.10 for 99%+ match
+            _ => 0.000001,        // Forex: essentially zero
+        }
+    }
+}
+
+impl std::fmt::Display for ExnessInstrument {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.symbol())
+    }
+}
+
+// ============================================================================
 // Data Types
 // ============================================================================
 
 /// Exness tick data (market maker quote)
 ///
-/// Exness Raw_Spread variant characteristics:
-/// - Bimodal spread distribution: 98% at 0.0 pips, 2% at 1-9 pips
+/// Exness Raw_Spread variant characteristics vary by instrument:
+///
+/// **Forex pairs (EURUSD, GBPUSD, etc.)**:
+/// - Bimodal spread: 98% at 0.0 pips (bid==ask), 2% stress events (1-9 pips)
 /// - CV=8.17 (8× higher variability than Standard variant)
-/// - Encodes broker risk perception via spread dynamics
+/// - Use `spread_tolerance()` = 0.000001 for zero-spread validation
+///
+/// **XAUUSD (Gold)**:
+/// - Consistent tight spread: ~$0.06 average (NOT zero, NOT bimodal)
+/// - 99.6% of spreads < $0.10
+/// - Use `spread_tolerance()` = 0.10 for tight-spread validation
 ///
 /// Data source: ZIP → CSV (monthly granularity)
 /// Format: Bid, Ask, Timestamp (no volumes)

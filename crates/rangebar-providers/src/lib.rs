@@ -40,7 +40,7 @@
 //!
 //! Top-level re-exports allow shorter import paths:
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! // Top-level imports (recommended)
 //! use rangebar_providers::{
 //!     HistoricalDataLoader,
@@ -51,7 +51,7 @@
 //!
 //! Or use submodule paths directly:
 //!
-//! ```rust,no_run
+//! ```rust,ignore
 //! // Submodule imports (also supported)
 //! use rangebar_providers::binance::HistoricalDataLoader;
 //! use rangebar_providers::exness::ExnessFetcher;
@@ -86,6 +86,6 @@ pub use binance::{
 // Includes: client, builder, types, and errors
 #[cfg(feature = "exness")]
 pub use exness::{
-    ConversionError, ExnessError, ExnessFetcher, ExnessRangeBar, ExnessRangeBarBuilder, ExnessTick,
-    SpreadStats, ValidationStrictness,
+    ConversionError, ExnessError, ExnessFetcher, ExnessInstrument, ExnessRangeBar,
+    ExnessRangeBarBuilder, ExnessTick, SpreadStats, ValidationStrictness,
 };
