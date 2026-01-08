@@ -151,7 +151,7 @@ Enable Polars integration with the `polars-io` feature:
 
 ```toml
 [dependencies]
-rangebar-io = { version = "5.0.0", features = ["polars-io"] }
+rangebar-io = { version = "6.0.0", features = ["polars-io"] }
 ```
 
 ## Version

@@ -13,7 +13,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! rangebar = "5.2"
+//! rangebar = "6.0"
 //! ```
 //!
 //! ## Meta-Crate

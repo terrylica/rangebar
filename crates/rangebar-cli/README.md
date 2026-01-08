@@ -70,7 +70,7 @@ Batch processor for all Tier-1 spot symbols:
 ```bash
 # Process all 18 Tier-1 symbols in parallel
 cargo run --bin spot-tier1-processor --release -- \
-  --start-date 2024-07-01 --end-date 2024-10-31 --threshold-bps 25
+  --start-date 2024-07-01 --end-date 2024-10-31 --threshold-decimal-bps 250
 
 # Custom parallelism
 cargo run --bin spot-tier1-processor -- --workers 16

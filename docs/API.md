@@ -577,9 +577,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 **Dependencies**:
 
 ```toml
-rangebar-core = "5.0.0"
-rangebar-providers = { version = "5.0.0", features = ["binance"] }
-rangebar-io = { version = "5.0.0", features = ["polars-io"] }
+rangebar-core = "6.0.0"
+rangebar-providers = { version = "6.0.0", features = ["binance"] }
+rangebar-io = { version = "6.0.0", features = ["polars-io"] }
 tokio = { version = "1.0", features = ["full"] }
 ```
 
@@ -720,7 +720,7 @@ async fn load_data(symbol: &str) -> Result<Vec<AggTrade>, Box<dyn std::error::Er
 | `tier1-symbol-discovery`       | Discover Tier-1 symbols      | `--format comprehensive`                     |
 | `data-structure-validator`     | Validate aggTrades schema    | `--markets spot,um`                          |
 | `rangebar-export`              | Export range bars to CSV     | `BTCUSDT 2024-01-01 2024-01-31 250 ./output` |
-| `spot-tier1-processor`         | Batch process all Tier-1     | `--threshold-bps 25 --workers 16`            |
+| `spot-tier1-processor`         | Batch process all Tier-1     | `--threshold-decimal-bps 250 --workers 16`   |
 | `polars-benchmark`             | Benchmark Polars performance | `--input data.csv --output-dir ./bench`      |
 | `temporal-integrity-test-only` | Validate temporal ordering   | `--input data.csv`                           |
 

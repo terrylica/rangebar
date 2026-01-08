@@ -56,7 +56,7 @@ The meta-crate supports optional features for selective compilation:
 
 ```toml
 [dependencies]
-rangebar = { version = "5.0.0", features = ["full"] }
+rangebar = { version = "6.0.0", features = ["full"] }
 ```
 
 ### Available Features
@@ -73,16 +73,16 @@ rangebar = { version = "5.0.0", features = ["full"] }
 
 ```toml
 # Minimal: Core algorithm only
-rangebar = { version = "5.0.0" }
+rangebar = { version = "6.0.0" }
 
 # Core + providers
-rangebar = { version = "5.0.0", features = ["providers"] }
+rangebar = { version = "6.0.0", features = ["providers"] }
 
 # Core + providers + streaming
-rangebar = { version = "5.0.0", features = ["streaming"] }
+rangebar = { version = "6.0.0", features = ["streaming"] }
 
 # Everything
-rangebar = { version = "5.0.0", features = ["full"] }
+rangebar = { version = "6.0.0", features = ["full"] }
 ```
 
 ## Architecture
