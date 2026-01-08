@@ -20,11 +20,11 @@ use rangebar_core::RangeBarProcessor;
 use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let threshold_bps = 250;
+    let threshold_decimal_bps = 250;
     let trades = load_your_data()?;  // Your data loading logic
 
     let start = Instant::now();
-    let mut processor = RangeBarProcessor::new(threshold_bps)?;
+    let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
     let bars = processor.process_agg_trade_records(&trades)?;
     let duration = start.elapsed();
 
@@ -109,11 +109,11 @@ fn bench_processor(c: &mut Criterion) {
         group.throughput(Throughput::Elements(size as u64));
 
         let trades = generators::create_massive_realistic_dataset(size);
-        let threshold_bps = 250;
+        let threshold_decimal_bps = 250;
 
         group.bench_function(format!("{}_trades", size), |b| {
             b.iter(|| {
-                let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+                let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
                 processor.process_agg_trade_records(black_box(&trades)).unwrap()
             });
         });
@@ -414,7 +414,7 @@ use rayon::prelude::*;
 // Process symbols in parallel
 let results: Vec<_> = symbols.par_iter()
     .map(|symbol| {
-        let mut processor = RangeBarProcessor::new(threshold_bps)?;
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
         let trades = load_symbol_data(symbol)?;
         processor.process_agg_trade_records(&trades)
     })

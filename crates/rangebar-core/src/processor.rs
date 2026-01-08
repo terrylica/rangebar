@@ -11,8 +11,8 @@ use thiserror::Error;
 
 /// Range bar processor with non-lookahead bias guarantee
 pub struct RangeBarProcessor {
-    /// Threshold in tenths of basis points (250 = 25bps, v3.0.0+)
-    threshold_bps: u32,
+    /// Threshold in decimal basis points (250 = 25bps, v3.0.0+)
+    threshold_decimal_bps: u32,
 
     /// Current bar state for streaming processing (Q19)
     /// Enables get_incomplete_bar() and stateful process_single_trade()
@@ -24,28 +24,32 @@ impl RangeBarProcessor {
     ///
     /// # Arguments
     ///
-    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    /// * `threshold_decimal_bps` - Threshold in **decimal basis points**
     ///   - Example: `250` → 25bps = 0.25%
     ///   - Example: `10` → 1bps = 0.01%
     ///   - Minimum: `1` → 0.1bps = 0.001%
     ///
     /// # Breaking Change (v3.0.0)
     ///
-    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// Prior to v3.0.0, `threshold_decimal_bps` was in 1bps units.
     /// **Migration**: Multiply all threshold values by 10.
-    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
-        // Validation bounds (v3.0.0: 0.1bps units)
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, ProcessingError> {
+        // Validation bounds (v3.0.0: decimal bps units)
         // Min: 1 × 0.1bps = 0.1bps = 0.001%
         // Max: 100,000 × 0.1bps = 10,000bps = 100%
-        if threshold_bps < 1 {
-            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        if threshold_decimal_bps < 1 {
+            return Err(ProcessingError::InvalidThreshold {
+                threshold_decimal_bps,
+            });
         }
-        if threshold_bps > 100_000 {
-            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        if threshold_decimal_bps > 100_000 {
+            return Err(ProcessingError::InvalidThreshold {
+                threshold_decimal_bps,
+            });
         }
 
         Ok(Self {
-            threshold_bps,
+            threshold_decimal_bps,
             current_bar_state: None,
         })
     }
@@ -75,7 +79,8 @@ impl RangeBarProcessor {
         match &mut self.current_bar_state {
             None => {
                 // First trade - initialize new bar
-                self.current_bar_state = Some(RangeBarState::new(&trade, self.threshold_bps));
+                self.current_bar_state =
+                    Some(RangeBarState::new(&trade, self.threshold_decimal_bps));
                 Ok(None)
             }
             Some(bar_state) => {
@@ -97,7 +102,8 @@ impl RangeBarProcessor {
                     let completed_bar = bar_state.bar.clone();
 
                     // Start new bar with breaching trade
-                    self.current_bar_state = Some(RangeBarState::new(&trade, self.threshold_bps));
+                    self.current_bar_state =
+                        Some(RangeBarState::new(&trade, self.threshold_decimal_bps));
 
                     Ok(Some(completed_bar))
                 } else {
@@ -200,7 +206,7 @@ impl RangeBarProcessor {
         for agg_record in agg_trade_records {
             if defer_open {
                 // Previous bar closed, this agg_record opens new bar
-                current_bar = Some(RangeBarState::new(agg_record, self.threshold_bps));
+                current_bar = Some(RangeBarState::new(agg_record, self.threshold_decimal_bps));
                 defer_open = false;
                 continue;
             }
@@ -208,7 +214,7 @@ impl RangeBarProcessor {
             match current_bar {
                 None => {
                     // First bar initialization
-                    current_bar = Some(RangeBarState::new(agg_record, self.threshold_bps));
+                    current_bar = Some(RangeBarState::new(agg_record, self.threshold_decimal_bps));
                 }
                 Some(ref mut bar_state) => {
                     // Check if this AggTrade record breaches the threshold
@@ -286,11 +292,12 @@ struct RangeBarState {
 
 impl RangeBarState {
     /// Create new range bar state from opening trade
-    fn new(trade: &AggTrade, threshold_bps: u32) -> Self {
+    fn new(trade: &AggTrade, threshold_decimal_bps: u32) -> Self {
         let bar = RangeBar::new(trade);
 
         // Compute FIXED thresholds from opening price
-        let (upper_threshold, lower_threshold) = bar.open.compute_range_thresholds(threshold_bps);
+        let (upper_threshold, lower_threshold) =
+            bar.open.compute_range_thresholds(threshold_decimal_bps);
 
         Self {
             bar,
@@ -318,9 +325,9 @@ pub enum ProcessingError {
     EmptyData,
 
     #[error(
-        "Invalid threshold: {threshold_bps} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)"
+        "Invalid threshold: {threshold_decimal_bps} (decimal bps). Valid range: 1-100,000 (0.001%-100%)"
     )]
-    InvalidThreshold { threshold_bps: u32 },
+    InvalidThreshold { threshold_decimal_bps: u32 },
 }
 
 #[cfg(feature = "python")]
@@ -340,12 +347,12 @@ impl From<ProcessingError> for PyErr {
             ProcessingError::EmptyData => {
                 pyo3::exceptions::PyValueError::new_err("Empty trade data")
             }
-            ProcessingError::InvalidThreshold { threshold_bps } => {
-                pyo3::exceptions::PyValueError::new_err(format!(
-                    "Invalid threshold: {} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)",
-                    threshold_bps
-                ))
-            }
+            ProcessingError::InvalidThreshold {
+                threshold_decimal_bps,
+            } => pyo3::exceptions::PyValueError::new_err(format!(
+                "Invalid threshold: {} (decimal bps). Valid range: 1-100,000 (0.001%-100%)",
+                threshold_decimal_bps
+            )),
         }
     }
 }
@@ -482,7 +489,7 @@ mod tests {
         let processor = RangeBarProcessor::new(250).unwrap(); // 250 × 0.1bps = 25bps = 0.25%
 
         let trade = test_utils::create_test_agg_trade(1, "50000.0", "1.0", 1000);
-        let bar_state = RangeBarState::new(&trade, processor.threshold_bps);
+        let bar_state = RangeBarState::new(&trade, processor.threshold_decimal_bps);
 
         // 50000 * 0.0025 = 125 (25bps = 0.25%)
         assert_eq!(bar_state.upper_threshold.to_string(), "50125.00000000");
@@ -540,14 +547,16 @@ mod tests {
         // Invalid: too low (0 × 0.1bps = 0%)
         assert!(matches!(
             RangeBarProcessor::new(0),
-            Err(ProcessingError::InvalidThreshold { threshold_bps: 0 })
+            Err(ProcessingError::InvalidThreshold {
+                threshold_decimal_bps: 0
+            })
         ));
 
         // Invalid: too high (150,000 × 0.1bps = 15,000bps = 150%)
         assert!(matches!(
             RangeBarProcessor::new(150_000),
             Err(ProcessingError::InvalidThreshold {
-                threshold_bps: 150_000
+                threshold_decimal_bps: 150_000
             })
         ));
 
@@ -638,7 +647,7 @@ struct InternalRangeBar {
 /// This implementation uses the proven fixed-point arithmetic algorithm
 /// that achieves 100% breach consistency compliance in multi-year processing.
 pub struct ExportRangeBarProcessor {
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
     current_bar: Option<InternalRangeBar>,
     completed_bars: Vec<RangeBar>,
 }
@@ -648,28 +657,32 @@ impl ExportRangeBarProcessor {
     ///
     /// # Arguments
     ///
-    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    /// * `threshold_decimal_bps` - Threshold in **decimal basis points**
     ///   - Example: `250` → 25bps = 0.25%
     ///   - Example: `10` → 1bps = 0.01%
     ///   - Minimum: `1` → 0.1bps = 0.001%
     ///
     /// # Breaking Change (v3.0.0)
     ///
-    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// Prior to v3.0.0, `threshold_decimal_bps` was in 1bps units.
     /// **Migration**: Multiply all threshold values by 10.
-    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
-        // Validation bounds (v3.0.0: 0.1bps units)
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, ProcessingError> {
+        // Validation bounds (v3.0.0: decimal bps units)
         // Min: 1 × 0.1bps = 0.1bps = 0.001%
         // Max: 100,000 × 0.1bps = 10,000bps = 100%
-        if threshold_bps < 1 {
-            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        if threshold_decimal_bps < 1 {
+            return Err(ProcessingError::InvalidThreshold {
+                threshold_decimal_bps,
+            });
         }
-        if threshold_bps > 100_000 {
-            return Err(ProcessingError::InvalidThreshold { threshold_bps });
+        if threshold_decimal_bps > 100_000 {
+            return Err(ProcessingError::InvalidThreshold {
+                threshold_decimal_bps,
+            });
         }
 
         Ok(Self {
-            threshold_bps,
+            threshold_decimal_bps,
             current_bar: None,
             completed_bars: Vec::new(),
         })
@@ -736,12 +749,12 @@ impl ExportRangeBarProcessor {
         let trade_turnover = (trade.price.to_f64() * trade.volume.to_f64()) as i128;
 
         // CRITICAL FIX: Use fixed-point integer arithmetic for precise threshold calculation
-        // v3.0.0: threshold_bps now in 0.1bps units, using BASIS_POINTS_SCALE = 100_000
+        // v3.0.0: threshold now in decimal bps, using BASIS_POINTS_SCALE = 100_000
         let price_val = trade.price.0;
         let bar_open_val = bar.open.0;
-        let threshold_bps = self.threshold_bps as i64;
-        let upper_threshold = bar_open_val + (bar_open_val * threshold_bps) / 100_000;
-        let lower_threshold = bar_open_val - (bar_open_val * threshold_bps) / 100_000;
+        let threshold_decimal_bps = self.threshold_decimal_bps as i64;
+        let upper_threshold = bar_open_val + (bar_open_val * threshold_decimal_bps) / 100_000;
+        let lower_threshold = bar_open_val - (bar_open_val * threshold_decimal_bps) / 100_000;
 
         // Update bar with new trade
         bar.close_time = trade.timestamp;

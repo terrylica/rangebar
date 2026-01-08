@@ -293,7 +293,7 @@ paths:
                                   properties:
                                     symbol:
                                       type: string
-                                    threshold_bps:
+                                    threshold_decimal_bps:
                                       type: integer
                                     total_bars:
                                       type: integer
@@ -307,21 +307,21 @@ paths:
                                       type: number
                                 example:
                                   - symbol: "BTCUSDT"
-                                    threshold_bps: 25
+                                    threshold_decimal_bps: 25
                                     total_bars: 55
                                     valid_bars: 55
                                     accuracy_pct: 100.0
                                     avg_movement_pct: 0.2575
                                     max_error_pct: 0.0000157
                                   - symbol: "DOGEUSDT"
-                                    threshold_bps: 25
+                                    threshold_decimal_bps: 25
                                     total_bars: 1519
                                     valid_bars: 1519
                                     accuracy_pct: 100.0
                                     avg_movement_pct: 0.3764
                                     max_error_pct: 0.0000200
                                   - symbol: "BTCUSDT"
-                                    threshold_bps: 50
+                                    threshold_decimal_bps: 50
                                     total_bars: 12
                                     valid_bars: 12
                                     accuracy_pct: 100.0
@@ -333,7 +333,7 @@ paths:
                                   threshold_compliance:
                                     type: string
                                     const: "EXACT"
-                                    description: "All bars must breach exactly at ±threshold_bps"
+                                    description: "All bars must breach exactly at ±threshold_decimal_bps"
                                   mathematical_accuracy:
                                     type: string
                                     const: "TICK_LEVEL_PRECISION"

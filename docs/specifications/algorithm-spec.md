@@ -23,13 +23,13 @@ This specification defines the **canonical range bar construction algorithm** im
 
 Given:
 
-- `threshold_bps` = threshold in 0.1bps units (e.g., `250` = 25bps = 0.25%)
+- `threshold_decimal_bps` = threshold in 0.1bps units (e.g., `250` = 25bps = 0.25%)
 - Bar opens at price `P_open`
 
 For each bar:
 
 ```
-threshold_ratio = threshold_bps / 100_000  # Convert 0.1bps units to decimal
+threshold_ratio = threshold_decimal_bps / 100_000  # Convert 0.1bps units to decimal
 upper_breach = P_open + (P_open * threshold_ratio)
 lower_breach = P_open - (P_open * threshold_ratio)
 ```
@@ -37,12 +37,12 @@ lower_breach = P_open - (P_open * threshold_ratio)
 **Examples**:
 
 ```
-threshold_bps = 250 (25bps = 0.25%)
+threshold_decimal_bps = 250 (25bps = 0.25%)
   P_open = 50000.00
   upper_breach = 50125.00  (50000 × 1.0025)
   lower_breach = 49875.00  (50000 × 0.9975)
 
-threshold_bps = 10 (1bps = 0.01%)
+threshold_decimal_bps = 10 (1bps = 0.01%)
   P_open = 1.09450
   upper_breach = 1.09461  (1.09450 × 1.0001)
   lower_breach = 1.09439  (1.09450 × 0.9999)
@@ -63,8 +63,8 @@ threshold_bps = 10 (1bps = 0.01%)
 **v3.0.0 (2025-09-24)**: Threshold units changed from 1bps to 0.1bps for precision
 
 - **Migration**: Multiply all threshold values by 10
-- **Before**: `threshold_bps = 25` (25bps = 0.25%)
-- **After**: `threshold_bps = 250` (250 × 0.1bps = 25bps = 0.25%)
+- **Before**: `threshold_decimal_bps = 25` (25bps = 0.25%)
+- **After**: `threshold_decimal_bps = 250` (250 × 0.1bps = 25bps = 0.25%)
 - **Rationale**: Enable precise thresholds like 0.5bps (5 units) for forex markets
 
 ---
@@ -74,18 +74,18 @@ threshold_bps = 10 (1bps = 0.01%)
 ### Core Processing Loop
 
 ```python
-def process_agg_trade_records(trades, threshold_bps):
+def process_agg_trade_records(trades, threshold_decimal_bps):
     """
     Convert sorted AggTrade records to range bars.
 
     Args:
         trades: List[AggTrade] sorted by (timestamp, agg_trade_id)
-        threshold_bps: u32 in 0.1bps units (250 = 25bps = 0.25%)
+        threshold_decimal_bps: u32 in 0.1bps units (250 = 25bps = 0.25%)
 
     Returns:
         List[RangeBar] completed bars only (no partial bars)
     """
-    threshold_ratio = threshold_bps / 100_000
+    threshold_ratio = threshold_decimal_bps / 100_000
     bars = []
     current_bar = None
     defer_open = False
@@ -356,9 +356,9 @@ impl FixedPoint {
 }
 
 // Threshold calculation (v3.0.0: 0.1bps units)
-pub fn compute_range_thresholds(open: FixedPoint, threshold_bps: u32) -> (FixedPoint, FixedPoint) {
+pub fn compute_range_thresholds(open: FixedPoint, threshold_decimal_bps: u32) -> (FixedPoint, FixedPoint) {
     let open_val = open.0;
-    let threshold = threshold_bps as i64;
+    let threshold = threshold_decimal_bps as i64;
     let upper = open_val + (open_val * threshold) / 100_000;  // BASIS_POINTS_SCALE
     let lower = open_val - (open_val * threshold) / 100_000;
     (FixedPoint(upper), FixedPoint(lower))
@@ -381,8 +381,8 @@ pub enum ProcessingError {
         curr_id: i64,
     },
 
-    #[error("Invalid threshold: {threshold_bps} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)")]
-    InvalidThreshold { threshold_bps: u32 },
+    #[error("Invalid threshold: {threshold_decimal_bps} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)")]
+    InvalidThreshold { threshold_decimal_bps: u32 },
 
     #[error("Empty trade data")]
     EmptyData,

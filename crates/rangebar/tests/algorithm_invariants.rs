@@ -20,21 +20,21 @@ use rangebar_core::{FixedPoint, RangeBar, RangeBarProcessor};
 /// # Arguments
 ///
 /// * `bars` - Completed range bars to validate
-/// * `threshold_bps` - Threshold in 0.1bps units (250 = 25bps = 0.25%)
+/// * `threshold_decimal_bps` - Threshold in decimal bps (250 = 25bps = 0.25%)
 ///
 /// # Returns
 ///
 /// `Ok(())` if all bars pass invariant checks, `Err(String)` with detailed diagnostics otherwise
 fn validate_breach_consistency_invariant(
     bars: &[RangeBar],
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
 ) -> Result<(), String> {
-    const BASIS_POINTS_SCALE: i64 = 100_000; // v3.0.0: 0.1bps units
+    const BASIS_POINTS_SCALE: i64 = 100_000; // v3.0.0: decimal bps
 
     for (i, bar) in bars.iter().enumerate() {
         // Compute thresholds from open (fixed throughout bar lifetime)
         let open_val = bar.open.0;
-        let threshold_delta = (open_val * threshold_bps as i64) / BASIS_POINTS_SCALE;
+        let threshold_delta = (open_val * threshold_decimal_bps as i64) / BASIS_POINTS_SCALE;
         let upper_threshold = open_val + threshold_delta;
         let lower_threshold = open_val - threshold_delta;
 
@@ -62,8 +62,8 @@ fn validate_breach_consistency_invariant(
                 bar.high,
                 bar.low,
                 bar.close,
-                threshold_bps as f64 / 10.0,
-                threshold_bps
+                threshold_decimal_bps as f64 / 10.0,
+                threshold_decimal_bps
             ));
         }
 
@@ -82,8 +82,8 @@ fn validate_breach_consistency_invariant(
                 bar.high,
                 bar.low,
                 bar.close,
-                threshold_bps as f64 / 10.0,
-                threshold_bps
+                threshold_decimal_bps as f64 / 10.0,
+                threshold_decimal_bps
             ));
         }
 
@@ -136,60 +136,60 @@ mod invariant_tests {
     /// Test breach consistency invariant on exact upward breach scenario
     #[test]
     fn test_invariant_exact_breach_upward() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
-        let trades = scenarios::exact_breach_upward(threshold_bps);
+        let trades = scenarios::exact_breach_upward(threshold_decimal_bps);
         let bars = processor.process_agg_trade_records(&trades).unwrap();
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Exact upward breach should satisfy invariant");
     }
 
     /// Test breach consistency invariant on exact downward breach scenario
     #[test]
     fn test_invariant_exact_breach_downward() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
-        let trades = scenarios::exact_breach_downward(threshold_bps);
+        let trades = scenarios::exact_breach_downward(threshold_decimal_bps);
         let bars = processor.process_agg_trade_records(&trades).unwrap();
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Exact downward breach should satisfy invariant");
     }
 
     /// Test breach consistency invariant on large price gap scenario
     #[test]
     fn test_invariant_large_gap() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = scenarios::large_gap_sequence();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Large gap scenario should satisfy invariant");
     }
 
     /// Test breach consistency invariant on single breach sequence
     #[test]
     fn test_invariant_single_breach() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
-        let trades = scenarios::single_breach_sequence(threshold_bps);
+        let trades = scenarios::single_breach_sequence(threshold_decimal_bps);
         let bars = processor.process_agg_trade_records(&trades).unwrap();
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Single breach scenario should satisfy invariant");
     }
 
     /// Test breach consistency invariant on large random dataset (1M ticks)
     #[test]
     fn test_invariant_massive_realistic_dataset() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_massive_realistic_dataset(1_000_000);
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -198,10 +198,10 @@ mod invariant_tests {
             "Processed {} trades into {} bars (threshold={}bps)",
             trades.len(),
             bars.len(),
-            threshold_bps as f64 / 10.0
+            threshold_decimal_bps as f64 / 10.0
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Massive realistic dataset should satisfy invariant");
     }
 
@@ -213,21 +213,23 @@ mod invariant_tests {
 
         let trades = generators::create_massive_realistic_dataset(100_000);
 
-        for threshold_bps in thresholds {
-            let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        for threshold_decimal_bps in thresholds {
+            let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
             let bars = processor.process_agg_trade_records(&trades).unwrap();
 
-            validate_breach_consistency_invariant(&bars, threshold_bps).unwrap_or_else(|err| {
-                panic!(
-                    "Invariant violation at threshold {}bps: {}",
-                    threshold_bps as f64 / 10.0,
-                    err
-                )
-            });
+            validate_breach_consistency_invariant(&bars, threshold_decimal_bps).unwrap_or_else(
+                |err| {
+                    panic!(
+                        "Invariant violation at threshold {}bps: {}",
+                        threshold_decimal_bps as f64 / 10.0,
+                        err
+                    )
+                },
+            );
 
             println!(
                 "✓ Threshold {}bps: {} bars generated, all satisfy invariant",
-                threshold_bps as f64 / 10.0,
+                threshold_decimal_bps as f64 / 10.0,
                 bars.len()
             );
         }
@@ -236,8 +238,8 @@ mod invariant_tests {
     /// Test breach consistency invariant on multi-day boundary dataset
     #[test]
     fn test_invariant_multi_day_boundaries() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_multi_day_boundary_dataset(7); // 7 days
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -248,15 +250,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Multi-day boundary dataset should satisfy invariant");
     }
 
     /// Test breach consistency invariant on volatile market conditions
     #[test]
     fn test_invariant_volatile_conditions() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let base_time = 1609459200000; // 2021-01-01 00:00:00
         let trades = generators::create_volatile_day_data(base_time, 10_000);
@@ -268,15 +270,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Volatile market conditions should satisfy invariant");
     }
 
     /// Test breach consistency invariant on stable market conditions
     #[test]
     fn test_invariant_stable_conditions() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let base_time = 1609459200000; // 2021-01-01 00:00:00
         let trades = generators::create_stable_day_data(base_time, 10_000);
@@ -284,15 +286,15 @@ mod invariant_tests {
 
         println!("Stable day: {} trades → {} bars", trades.len(), bars.len());
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Stable market conditions should satisfy invariant");
     }
 
     /// Test breach consistency invariant on trending market conditions
     #[test]
     fn test_invariant_trending_conditions() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let base_time = 1609459200000; // 2021-01-01 00:00:00
         let trades = generators::create_trending_day_data(base_time, 10_000);
@@ -304,15 +306,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Trending market conditions should satisfy invariant");
     }
 
     /// Test breach consistency invariant on high-frequency data
     #[test]
     fn test_invariant_high_frequency() {
-        let threshold_bps = 100; // 10bps = 0.1% (tight for HFT)
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 100; // 10bps = 0.1% (tight for HFT)
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_high_frequency_data(10); // 10ms interval
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -323,15 +325,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("High-frequency data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on low-frequency data
     #[test]
     fn test_invariant_low_frequency() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_low_frequency_data(60_000); // 1min interval
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -342,15 +344,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Low-frequency data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on mixed-frequency data
     #[test]
     fn test_invariant_mixed_frequency() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_mixed_frequency_data();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -361,15 +363,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Mixed-frequency data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on rapid threshold hits
     #[test]
     fn test_invariant_rapid_threshold_hits() {
-        let threshold_bps = 50; // 5bps = 0.05% (tight threshold)
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 50; // 5bps = 0.05% (tight threshold)
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_rapid_threshold_hit_data();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -380,15 +382,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Rapid threshold hits should satisfy invariant");
     }
 
     /// Test breach consistency invariant on precision limit edge cases
     #[test]
     fn test_invariant_precision_limits() {
-        let threshold_bps = 1; // 0.1bps = 0.001% (minimum threshold)
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 1; // 0.1bps = 0.001% (minimum threshold)
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_precision_limit_data();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -399,15 +401,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Precision limit data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on volume extreme edge cases
     #[test]
     fn test_invariant_volume_extremes() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_volume_extreme_data();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -418,15 +420,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Volume extreme data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on timestamp edge cases
     #[test]
     fn test_invariant_timestamp_edges() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_timestamp_edge_data();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -437,15 +439,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Timestamp edge data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on floating-point stress data
     #[test]
     fn test_invariant_floating_point_stress() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         let trades = generators::create_floating_point_stress_data();
         let bars = processor.process_agg_trade_records(&trades).unwrap();
@@ -456,15 +458,15 @@ mod invariant_tests {
             bars.len()
         );
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Floating-point stress data should satisfy invariant");
     }
 
     /// Test breach consistency invariant on custom oscillating sequence
     #[test]
     fn test_invariant_custom_oscillation() {
-        let threshold_bps = 250; // 25bps = 0.25%
-        let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        let threshold_decimal_bps = 250; // 25bps = 0.25%
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
         // Create oscillating sequence that repeatedly approaches but doesn't breach
         let trades = AggTradeBuilder::new()
@@ -482,7 +484,7 @@ mod invariant_tests {
 
         assert_eq!(bars.len(), 1, "Should create exactly 1 bar on exact breach");
 
-        validate_breach_consistency_invariant(&bars, threshold_bps)
+        validate_breach_consistency_invariant(&bars, threshold_decimal_bps)
             .expect("Custom oscillation should satisfy invariant");
     }
 
@@ -497,21 +499,23 @@ mod invariant_tests {
 
         let trades = generators::create_massive_realistic_dataset(10_000);
 
-        for threshold_bps in boundary_thresholds {
-            let mut processor = RangeBarProcessor::new(threshold_bps).unwrap();
+        for threshold_decimal_bps in boundary_thresholds {
+            let mut processor = RangeBarProcessor::new(threshold_decimal_bps).unwrap();
             let bars = processor.process_agg_trade_records(&trades).unwrap();
 
-            validate_breach_consistency_invariant(&bars, threshold_bps).unwrap_or_else(|err| {
-                panic!(
-                    "Invariant violation at boundary threshold {}bps: {}",
-                    threshold_bps as f64 / 10.0,
-                    err
-                )
-            });
+            validate_breach_consistency_invariant(&bars, threshold_decimal_bps).unwrap_or_else(
+                |err| {
+                    panic!(
+                        "Invariant violation at boundary threshold {}bps: {}",
+                        threshold_decimal_bps as f64 / 10.0,
+                        err
+                    )
+                },
+            );
 
             println!(
                 "✓ Boundary threshold {}bps: {} bars, all valid",
-                threshold_bps as f64 / 10.0,
+                threshold_decimal_bps as f64 / 10.0,
                 bars.len()
             );
         }

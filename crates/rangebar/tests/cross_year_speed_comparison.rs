@@ -43,7 +43,7 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
     println!("🚀 Cross-Year Speed Comparison: Oct 2024 - Feb 2025");
     println!("📊 Testing batch vs streaming rangebar construction with memory tracking\n");
 
-    let threshold_bps = 25; // 0.25% standard threshold
+    let threshold_decimal_bps = 25; // 0.25% standard threshold
 
     // Realistic monthly trade volumes (crypto market activity patterns)
     let monthly_tests = vec![
@@ -66,11 +66,12 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
         total_trades += trade_count;
 
         // Batch processing benchmark
-        let batch_metrics = benchmark_batch_processing(&trades, threshold_bps);
+        let batch_metrics = benchmark_batch_processing(&trades, threshold_decimal_bps);
         total_batch_duration += batch_metrics.duration_ms;
 
         // Production Streaming V2 benchmark (bounded memory)
-        let streaming_v2_metrics = benchmark_streaming_v2_processing(&trades, threshold_bps);
+        let streaming_v2_metrics =
+            benchmark_streaming_v2_processing(&trades, threshold_decimal_bps);
 
         println!(
             "  📊 {}: V2 = {:.0} t/s, {:.1}MB, {}ms",
@@ -138,7 +139,7 @@ fn test_cross_year_speed_comparison_oct2024_feb2025() {
 fn test_year_boundary_speed_edge_cases() {
     println!("🎯 Year Boundary Speed Edge Cases (2024→2025)");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
     let edge_cases = vec![
         ("new_years_eve", 1735603200000, 500_000),   // Dec 31, 2024
         ("new_years_day", 1735689600000, 500_000),   // Jan 1, 2025
@@ -150,8 +151,8 @@ fn test_year_boundary_speed_edge_cases() {
 
         let trades = generate_year_boundary_data(trade_count, base_timestamp, case_name);
 
-        let batch_metrics = benchmark_batch_processing(&trades, threshold_bps);
-        let v2_metrics = benchmark_streaming_v2_processing(&trades, threshold_bps);
+        let batch_metrics = benchmark_batch_processing(&trades, threshold_decimal_bps);
+        let v2_metrics = benchmark_streaming_v2_processing(&trades, threshold_decimal_bps);
 
         assert_eq!(
             batch_metrics.bar_count, v2_metrics.bar_count,
@@ -193,11 +194,14 @@ struct ProcessingMetrics {
     throughput_aggtrades_per_sec: f64,
 }
 
-fn benchmark_batch_processing(trades: &[AggTrade], threshold_bps: u32) -> ProcessingMetrics {
+fn benchmark_batch_processing(
+    trades: &[AggTrade],
+    threshold_decimal_bps: u32,
+) -> ProcessingMetrics {
     let initial_memory = get_memory_usage_kb();
 
     let start_time = Instant::now();
-    let mut processor = ExportRangeBarProcessor::new(threshold_bps)
+    let mut processor = ExportRangeBarProcessor::new(threshold_decimal_bps)
         .expect("Failed to create processor with valid threshold");
     processor.process_trades_continuously(trades);
     let mut bars = processor.get_all_completed_bars();
@@ -221,7 +225,10 @@ fn benchmark_batch_processing(trades: &[AggTrade], threshold_bps: u32) -> Proces
 }
 
 /// Benchmark Production Streaming V2 (bounded memory architecture)
-fn benchmark_streaming_v2_processing(trades: &[AggTrade], threshold_bps: u32) -> ProcessingMetrics {
+fn benchmark_streaming_v2_processing(
+    trades: &[AggTrade],
+    threshold_decimal_bps: u32,
+) -> ProcessingMetrics {
     let rt = Runtime::new().unwrap();
     let initial_memory = get_memory_usage_kb();
 
@@ -235,7 +242,7 @@ fn benchmark_streaming_v2_processing(trades: &[AggTrade], threshold_bps: u32) ->
             ..Default::default()
         };
 
-        let mut processor = StreamingProcessor::with_config(threshold_bps, config)
+        let mut processor = StreamingProcessor::with_config(threshold_decimal_bps, config)
             .expect("Failed to create processor");
 
         // Get channels for streaming

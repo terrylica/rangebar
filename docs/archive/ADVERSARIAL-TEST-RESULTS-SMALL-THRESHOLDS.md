@@ -21,7 +21,7 @@
 **Initial Issue Discovered**: Test failures with 0.25% and 0.3% thresholds
 
 - ❌ **Root Cause**: Incorrect basis points conversion in test setup
-- ✅ **Resolution**: System uses custom scale where `threshold_bps / 1,000,000 = percentage`
+- ✅ **Resolution**: System uses custom scale where `threshold_decimal_bps / 1,000,000 = percentage`
 - ✅ **Corrected Values**:
     - 0.25% = 2500 basis points (not 250)
     - 0.3% = 3000 basis points (not 300)
@@ -163,7 +163,7 @@ if let Some(incomplete_bar) = processor.get_incomplete_bar() {
 **Discovery**: System uses non-standard basis points definition
 
 - Standard: 1 bp = 0.01% (10,000 bp = 100%)
-- This system: `threshold_bps / 1,000,000 = percentage`
+- This system: `threshold_decimal_bps / 1,000,000 = percentage`
 - Documentation: Correctly specified in code comments (`8000 = 0.8%`)
 
 ### **Export vs. Core Algorithm**

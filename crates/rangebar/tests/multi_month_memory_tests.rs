@@ -31,7 +31,7 @@ async fn test_multi_month_boundary_consistency() {
         MONTHS_TO_TEST.len()
     );
 
-    let threshold_bps = 25; // 0.25% standard threshold
+    let threshold_decimal_bps = 25; // 0.25% standard threshold
 
     // Generate multi-month dataset
     println!("  📊 Generating multi-month dataset...");
@@ -49,15 +49,21 @@ async fn test_multi_month_boundary_consistency() {
 
     // Test batch processing with memory monitoring
     println!("  🔄 Testing batch processing with memory monitoring...");
-    let (batch_bars, batch_duration, batch_memory) =
-        process_with_memory_monitoring(&multi_month_data, threshold_bps, ProcessingMode::Batch)
-            .await;
+    let (batch_bars, batch_duration, batch_memory) = process_with_memory_monitoring(
+        &multi_month_data,
+        threshold_decimal_bps,
+        ProcessingMode::Batch,
+    )
+    .await;
 
     // Test streaming processing with memory monitoring
     println!("  🔄 Testing streaming processing with memory monitoring...");
-    let (streaming_bars, streaming_duration, streaming_memory) =
-        process_with_memory_monitoring(&multi_month_data, threshold_bps, ProcessingMode::Streaming)
-            .await;
+    let (streaming_bars, streaming_duration, streaming_memory) = process_with_memory_monitoring(
+        &multi_month_data,
+        threshold_decimal_bps,
+        ProcessingMode::Streaming,
+    )
+    .await;
 
     // Compare results
     let matches = batch_bars.len() == streaming_bars.len();
@@ -109,7 +115,7 @@ async fn test_multi_month_boundary_consistency() {
 async fn test_progressive_memory_scaling() {
     println!("🔍 Testing progressive memory scaling across dataset sizes");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
     let test_sizes = vec![
         ("100K trades", 100_000),
         ("500K trades", 500_000),
@@ -128,12 +134,17 @@ async fn test_progressive_memory_scaling() {
 
         // Test batch memory usage
         let (_batch_bars, _batch_duration, batch_memory) =
-            process_with_memory_monitoring(&dataset, threshold_bps, ProcessingMode::Batch).await;
+            process_with_memory_monitoring(&dataset, threshold_decimal_bps, ProcessingMode::Batch)
+                .await;
 
         // Test streaming memory usage
         let (_streaming_bars, _streaming_duration, streaming_memory) =
-            process_with_memory_monitoring(&dataset, threshold_bps, ProcessingMode::Streaming)
-                .await;
+            process_with_memory_monitoring(
+                &dataset,
+                threshold_decimal_bps,
+                ProcessingMode::Streaming,
+            )
+            .await;
 
         // Calculate memory efficiency
         let batch_mb = batch_memory.peak_rss_kb as f64 / 1024.0;
@@ -170,7 +181,7 @@ async fn test_progressive_memory_scaling() {
 async fn test_year_boundary_edge_cases() {
     println!("🔍 Testing year boundary edge cases (2024→2025)");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
 
     // Test specific year boundary scenarios
     let boundary_tests = vec![
@@ -183,8 +194,8 @@ async fn test_year_boundary_edge_cases() {
     for (test_name, dataset) in boundary_tests {
         println!("  🎯 Testing: {}", test_name);
 
-        let batch_bars = process_batch_style(&dataset, threshold_bps);
-        let streaming_bars = process_streaming_style(&dataset, threshold_bps).await;
+        let batch_bars = process_batch_style(&dataset, threshold_decimal_bps);
+        let streaming_bars = process_streaming_style(&dataset, threshold_decimal_bps).await;
 
         let matches = batch_bars.len() == streaming_bars.len();
         println!(
@@ -206,7 +217,7 @@ async fn test_year_boundary_edge_cases() {
 async fn test_memory_leak_detection() {
     println!("🔍 Testing memory leak detection across extended processing");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
     let iterations = 10;
     let trades_per_iteration = 100_000;
 
@@ -227,12 +238,17 @@ async fn test_memory_leak_detection() {
 
         // Test batch processing
         let (_batch_bars, _batch_duration, batch_memory) =
-            process_with_memory_monitoring(&dataset, threshold_bps, ProcessingMode::Batch).await;
+            process_with_memory_monitoring(&dataset, threshold_decimal_bps, ProcessingMode::Batch)
+                .await;
 
         // Test streaming processing
         let (_streaming_bars, _streaming_duration, streaming_memory) =
-            process_with_memory_monitoring(&dataset, threshold_bps, ProcessingMode::Streaming)
-                .await;
+            process_with_memory_monitoring(
+                &dataset,
+                threshold_decimal_bps,
+                ProcessingMode::Streaming,
+            )
+            .await;
 
         batch_memory_progression.push(batch_memory.peak_rss_kb);
         streaming_memory_progression.push(streaming_memory.peak_rss_kb);
@@ -419,7 +435,7 @@ struct MemoryMetrics {
 
 async fn process_with_memory_monitoring(
     trades: &[AggTrade],
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
     mode: ProcessingMode,
 ) -> (Vec<RangeBar>, std::time::Duration, MemoryMetrics) {
     // Get initial memory
@@ -428,8 +444,8 @@ async fn process_with_memory_monitoring(
     let start_time = Instant::now();
 
     let bars = match mode {
-        ProcessingMode::Batch => process_batch_style(trades, threshold_bps),
-        ProcessingMode::Streaming => process_streaming_style(trades, threshold_bps).await,
+        ProcessingMode::Batch => process_batch_style(trades, threshold_decimal_bps),
+        ProcessingMode::Streaming => process_streaming_style(trades, threshold_decimal_bps).await,
     };
 
     let duration = start_time.elapsed();

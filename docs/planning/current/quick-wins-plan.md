@@ -176,9 +176,9 @@ fn test_get_trades_from_empty_buffer() {
 
 ```rust
 impl RangeBarProcessor {
-    pub fn new(threshold_bps: u32) -> Self {
+    pub fn new(threshold_decimal_bps: u32) -> Self {
         Self {
-            threshold_bps,  // NO VALIDATION!
+            threshold_decimal_bps,  // NO VALIDATION!
             current_bar_state: None,
         }
     }
@@ -191,23 +191,23 @@ impl RangeBarProcessor {
 
 ```rust
 impl RangeBarProcessor {
-    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, ProcessingError> {
         // Validation bounds (v3.0.0: 0.1bps units)
         // Min: 1 × 0.1bps = 0.1bps = 0.001%
         // Max: 100,000 × 0.1bps = 10,000bps = 100%
-        if threshold_bps < 1 {
+        if threshold_decimal_bps < 1 {
             return Err(ProcessingError::InvalidThreshold {
-                threshold_bps,
+                threshold_decimal_bps,
             });
         }
-        if threshold_bps > 100_000 {
+        if threshold_decimal_bps > 100_000 {
             return Err(ProcessingError::InvalidThreshold {
-                threshold_bps,
+                threshold_decimal_bps,
             });
         }
 
         Ok(Self {
-            threshold_bps,
+            threshold_decimal_bps,
             current_bar_state: None,
         })
     }
@@ -221,9 +221,9 @@ impl RangeBarProcessor {
 pub enum ProcessingError {
     // ... existing variants ...
 
-    #[error("Invalid threshold: {threshold_bps} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)")]
+    #[error("Invalid threshold: {threshold_decimal_bps} (0.1bps units). Valid range: 1-100,000 (0.001%-100%)")]
     InvalidThreshold {
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
     },
 }
 ```
@@ -270,13 +270,13 @@ fn test_threshold_validation() {
     // Invalid: too low (0 × 0.1bps = 0%)
     assert!(matches!(
         RangeBarProcessor::new(0),
-        Err(ProcessingError::InvalidThreshold { threshold_bps: 0 })
+        Err(ProcessingError::InvalidThreshold { threshold_decimal_bps: 0 })
     ));
 
     // Invalid: too high (150,000 × 0.1bps = 15,000bps = 150%)
     assert!(matches!(
         RangeBarProcessor::new(150_000),
-        Err(ProcessingError::InvalidThreshold { threshold_bps: 150_000 })
+        Err(ProcessingError::InvalidThreshold { threshold_decimal_bps: 150_000 })
     ));
 }
 ```

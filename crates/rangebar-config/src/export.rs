@@ -137,14 +137,14 @@ impl ExportConfig {
     pub fn generate_filename(
         &self,
         symbol: &str,
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
         start_date: Option<&str>,
         end_date: Option<&str>,
         extension: Option<&str>,
     ) -> String {
         let ext = extension.unwrap_or_else(|| self.default_format.file_extension());
         let threshold_str = if self.include_threshold_in_filename {
-            format!("_{:04}bps", threshold_bps)
+            format!("_{:04}bps", threshold_decimal_bps)
         } else {
             String::new()
         };
@@ -179,7 +179,7 @@ impl ExportConfig {
             }
             FileNamingPattern::Custom(pattern) => pattern
                 .replace("{symbol}", symbol)
-                .replace("{threshold}", &format!("{:04}bps", threshold_bps))
+                .replace("{threshold}", &format!("{:04}bps", threshold_decimal_bps))
                 .replace("{extension}", ext)
                 .replace("{timestamp}", &self.format_current_timestamp()),
         }

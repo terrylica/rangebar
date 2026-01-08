@@ -14,20 +14,20 @@ use std::path::Path;
 async fn test_single_threshold_consistency() {
     println!("🔍 Testing single threshold consistency with 25bps (0.25%)");
 
-    let threshold_bps = 25; // 0.25% - our standard threshold
+    let threshold_decimal_bps = 25; // 0.25% - our standard threshold
     let test_data = create_synthetic_test_data();
 
     println!(
         "  Testing threshold: {}bp ({}%)",
-        threshold_bps,
-        threshold_bps as f64 / 100.0
+        threshold_decimal_bps,
+        threshold_decimal_bps as f64 / 100.0
     );
 
     // Test batch-style processing
-    let batch_bars = process_batch_style(&test_data, threshold_bps);
+    let batch_bars = process_batch_style(&test_data, threshold_decimal_bps);
 
     // Test streaming-style processing
-    let streaming_bars = process_streaming_style(&test_data, threshold_bps).await;
+    let streaming_bars = process_streaming_style(&test_data, threshold_decimal_bps).await;
 
     let batch_count = batch_bars.len();
     let streaming_count = streaming_bars.len();
@@ -90,13 +90,13 @@ async fn test_cross_boundary_scenarios() {
         ("rapid_reversals", create_rapid_reversal_test_data()),
     ];
 
-    let threshold_bps = 25; // 0.25% standard threshold
+    let threshold_decimal_bps = 25; // 0.25% standard threshold
 
     for (test_name, test_data) in boundary_tests {
         println!("  🎯 Testing: {}", test_name);
 
-        let batch_bars = process_batch_style(&test_data, threshold_bps);
-        let streaming_bars = process_streaming_style(&test_data, threshold_bps).await;
+        let batch_bars = process_batch_style(&test_data, threshold_decimal_bps);
+        let streaming_bars = process_streaming_style(&test_data, threshold_decimal_bps).await;
 
         let batch_count = batch_bars.len();
         let streaming_count = streaming_bars.len();
@@ -121,14 +121,14 @@ async fn test_breach_consistency_validation() {
     println!("🔍 Testing breach consistency validation");
 
     let test_data = create_breach_test_data();
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
 
-    let batch_bars = process_batch_style(&test_data, threshold_bps);
-    let streaming_bars = process_streaming_style(&test_data, threshold_bps).await;
+    let batch_bars = process_batch_style(&test_data, threshold_decimal_bps);
+    let streaming_bars = process_streaming_style(&test_data, threshold_decimal_bps).await;
 
     // Validate breach consistency for both implementations
-    let batch_violations = validate_breach_consistency(&batch_bars, threshold_bps);
-    let streaming_violations = validate_breach_consistency(&streaming_bars, threshold_bps);
+    let batch_violations = validate_breach_consistency(&batch_bars, threshold_decimal_bps);
+    let streaming_violations = validate_breach_consistency(&streaming_bars, threshold_decimal_bps);
 
     println!("  Batch breach violations: {}", batch_violations);
     println!("  Streaming breach violations: {}", streaming_violations);
@@ -150,10 +150,10 @@ fn test_edge_case_exact_thresholds() {
 
     // Create data that hits thresholds exactly
     let base_price = FixedPoint::from_str("23000.0").unwrap();
-    let threshold_bps = 25; // 0.25%
+    let threshold_decimal_bps = 25; // 0.25%
 
     // Calculate exact threshold prices
-    let threshold_fraction = threshold_bps as f64 / 10000.0;
+    let threshold_fraction = threshold_decimal_bps as f64 / 10000.0;
     let upper_exact = base_price.to_f64() * (1.0 + threshold_fraction);
     let lower_exact = base_price.to_f64() * (1.0 - threshold_fraction);
 
@@ -166,7 +166,7 @@ fn test_edge_case_exact_thresholds() {
         create_test_trade(1000005, lower_exact - 0.01, 1659312005000), // Just below
     ];
 
-    let bars = process_batch_style(&exact_trades, threshold_bps);
+    let bars = process_batch_style(&exact_trades, threshold_decimal_bps);
 
     println!("  Generated {} bars from exact threshold test", bars.len());
 
@@ -177,7 +177,7 @@ fn test_edge_case_exact_thresholds() {
     );
 
     // Check that each bar respects breach consistency
-    let violations = validate_breach_consistency(&bars, threshold_bps);
+    let violations = validate_breach_consistency(&bars, threshold_decimal_bps);
     assert_eq!(
         violations, 0,
         "Exact threshold test should have zero breach violations"
@@ -295,8 +295,8 @@ fn create_test_trade(id: u64, price: f64, timestamp: u64) -> AggTrade {
     }
 }
 
-fn process_batch_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
-    let mut processor = ExportRangeBarProcessor::new(threshold_bps)
+fn process_batch_style(trades: &[AggTrade], threshold_decimal_bps: u32) -> Vec<RangeBar> {
+    let mut processor = ExportRangeBarProcessor::new(threshold_decimal_bps)
         .expect("Failed to create processor with valid threshold");
 
     // Process all trades continuously (simulating boundary-safe mode)
@@ -313,7 +313,7 @@ fn process_batch_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar>
     bars
 }
 
-async fn process_streaming_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
+async fn process_streaming_style(trades: &[AggTrade], threshold_decimal_bps: u32) -> Vec<RangeBar> {
     let temp_dir = std::env::temp_dir().join(format!("rangebar_test_{}", std::process::id()));
     fs::create_dir_all(&temp_dir).expect("Failed to create temp directory");
     let test_file = temp_dir.join("test_data.csv");
@@ -322,7 +322,7 @@ async fn process_streaming_style(trades: &[AggTrade], threshold_bps: u32) -> Vec
     write_trades_to_csv(&test_file, trades).expect("Failed to write test data");
 
     // Use the corrected streaming approach that matches our fix
-    let mut range_processor = ExportRangeBarProcessor::new(threshold_bps)
+    let mut range_processor = ExportRangeBarProcessor::new(threshold_decimal_bps)
         .expect("Failed to create processor with valid threshold");
 
     // Simulate the corrected streaming behavior:
@@ -395,9 +395,9 @@ fn validate_temporal_integrity(bars: &[RangeBar], test_name: &str) {
     }
 }
 
-fn validate_breach_consistency(bars: &[RangeBar], threshold_bps: u32) -> usize {
+fn validate_breach_consistency(bars: &[RangeBar], threshold_decimal_bps: u32) -> usize {
     let mut violations = 0;
-    let threshold_fraction = threshold_bps as f64 / 10000.0;
+    let threshold_fraction = threshold_decimal_bps as f64 / 10000.0;
 
     for (i, bar) in bars.iter().enumerate() {
         let open_price = bar.open.to_f64();
@@ -440,20 +440,20 @@ async fn test_memory_efficiency_comparison() {
 
     // Create larger dataset to test memory usage
     let large_dataset = create_large_test_dataset(50000); // 50K trades
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
 
     println!("  Testing with {} trades", large_dataset.len());
 
     // Measure batch processing
     let start_time = std::time::Instant::now();
-    let batch_bars = process_batch_style(&large_dataset, threshold_bps);
+    let batch_bars = process_batch_style(&large_dataset, threshold_decimal_bps);
     let batch_duration = start_time.elapsed();
 
     println!("  Batch: {} bars in {:?}", batch_bars.len(), batch_duration);
 
     // Measure streaming processing
     let start_time = std::time::Instant::now();
-    let streaming_bars = process_streaming_style(&large_dataset, threshold_bps).await;
+    let streaming_bars = process_streaming_style(&large_dataset, threshold_decimal_bps).await;
     let streaming_duration = start_time.elapsed();
 
     println!(

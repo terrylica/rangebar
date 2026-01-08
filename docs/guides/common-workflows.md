@@ -29,10 +29,10 @@ use std::path::Path;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Configure processing
     let symbol = "BTCUSDT";
-    let threshold_bps = 250;  // 25bps = 0.25%
+    let threshold_decimal_bps = 250;  // 25bps = 0.25%
     let days = 1;  // Yesterday
 
-    println!("Processing {} with {}bps threshold", symbol, threshold_bps as f64 / 10.0);
+    println!("Processing {} with {}bps threshold", symbol, threshold_decimal_bps as f64 / 10.0);
 
     // 2. Fetch data
     let loader = HistoricalDataLoader::new(symbol);
@@ -40,13 +40,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Loaded {} trades", trades.len());
 
     // 3. Process to range bars
-    let mut processor = RangeBarProcessor::new(threshold_bps)?;
+    let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
     let bars = processor.process_agg_trade_records(&trades)?;
     println!("Generated {} range bars", bars.len());
 
     // 4. Export to Parquet
     let exporter = PolarsExporter::new();
-    let output_path = Path::new(&format!("output/{}_{bps}.parquet", symbol, bps = threshold_bps / 10));
+    let output_path = Path::new(&format!("output/{}_{bps}.parquet", symbol, bps = threshold_decimal_bps / 10));
     exporter.export_to_parquet(&bars, output_path)?;
     println!("✓ Exported to {}", output_path.display());
 
@@ -91,15 +91,15 @@ use std::path::{Path, PathBuf};
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let symbol = "ETHUSDT";
-    let threshold_bps = 100;  // 10bps = 0.1%
+    let threshold_decimal_bps = 100;  // 10bps = 0.1%
     let days = 30;  // 30 days of data
 
     // 1. Set up streaming exporter (writes bars as generated)
-    let output_path = PathBuf::from(format!("output/{}_{bps}_streaming.csv", symbol, bps = threshold_bps / 10));
+    let output_path = PathBuf::from(format!("output/{}_{bps}_streaming.csv", symbol, bps = threshold_decimal_bps / 10));
     let mut exporter = StreamingCsvExporter::new(output_path.clone())?;
 
     // 2. Set up processor
-    let mut processor = RangeBarProcessor::new(threshold_bps)?;
+    let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
 
     // 3. Fetch and process in streaming mode
     let loader = HistoricalDataLoader::new(symbol);
@@ -154,7 +154,7 @@ use rayon::prelude::*;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let threshold_bps = 250;  // 25bps = 0.25%
+    let threshold_decimal_bps = 250;  // 25bps = 0.25%
     let days = 7;  // 1 week
 
     // 1. Get Tier-1 symbols (18 symbols)
@@ -173,7 +173,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .block_on(loader.load_historical_range(days))
                 .ok()?;
 
-            let mut processor = RangeBarProcessor::new(threshold_bps).ok()?;
+            let mut processor = RangeBarProcessor::new(threshold_decimal_bps).ok()?;
             let bars = processor.process_agg_trade_records(&trades).ok()?;
 
             println!("✓ {} → {} bars", symbol, bars.len());
@@ -238,7 +238,7 @@ use std::collections::HashSet;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let threshold_bps = 250;
+    let threshold_decimal_bps = 250;
     let days = 30;
     let output_dir = Path::new("output/tier1_analysis");
     std::fs::create_dir_all(output_dir)?;
@@ -272,7 +272,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // Process with error handling
-        match process_symbol(symbol, threshold_bps, days, output_dir, &exporter).await {
+        match process_symbol(symbol, threshold_decimal_bps, days, output_dir, &exporter).await {
             Ok(bar_count) => println!("✓ Complete ({} bars)", bar_count),
             Err(e) => {
                 eprintln!("✗ Failed: {}", e);
@@ -287,7 +287,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn process_symbol(
     symbol: &str,
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
     days: usize,
     output_dir: &Path,
     exporter: &PolarsExporter,
@@ -297,11 +297,11 @@ async fn process_symbol(
     let trades = loader.load_historical_range(days).await?;
 
     // Process to bars
-    let mut processor = RangeBarProcessor::new(threshold_bps)?;
+    let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
     let bars = processor.process_agg_trade_records(&trades)?;
 
     // Export atomically
-    let output_path = output_dir.join(format!("{}_{bps}.parquet", symbol, bps = threshold_bps / 10));
+    let output_path = output_dir.join(format!("{}_{bps}.parquet", symbol, bps = threshold_decimal_bps / 10));
     let temp_path = output_path.with_extension("tmp");
 
     exporter.export_to_parquet(&bars, &temp_path)?;
@@ -349,8 +349,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "Thresh", "Bars", "Avg Duration", "Min Duration", "Max Duration");
     println!("{}", "-".repeat(70));
 
-    for threshold_bps in thresholds_bps {
-        let mut processor = RangeBarProcessor::new(threshold_bps)?;
+    for threshold_decimal_bps in thresholds_bps {
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
         let bars = processor.process_agg_trade_records(&trades)?;
 
         // Calculate bar duration statistics
@@ -363,7 +363,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let max_duration = *durations.iter().max().unwrap_or(&0);
 
         println!("{}bps {:>10} {:>12}ms {:>12}ms {:>12}ms",
-            threshold_bps as f64 / 10.0,
+            threshold_decimal_bps as f64 / 10.0,
             bars.len(),
             avg_duration / 1000,  // μs → ms
             min_duration / 1000,
@@ -415,7 +415,7 @@ use std::path::Path;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let symbol = "BTCUSDT";
-    let threshold_bps = 250;  // 25bps = 0.25%
+    let threshold_decimal_bps = 250;  // 25bps = 0.25%
     let start_date = NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
     let end_date = NaiveDate::from_ymd_opt(2024, 12, 31).unwrap();  // 2 years
 
@@ -427,13 +427,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut total_trades = 0;
 
     println!("Processing {} from {} to {}", symbol, start_date, end_date);
-    println!("Threshold: {}bps\n", threshold_bps as f64 / 10.0);
+    println!("Threshold: {}bps\n", threshold_decimal_bps as f64 / 10.0);
 
     while current <= end_date {
         let output_file = output_dir.join(format!(
             "{}_{}.parquet",
             current.format("%Y-%m-%d"),
-            threshold_bps / 10
+            threshold_decimal_bps / 10
         ));
 
         // Skip if already processed
@@ -444,7 +444,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // Process single day
-        match process_single_day(symbol, current, threshold_bps, &output_file).await {
+        match process_single_day(symbol, current, threshold_decimal_bps, &output_file).await {
             Ok((bars, trades)) => {
                 total_bars += bars;
                 total_trades += trades;
@@ -471,7 +471,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 async fn process_single_day(
     symbol: &str,
     date: NaiveDate,
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
     output_path: &Path,
 ) -> Result<(usize, usize), Box<dyn std::error::Error>> {
     let loader = HistoricalDataLoader::new(symbol);
@@ -481,7 +481,7 @@ async fn process_single_day(
     let trades = loader.load_historical_range(1).await?;
     let trade_count = trades.len();
 
-    let mut processor = RangeBarProcessor::new(threshold_bps)?;
+    let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
     let bars = processor.process_agg_trade_records(&trades)?;
     let bar_count = bars.len();
 
@@ -507,7 +507,7 @@ use rangebar_providers::binance::HistoricalDataLoader;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let symbol = "BTCUSDT";
-    let threshold_bps = 250;
+    let threshold_decimal_bps = 250;
     let days = 7;
 
     println!("Comparing {} across markets ({} days)\n", symbol, days);
@@ -522,7 +522,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let loader = HistoricalDataLoader::new_with_market(symbol, market);
         let trades = loader.load_historical_range(days).await?;
 
-        let mut processor = RangeBarProcessor::new(threshold_bps)?;
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
         let bars = processor.process_agg_trade_records(&trades)?;
 
         // Calculate statistics
@@ -592,7 +592,7 @@ use std::time::Instant;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sizes = vec![10_000, 100_000, 1_000_000, 10_000_000];
-    let threshold_bps = 250;
+    let threshold_decimal_bps = 250;
 
     println!("=== Range Bar Processing Throughput ===");
     println!("{:>12} {:>12} {:>15} {:>15}",
@@ -605,7 +605,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Measure processing time
         let start = Instant::now();
-        let mut processor = RangeBarProcessor::new(threshold_bps)?;
+        let mut processor = RangeBarProcessor::new(threshold_decimal_bps)?;
         let bars = processor.process_agg_trade_records(&trades)?;
         let duration = start.elapsed();
 

@@ -15,7 +15,7 @@ use std::time::Instant;
 async fn test_massive_dataset_boundary_consistency() {
     println!("🔍 Testing massive dataset boundary consistency (1M+ trades)");
 
-    let threshold_bps = 25; // 0.25% standard threshold
+    let threshold_decimal_bps = 25; // 0.25% standard threshold
     let trade_count = 1_000_000; // 1 million trades
 
     println!(
@@ -29,7 +29,7 @@ async fn test_massive_dataset_boundary_consistency() {
     // Test batch processing
     println!("  🔄 Running batch processing...");
     let start_batch = Instant::now();
-    let batch_bars = process_batch_style(&massive_dataset, threshold_bps);
+    let batch_bars = process_batch_style(&massive_dataset, threshold_decimal_bps);
     let batch_duration = start_batch.elapsed();
 
     println!(
@@ -41,7 +41,7 @@ async fn test_massive_dataset_boundary_consistency() {
     // Test streaming processing
     println!("  🔄 Running streaming processing...");
     let start_streaming = Instant::now();
-    let streaming_bars = process_streaming_style(&massive_dataset, threshold_bps).await;
+    let streaming_bars = process_streaming_style(&massive_dataset, threshold_decimal_bps).await;
     let streaming_duration = start_streaming.elapsed();
 
     println!(
@@ -95,7 +95,7 @@ async fn test_massive_dataset_boundary_consistency() {
 async fn test_multi_day_boundary_transitions() {
     println!("🔍 Testing multi-day boundary transitions");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
     let days = 7; // One week of data
 
     println!("  Generating {} days of continuous trading data", days);
@@ -104,8 +104,8 @@ async fn test_multi_day_boundary_transitions() {
     println!("  Total trades: {}", multi_day_dataset.len());
 
     // Test with boundary preservation
-    let batch_bars = process_batch_style(&multi_day_dataset, threshold_bps);
-    let streaming_bars = process_streaming_style(&multi_day_dataset, threshold_bps).await;
+    let batch_bars = process_batch_style(&multi_day_dataset, threshold_decimal_bps);
+    let streaming_bars = process_streaming_style(&multi_day_dataset, threshold_decimal_bps).await;
 
     println!("  📊 Multi-day results:");
     println!("    Batch: {} bars", batch_bars.len());
@@ -132,7 +132,7 @@ async fn test_multi_day_boundary_transitions() {
 async fn test_market_session_boundaries() {
     println!("🔍 Testing market session boundaries");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
 
     // Create data with distinct trading sessions
     let session_datasets = vec![
@@ -145,8 +145,8 @@ async fn test_market_session_boundaries() {
     for (session_name, dataset) in session_datasets {
         println!("  🎯 Testing: {}", session_name);
 
-        let batch_bars = process_batch_style(&dataset, threshold_bps);
-        let streaming_bars = process_streaming_style(&dataset, threshold_bps).await;
+        let batch_bars = process_batch_style(&dataset, threshold_decimal_bps);
+        let streaming_bars = process_streaming_style(&dataset, threshold_decimal_bps).await;
 
         let matches = batch_bars.len() == streaming_bars.len();
         println!(
@@ -167,7 +167,7 @@ async fn test_market_session_boundaries() {
 async fn test_frequency_boundary_variations() {
     println!("🔍 Testing high/low frequency boundary variations");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
 
     let frequency_tests = vec![
         ("high_frequency_1ms", create_high_frequency_data(1)), // 1ms intervals
@@ -180,11 +180,11 @@ async fn test_frequency_boundary_variations() {
         println!("  📈 Testing: {}", test_name);
 
         let start_time = Instant::now();
-        let batch_bars = process_batch_style(&dataset, threshold_bps);
+        let batch_bars = process_batch_style(&dataset, threshold_decimal_bps);
         let batch_duration = start_time.elapsed();
 
         let start_time = Instant::now();
-        let streaming_bars = process_streaming_style(&dataset, threshold_bps).await;
+        let streaming_bars = process_streaming_style(&dataset, threshold_decimal_bps).await;
         let streaming_duration = start_time.elapsed();
 
         let matches = batch_bars.len() == streaming_bars.len();
@@ -208,7 +208,7 @@ async fn test_frequency_boundary_variations() {
 async fn test_stress_boundary_conditions() {
     println!("🔍 Testing stress boundary conditions");
 
-    let threshold_bps = 25;
+    let threshold_decimal_bps = 25;
 
     let stress_tests = vec![
         ("rapid_threshold_hits", create_rapid_threshold_hit_data()),
@@ -221,8 +221,8 @@ async fn test_stress_boundary_conditions() {
     for (test_name, dataset) in stress_tests {
         println!("  ⚡ Stress testing: {}", test_name);
 
-        let batch_bars = process_batch_style(&dataset, threshold_bps);
-        let streaming_bars = process_streaming_style(&dataset, threshold_bps).await;
+        let batch_bars = process_batch_style(&dataset, threshold_decimal_bps);
+        let streaming_bars = process_streaming_style(&dataset, threshold_decimal_bps).await;
 
         let matches = batch_bars.len() == streaming_bars.len();
         println!(

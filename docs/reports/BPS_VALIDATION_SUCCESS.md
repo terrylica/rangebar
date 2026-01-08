@@ -39,7 +39,7 @@
 
 ### BPS Refactor Changes
 
-- **API scaling bug**: Fixed `threshold_pct * 1_000_000.0` → `threshold_bps` direct usage
+- **API scaling bug**: Fixed `threshold_pct * 1_000_000.0` → `threshold_decimal_bps` direct usage
 - **Export scaling bug**: Fixed `* 1_000_000` → `* 10_000` (correct BPS conversion)
 - **Interface standardization**: All components now use integer BPS exclusively
 - **Documentation update**: Corrected examples and thresholds

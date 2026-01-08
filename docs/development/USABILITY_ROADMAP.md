@@ -71,7 +71,7 @@ from rangebar import convert_to_rust_arrays, range_bars_rust
 
 # Auto-convert Python objects to Rust arrays
 rust_arrays = convert_to_rust_arrays(aggtrade_list)
-bars = range_bars_rust(rust_arrays, threshold_bps=8000)
+bars = range_bars_rust(rust_arrays, threshold_decimal_bps=8000)
 ```
 
 #### 4. Examples Directory

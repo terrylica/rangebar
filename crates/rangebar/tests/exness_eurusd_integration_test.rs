@@ -308,7 +308,7 @@ fn export_results(ticks: &[ExnessTick], bars: &[rangebar::providers::exness::Exn
         "ticks_per_bar_avg": ticks.len() as f64 / bars.len() as f64,
         "bars_per_day": bars.len() / 5,
         "ticks_per_day": ticks.len() / 5,
-        "threshold_bps": 0.1,
+        "threshold_decimal_bps": 0.1,
         "validation_strictness": "Strict",
     });
 

@@ -84,9 +84,9 @@ pub fn push(&self, trade: AggTrade) -> Result<(), ReplayBufferError> {
 **Current Code**:
 
 ```rust
-pub fn new(threshold_bps: u32) -> Self {
+pub fn new(threshold_decimal_bps: u32) -> Self {
     Self {
-        threshold_bps,  // NO VALIDATION!
+        threshold_decimal_bps,  // NO VALIDATION!
         current_bar_state: None,
     }
 }
@@ -95,23 +95,23 @@ pub fn new(threshold_bps: u32) -> Self {
 **Fix**:
 
 ```rust
-pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
+pub fn new(threshold_decimal_bps: u32) -> Result<Self, ProcessingError> {
     // Validate threshold bounds (1 to 100,000 × 0.1bps = 0.001% to 100%)
-    if threshold_bps < 1 {
+    if threshold_decimal_bps < 1 {
         return Err(ProcessingError::InvalidThreshold {
-            threshold_bps,
+            threshold_decimal_bps,
             reason: "Threshold must be at least 1 (0.1bps)".to_string(),
         });
     }
-    if threshold_bps > 100_000 {
+    if threshold_decimal_bps > 100_000 {
         return Err(ProcessingError::InvalidThreshold {
-            threshold_bps,
+            threshold_decimal_bps,
             reason: "Threshold cannot exceed 100,000 (100%)".to_string(),
         });
     }
 
     Ok(Self {
-        threshold_bps,
+        threshold_decimal_bps,
         current_bar_state: None,
     })
 }
@@ -152,7 +152,7 @@ pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError> {
     ```rust
     #[instrument(skip(trades), fields(
         trade_count = trades.len(),
-        threshold_bps = self.threshold_bps,
+        threshold_decimal_bps = self.threshold_decimal_bps,
         symbol = %symbol
     ))]
     pub fn process_agg_trade_records(&mut self, trades: &[AggTrade]) -> Result<Vec<RangeBar>, ProcessingError> {

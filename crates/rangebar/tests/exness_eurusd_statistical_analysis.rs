@@ -95,7 +95,7 @@ struct ThresholdStatistics {
     #[allow(dead_code)]
     threshold_units: u32,
     threshold_label: String,
-    threshold_bps: f64,
+    threshold_decimal_bps: f64,
     #[allow(dead_code)]
     total_ticks: usize,
     total_bars: usize,
@@ -122,7 +122,7 @@ fn compute_statistics(
     threshold_units: u32,
     threshold_label: &str,
 ) -> ThresholdStatistics {
-    let threshold_bps = threshold_units as f64 * 0.1;
+    let threshold_decimal_bps = threshold_units as f64 * 0.1;
 
     // Ticks per bar
     let mut ticks_per_bar: Vec<usize> = bars
@@ -186,7 +186,7 @@ fn compute_statistics(
     ThresholdStatistics {
         threshold_units,
         threshold_label: threshold_label.to_string(),
-        threshold_bps,
+        threshold_decimal_bps,
         total_ticks: ticks.len(),
         total_bars: bars.len(),
         bars_per_day: bars.len() as f64 / 5.0,
@@ -210,7 +210,7 @@ fn compute_statistics(
 fn print_statistics(stats: &ThresholdStatistics) {
     println!(
         "Threshold: {} ({} bps)",
-        stats.threshold_label, stats.threshold_bps
+        stats.threshold_label, stats.threshold_decimal_bps
     );
     println!("────────────────────────────────────────");
     println!("Total bars:           {}", stats.total_bars);
@@ -270,13 +270,13 @@ fn export_statistical_analysis(results: &[ThresholdStatistics], ticks: &[ExnessT
 
     // Export summary comparison table
     let mut summary_csv = String::from(
-        "threshold_bps,threshold_label,total_bars,bars_per_day,ticks_per_bar_mean,ticks_per_bar_median,bar_duration_mean_ms,price_movement_mean_pips,spread_mean_pips,zero_spread_bars_pct\n",
+        "threshold_decimal_bps,threshold_label,total_bars,bars_per_day,ticks_per_bar_mean,ticks_per_bar_median,bar_duration_mean_ms,price_movement_mean_pips,spread_mean_pips,zero_spread_bars_pct\n",
     );
 
     for stats in results {
         summary_csv.push_str(&format!(
             "{},{},{},{:.0},{:.2},{},{:.0},{:.4},{:.4},{:.2}\n",
-            stats.threshold_bps,
+            stats.threshold_decimal_bps,
             stats.threshold_label,
             stats.total_bars,
             stats.bars_per_day,
@@ -298,7 +298,7 @@ fn export_statistical_analysis(results: &[ThresholdStatistics], ticks: &[ExnessT
         "total_ticks": ticks.len(),
         "thresholds": results.iter().map(|s| {
             serde_json::json!({
-                "threshold_bps": s.threshold_bps,
+                "threshold_decimal_bps": s.threshold_decimal_bps,
                 "threshold_label": s.threshold_label,
                 "total_bars": s.total_bars,
                 "bars_per_day": s.bars_per_day,

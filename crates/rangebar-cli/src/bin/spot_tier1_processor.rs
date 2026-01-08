@@ -17,7 +17,7 @@ use rangebar_providers::binance::get_tier1_symbols;
 struct SpotBatchConfig {
     start_date: String,
     end_date: String,
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
     market: String,
     period_description: String,
     data_source: String,
@@ -102,8 +102,8 @@ Output:
 - JSON metadata: spot_batch_summary.json with execution statistics
 
 Examples:
-  spot-tier1-processor --start-date 2024-07-01 --end-date 2024-10-31 --threshold-bps 25
-  spot-tier1-processor --threshold-bps 50 --workers 16
+  spot-tier1-processor --start-date 2024-07-01 --end-date 2024-10-31 --threshold-decimal-bps 250
+  spot-tier1-processor --threshold-decimal-bps 500 --workers 16
   spot-tier1-processor --output-dir ./output/custom_batch
 ",
     version
@@ -117,9 +117,9 @@ struct Args {
     #[arg(long, default_value = "2024-10-31")]
     end_date: String,
 
-    /// Threshold in basis points (e.g., 25 for 0.25%)
-    #[arg(long, default_value = "25")]
-    threshold_bps: u32,
+    /// Threshold in decimal basis points (e.g., 250 for 25bps = 0.25%)
+    #[arg(long, default_value = "250")]
+    threshold_decimal_bps: u32,
 
     /// Output directory
     #[arg(long, default_value = "./output/spot_tier1_batch")]
@@ -161,7 +161,7 @@ fn execute_single_symbol(
         .arg(&symbol_pair)
         .arg(&config.start_date)
         .arg(&config.end_date)
-        .arg(config.threshold_bps.to_string())
+        .arg(config.threshold_decimal_bps.to_string())
         .arg(output_dir)
         .arg("spot") // Explicit spot market
         .output();
@@ -177,7 +177,8 @@ fn execute_single_symbol(
             let throughput = total_trades.map(|t| t as f64 / processing_time);
 
             // Find generated output files
-            let output_files = find_output_files(output_dir, &symbol_pair, config.threshold_bps);
+            let output_files =
+                find_output_files(output_dir, &symbol_pair, config.threshold_decimal_bps);
 
             println!("✅ {}: {:.2}s", symbol_pair, processing_time);
 
@@ -247,13 +248,19 @@ fn parse_output_statistics(output: &str) -> (Option<u64>, Option<u64>) {
     (total_trades, total_bars)
 }
 
-fn find_output_files(output_dir: &str, symbol: &str, threshold_bps: u32) -> Vec<String> {
+fn find_output_files(output_dir: &str, symbol: &str, threshold_decimal_bps: u32) -> Vec<String> {
     let mut files = Vec::new();
 
     // Expected filename patterns based on new BPS naming convention
     let patterns = [
-        format!("spot_{}_rangebar_*_{:04}bps.csv", symbol, threshold_bps),
-        format!("spot_{}_rangebar_*_{:04}bps.json", symbol, threshold_bps),
+        format!(
+            "spot_{}_rangebar_*_{:04}bps.csv",
+            symbol, threshold_decimal_bps
+        ),
+        format!(
+            "spot_{}_rangebar_*_{:04}bps.json",
+            symbol, threshold_decimal_bps
+        ),
     ];
 
     for _pattern in &patterns {
@@ -262,7 +269,7 @@ fn find_output_files(output_dir: &str, symbol: &str, threshold_bps: u32) -> Vec<
                 let filename = entry.file_name().to_string_lossy().to_string();
                 if filename.contains("spot_")
                     && filename.contains(symbol)
-                    && filename.contains(&format!("{:04}bps", threshold_bps))
+                    && filename.contains(&format!("{:04}bps", threshold_decimal_bps))
                 {
                     files.push(filename);
                 }
@@ -347,8 +354,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("📅 Date Range: {} to {}", args.start_date, args.end_date);
     println!(
         "🎯 Threshold: {} bps ({:.2}%)",
-        args.threshold_bps,
-        args.threshold_bps as f64 / 100.0
+        args.threshold_decimal_bps,
+        args.threshold_decimal_bps as f64 / 100.0
     );
     println!("📂 Output: {}", args.output_dir);
     println!("🔧 Workers: {}", args.workers);
@@ -367,7 +374,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = SpotBatchConfig {
         start_date: args.start_date.clone(),
         end_date: args.end_date.clone(),
-        threshold_bps: args.threshold_bps,
+        threshold_decimal_bps: args.threshold_decimal_bps,
         market: "spot".to_string(),
         period_description: format!("{} to {} (continuous)", args.start_date, args.end_date),
         data_source: "Binance spot market aggTrades".to_string(),
@@ -421,7 +428,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         naming_convention: "spot_{SYMBOL}_rangebar_{STARTDATE}_{ENDDATE}_{BBPS}bps.{ext}"
             .to_string(),
         continuous_date_range: format!("{} to {}", args.start_date, args.end_date),
-        basis_points_format: format!("{:04}bps", config.threshold_bps),
+        basis_points_format: format!("{:04}bps", config.threshold_decimal_bps),
     };
 
     // Create metadata

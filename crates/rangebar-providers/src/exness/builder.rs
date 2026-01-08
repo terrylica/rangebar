@@ -43,7 +43,7 @@ impl ExnessRangeBarBuilder {
     ///
     /// # Arguments
     ///
-    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    /// * `threshold_decimal_bps` - Threshold in **decimal basis points**
     ///   - Example: `250` → 25bps = 0.25%
     ///   - Example: `10` → 1bps = 0.01%
     ///   - Minimum: `1` → 0.1bps = 0.001%
@@ -56,7 +56,7 @@ impl ExnessRangeBarBuilder {
     ///
     /// # Breaking Change (v3.0.0)
     ///
-    /// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+    /// Prior to v3.0.0, `threshold_decimal_bps` was in 1bps units.
     /// **Migration**: Multiply all threshold values by 10.
     ///
     /// # Examples
@@ -66,18 +66,18 @@ impl ExnessRangeBarBuilder {
     /// use rangebar_providers::exness::ValidationStrictness;
     ///
     /// let builder = ExnessRangeBarBuilder::new(
-    ///     250,                          // 250 × 0.1bps = 25bps = 0.25% (v3.0.0)
+    ///     250,                          // 250 decimal bps = 25bps = 0.25% (v3.0.0)
     ///     "EURUSD_Raw_Spread",          // Exness Raw_Spread variant
     ///     ValidationStrictness::Strict  // Default level
     /// );
     /// ```
     pub fn new(
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
         instrument: impl Into<String>,
         validation_strictness: ValidationStrictness,
     ) -> Result<Self, rangebar_core::processor::ProcessingError> {
         Ok(Self {
-            processor: RangeBarProcessor::new(threshold_bps)?,
+            processor: RangeBarProcessor::new(threshold_decimal_bps)?,
             tick_counter: 0,
             instrument: instrument.into(),
             validation_strictness,
@@ -92,7 +92,7 @@ impl ExnessRangeBarBuilder {
     /// # Arguments
     ///
     /// * `instrument` - Exness instrument enum
-    /// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+    /// * `threshold_decimal_bps` - Threshold in **decimal basis points**
     /// * `validation_strictness` - Validation level (Permissive/Strict/Paranoid)
     ///
     /// # Example
@@ -102,17 +102,17 @@ impl ExnessRangeBarBuilder {
     ///
     /// let builder = ExnessRangeBarBuilder::for_instrument(
     ///     ExnessInstrument::XAUUSD,
-    ///     50,                           // 5bps = 0.05%
+    ///     50,                           // 5 decimal bps = 0.5bps = 0.005%
     ///     ValidationStrictness::Strict,
     /// ).unwrap();
     /// ```
     pub fn for_instrument(
         instrument: ExnessInstrument,
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
         validation_strictness: ValidationStrictness,
     ) -> Result<Self, rangebar_core::processor::ProcessingError> {
         Self::new(
-            threshold_bps,
+            threshold_decimal_bps,
             instrument.raw_spread_symbol(),
             validation_strictness,
         )
@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn test_builder_streaming_state() {
         let mut builder = ExnessRangeBarBuilder::new(
-            250, // 25bps in v3.0.0 units
+            250, // 250 decimal bps = 25bps
             "EURUSD_Raw_Spread",
             ValidationStrictness::Strict,
         )

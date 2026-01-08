@@ -130,7 +130,7 @@ last_trade_ids = np.array([1, 2], dtype=np.int64)
 result = rust.compute_range_bars(
     prices=prices, volumes=volumes, timestamps=timestamps,
     trade_ids=trade_ids, first_trade_ids=first_trade_ids, last_trade_ids=last_trade_ids,
-    threshold_bps=8000
+    threshold_decimal_bps=8000
 )
 
 # Verify singular field names

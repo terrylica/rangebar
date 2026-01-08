@@ -41,8 +41,8 @@ prices.push(trade.price.to_f64() as f32);  // Consistent f32
 - **Solution**: Corrected conversion formula
 
 ```rust
-// BEFORE: let threshold_multiplier = (self.threshold_bps as f32) / 1_000_000.0;
-// AFTER:  let threshold_multiplier = (self.threshold_bps as f32) / 10_000.0;
+// BEFORE: let threshold_multiplier = (self.threshold_decimal_bps as f32) / 1_000_000.0;
+// AFTER:  let threshold_multiplier = (self.threshold_decimal_bps as f32) / 10_000.0;
 ```
 
 ### **Issue #3: WebGPU Tensor Aliasing Violations** ✅ FIXED

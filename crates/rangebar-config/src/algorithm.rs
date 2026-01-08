@@ -6,14 +6,14 @@ use serde::{Deserialize, Serialize};
 /// Range bar algorithm configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AlgorithmConfig {
-    /// Default threshold in basis points (e.g., 250 = 0.25%)
-    pub default_threshold_bps: u32,
+    /// Default threshold in decimal basis points (e.g., 250 = 25bps = 0.25%)
+    pub default_threshold_decimal_bps: u32,
 
-    /// Minimum allowed threshold in basis points
-    pub min_threshold_bps: u32,
+    /// Minimum allowed threshold in decimal basis points
+    pub min_threshold_decimal_bps: u32,
 
-    /// Maximum allowed threshold in basis points
-    pub max_threshold_bps: u32,
+    /// Maximum allowed threshold in decimal basis points
+    pub max_threshold_decimal_bps: u32,
 
     /// Enable fixed-point arithmetic precision validation
     pub validate_precision: bool,
@@ -52,9 +52,9 @@ pub struct AlgorithmConfig {
 impl Default for AlgorithmConfig {
     fn default() -> Self {
         Self {
-            default_threshold_bps: 250, // 250 × 0.1bps = 25bps = 0.25% (v3.0.0)
-            min_threshold_bps: 1,       // 1 × 0.1bps = 0.1bps = 0.001% (v3.0.0 minimum)
-            max_threshold_bps: 100000,  // 100000 × 0.1bps = 10000bps = 100% (v3.0.0)
+            default_threshold_decimal_bps: 250, // 250 decimal bps = 25bps = 0.25% (v3.0.0)
+            min_threshold_decimal_bps: 1,       // 1 decimal bps = 0.1bps = 0.001% (v3.0.0 minimum)
+            max_threshold_decimal_bps: 100000,  // 100000 decimal bps = 10000bps = 100% (v3.0.0)
             validate_precision: true,
             fixed_point_decimals: 8,
             validate_non_lookahead: true,
@@ -71,25 +71,25 @@ impl Default for AlgorithmConfig {
 }
 
 impl AlgorithmConfig {
-    /// Convert basis points to decimal threshold
-    pub fn threshold_as_decimal(&self, threshold_bps: Option<u32>) -> f64 {
-        let bps = threshold_bps.unwrap_or(self.default_threshold_bps);
+    /// Convert decimal basis points to decimal threshold
+    pub fn threshold_as_decimal(&self, threshold_decimal_bps: Option<u32>) -> f64 {
+        let bps = threshold_decimal_bps.unwrap_or(self.default_threshold_decimal_bps);
         bps as f64 / BASIS_POINTS_SCALE as f64
     }
 
     /// Validate threshold is within acceptable bounds
-    pub fn validate_threshold(&self, threshold_bps: u32) -> Result<(), String> {
-        if threshold_bps < self.min_threshold_bps {
+    pub fn validate_threshold(&self, threshold_decimal_bps: u32) -> Result<(), String> {
+        if threshold_decimal_bps < self.min_threshold_decimal_bps {
             return Err(format!(
-                "Threshold {} bps is below minimum {} bps",
-                threshold_bps, self.min_threshold_bps
+                "Threshold {} decimal bps is below minimum {} decimal bps",
+                threshold_decimal_bps, self.min_threshold_decimal_bps
             ));
         }
 
-        if threshold_bps > self.max_threshold_bps {
+        if threshold_decimal_bps > self.max_threshold_decimal_bps {
             return Err(format!(
-                "Threshold {} bps exceeds maximum {} bps",
-                threshold_bps, self.max_threshold_bps
+                "Threshold {} decimal bps exceeds maximum {} decimal bps",
+                threshold_decimal_bps, self.max_threshold_decimal_bps
             ));
         }
 
@@ -97,14 +97,14 @@ impl AlgorithmConfig {
     }
 
     /// Get the upper breach threshold for a given price
-    pub fn upper_threshold(&self, price: f64, threshold_bps: Option<u32>) -> f64 {
-        let threshold = self.threshold_as_decimal(threshold_bps);
+    pub fn upper_threshold(&self, price: f64, threshold_decimal_bps: Option<u32>) -> f64 {
+        let threshold = self.threshold_as_decimal(threshold_decimal_bps);
         price * (1.0 + threshold)
     }
 
     /// Get the lower breach threshold for a given price
-    pub fn lower_threshold(&self, price: f64, threshold_bps: Option<u32>) -> f64 {
-        let threshold = self.threshold_as_decimal(threshold_bps);
+    pub fn lower_threshold(&self, price: f64, threshold_decimal_bps: Option<u32>) -> f64 {
+        let threshold = self.threshold_as_decimal(threshold_decimal_bps);
         price * (1.0 - threshold)
     }
 
@@ -151,14 +151,14 @@ mod tests {
     fn test_threshold_conversion() {
         let config = AlgorithmConfig::default();
 
-        // v3.0.0: thresholds now in 0.1bps units
-        // Test default threshold (250 × 0.1bps = 25bps = 0.25%)
+        // v3.0.0: thresholds now in decimal bps
+        // Test default threshold (250 decimal bps = 25bps = 0.25%)
         assert_eq!(config.threshold_as_decimal(None), 0.0025);
 
-        // Test custom threshold (800 × 0.1bps = 80bps = 0.8%)
+        // Test custom threshold (800 decimal bps = 80bps = 0.8%)
         assert_eq!(config.threshold_as_decimal(Some(800)), 0.008);
 
-        // Test 1% threshold (1000 × 0.1bps = 100bps = 1%)
+        // Test 1% threshold (1000 decimal bps = 100bps = 1%)
         assert_eq!(config.threshold_as_decimal(Some(1000)), 0.01);
     }
 
@@ -166,13 +166,13 @@ mod tests {
     fn test_threshold_validation() {
         let config = AlgorithmConfig::default();
 
-        // Valid threshold (250 × 0.1bps = 25bps)
+        // Valid threshold (250 decimal bps = 25bps)
         assert!(config.validate_threshold(250).is_ok());
 
         // Too low (0 is below minimum of 1)
         assert!(config.validate_threshold(0).is_err());
 
-        // Too high (150000 × 0.1bps = 15000bps = 150% exceeds max of 100%)
+        // Too high (150000 decimal bps = 15000bps = 150% exceeds max of 100%)
         assert!(config.validate_threshold(150000).is_err());
     }
 
@@ -181,14 +181,14 @@ mod tests {
         let config = AlgorithmConfig::default();
         let price = 50000.0;
 
-        // v3.0.0: Default threshold is 250 × 0.1bps = 25bps = 0.25%
+        // v3.0.0: Default threshold is 250 decimal bps = 25bps = 0.25%
         let upper = config.upper_threshold(price, None);
         let lower = config.lower_threshold(price, None);
 
         assert_eq!(upper, 50125.0); // +0.25%
         assert_eq!(lower, 49875.0); // -0.25%
 
-        // 0.8% threshold (800 × 0.1bps = 80bps = 0.8%)
+        // 0.8% threshold (800 decimal bps = 80bps = 0.8%)
         let upper_8 = config.upper_threshold(price, Some(800));
         let lower_8 = config.lower_threshold(price, Some(800));
 

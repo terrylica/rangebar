@@ -9,7 +9,7 @@
 
 ## Problem Statement
 
-**Current API Constraint**: `threshold_bps: u32` with 1bps granularity (minimum 0.01%)
+**Current API Constraint**: `threshold_decimal_bps: u32` with 1bps granularity (minimum 0.01%)
 
 **User Requirement**: 480 bars/day from EURUSD data
 
@@ -34,12 +34,12 @@ Gap: Need 10x finer granularity
 
 **Current Interpretation**:
 
-- `threshold_bps: u32` where 1 unit = 1bps = 0.01%
+- `threshold_decimal_bps: u32` where 1 unit = 1bps = 0.01%
 - Example: `new(25, ...)` → 25bps = 0.25%
 
 **New Interpretation**:
 
-- `threshold_bps: u32` where 1 unit = 0.1bps = 0.001%
+- `threshold_decimal_bps: u32` where 1 unit = 0.1bps = 0.001%
 - Example: `new(250, ...)` → 250 × 0.1bps = 25bps = 0.25%
 
 ### Calculation Change
@@ -47,21 +47,21 @@ Gap: Need 10x finer granularity
 **Current Formula**:
 
 ```rust
-let threshold_fraction = threshold_bps as f64 / 10_000.0;
+let threshold_fraction = threshold_decimal_bps as f64 / 10_000.0;
 // Example: 25 / 10000 = 0.0025 = 0.25%
 ```
 
 **New Formula**:
 
 ```rust
-let threshold_fraction = threshold_bps as f64 / 100_000.0;
+let threshold_fraction = threshold_decimal_bps as f64 / 100_000.0;
 // Example: 250 / 100000 = 0.0025 = 0.25%
 ```
 
 **Alternative (clearer)**:
 
 ```rust
-let threshold_fraction = (threshold_bps as f64 * 0.1) / 10_000.0;
+let threshold_fraction = (threshold_decimal_bps as f64 * 0.1) / 10_000.0;
 // Example: (250 * 0.1) / 10000 = 25 / 10000 = 0.0025 = 0.25%
 ```
 
@@ -74,11 +74,11 @@ let threshold_fraction = (threshold_bps as f64 * 0.1) / 10_000.0;
 **1. API Signature** (no change, but semantics change):
 
 ```rust
-// Before: threshold_bps in 1bps units
-pub fn new(threshold_bps: u32, ...) -> Self
+// Before: threshold_decimal_bps in 1bps units
+pub fn new(threshold_decimal_bps: u32, ...) -> Self
 
-// After: threshold_bps in 0.1bps units (same signature, different meaning)
-pub fn new(threshold_bps: u32, ...) -> Self
+// After: threshold_decimal_bps in 0.1bps units (same signature, different meaning)
+pub fn new(threshold_decimal_bps: u32, ...) -> Self
 ```
 
 **2. User Code Migration**:
@@ -169,17 +169,17 @@ DukascopyRangeBarBuilder::new(10, "EURUSD", ...) // 1bps (old minimum)
 ```rust
 // BEFORE:
 impl RangeBarProcessor {
-    pub fn new(threshold_bps: u32) -> Self {
-        let threshold_fraction = threshold_bps as f64 / 10_000.0;
+    pub fn new(threshold_decimal_bps: u32) -> Self {
+        let threshold_fraction = threshold_decimal_bps as f64 / 10_000.0;
         // ...
     }
 }
 
 // AFTER:
 impl RangeBarProcessor {
-    pub fn new(threshold_bps: u32) -> Self {
-        // threshold_bps now in 0.1bps units (e.g., 250 = 25bps)
-        let threshold_fraction = threshold_bps as f64 / 100_000.0;
+    pub fn new(threshold_decimal_bps: u32) -> Self {
+        // threshold_decimal_bps now in 0.1bps units (e.g., 250 = 25bps)
+        let threshold_fraction = threshold_decimal_bps as f64 / 100_000.0;
         // ...
     }
 }
@@ -192,14 +192,14 @@ impl RangeBarProcessor {
 ///
 /// # Arguments
 ///
-/// * `threshold_bps` - Threshold in **tenths of basis points** (0.1bps units)
+/// * `threshold_decimal_bps` - Threshold in **tenths of basis points** (0.1bps units)
 ///   - Example: `25` → 2.5bps = 0.025%
 ///   - Example: `250` → 25bps = 0.25%
 ///   - Minimum: `1` → 0.1bps = 0.001%
 ///
 /// # Breaking Change (v3.0.0)
 ///
-/// Prior to v3.0.0, `threshold_bps` was in 1bps units.
+/// Prior to v3.0.0, `threshold_decimal_bps` was in 1bps units.
 /// **Migration**: Multiply all threshold values by 10.
 ```
 
@@ -269,7 +269,7 @@ let mut builder_1bps = DukascopyRangeBarBuilder::new(10, "EURUSD", ...);   // 1b
 
 ### Breaking Changes
 
-- **Threshold Granularity**: Changed `threshold_bps` parameter interpretation from 1bps units to 0.1bps units
+- **Threshold Granularity**: Changed `threshold_decimal_bps` parameter interpretation from 1bps units to 0.1bps units
     - **Migration Required**: Multiply all threshold values by 10
     - Example: `new(25, ...)` (v2.x) → `new(250, ...)` (v3.x) for same 25bps threshold
     - **Rationale**: Enable ultra-low thresholds (0.1-0.9bps) for forex instruments with 5 decimal precision
@@ -348,7 +348,7 @@ let builder = DukascopyRangeBarBuilder::new(5, "EURUSD", Strict);  // 0.5bps (NE
 
 ### Must Have (P0)
 
-- ✅ Core calculation changed: `threshold_bps / 100_000.0`
+- ✅ Core calculation changed: `threshold_decimal_bps / 100_000.0`
 - ✅ All existing tests pass with updated threshold values (× 10)
 - ✅ Bar counts identical pre/post migration (for same effective threshold)
 - ✅ Ultra-low threshold tests (0.1bps - 1bps) added and passing
@@ -407,16 +407,16 @@ let builder = DukascopyRangeBarBuilder::new(5, "EURUSD", Strict);  // 0.5bps (NE
 
 ### Alternative 1: Add New Parameter (Rejected)
 ```rust
-pub fn new(threshold_bps: u32, granularity: BpsGranularity) -> Self
+pub fn new(threshold_decimal_bps: u32, granularity: BpsGranularity) -> Self
 // where BpsGranularity = OneBps | TenthBps
 ````
 
 **Rejected**: API clutter, confusing for users
 
-### Alternative 2: Use f64 for threshold_bps (Rejected)
+### Alternative 2: Use f64 for threshold_decimal_bps (Rejected)
 
 ```rust
-pub fn new(threshold_bps: f64, ...) -> Self
+pub fn new(threshold_decimal_bps: f64, ...) -> Self
 ```
 
 **Rejected**: Breaking change anyway, f64 less clear than scaled u32

@@ -50,9 +50,9 @@ pub struct StreamingProcessor {
     /// Range bar processor (single instance, no accumulation)
     processor: ExportRangeBarProcessor,
 
-    /// Threshold in basis points for recreating processor
+    /// Threshold in decimal basis points for recreating processor
     #[allow(dead_code)]
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
 
     /// Bounded channel for incoming trades
     trade_sender: Option<mpsc::Sender<AggTrade>>,
@@ -103,13 +103,15 @@ pub struct StreamingMetrics {
 
 impl StreamingProcessor {
     /// Create new production streaming processor
-    pub fn new(threshold_bps: u32) -> Result<Self, rangebar_core::processor::ProcessingError> {
-        Self::with_config(threshold_bps, StreamingProcessorConfig::default())
+    pub fn new(
+        threshold_decimal_bps: u32,
+    ) -> Result<Self, rangebar_core::processor::ProcessingError> {
+        Self::with_config(threshold_decimal_bps, StreamingProcessorConfig::default())
     }
 
     /// Create with custom configuration
     pub fn with_config(
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
         config: StreamingProcessorConfig,
     ) -> Result<Self, rangebar_core::processor::ProcessingError> {
         let (trade_sender, trade_receiver) = mpsc::channel(config.trade_channel_capacity);
@@ -119,8 +121,8 @@ impl StreamingProcessor {
         let circuit_breaker_timeout = config.circuit_breaker_timeout;
 
         Ok(Self {
-            processor: ExportRangeBarProcessor::new(threshold_bps)?,
-            threshold_bps,
+            processor: ExportRangeBarProcessor::new(threshold_decimal_bps)?,
+            threshold_decimal_bps,
             trade_sender: Some(trade_sender),
             trade_receiver,
             bar_sender,

@@ -500,8 +500,8 @@ for symbol in symbols {
 
 ```rust
 // ✅ Good: Propagate fatal errors immediately
-if threshold_bps < 1 {
-    return Err(ProcessingError::InvalidThreshold { threshold_bps });
+if threshold_decimal_bps < 1 {
+    return Err(ProcessingError::InvalidThreshold { threshold_decimal_bps });
 }
 
 // ✅ Good: Continue on recoverable errors (network timeout)
@@ -545,7 +545,7 @@ fn log_error(symbol: &str, error: &Error) {
 
 ```rust
 // ✅ Good: Includes all parameters
-format!("{}_{}bps_{}_to_{}.parquet", symbol, threshold_bps / 10, start_date, end_date)
+format!("{}_{}bps_{}_to_{}.parquet", symbol, threshold_decimal_bps / 10, start_date, end_date)
 
 // ❌ Bad: Ambiguous
 format!("{}_output.parquet", symbol)
@@ -637,7 +637,7 @@ fn process_large_dataset_streaming(
 use rangebar_providers::binance::get_tier1_usdt_pairs;
 
 fn process_tier1_with_recovery(
-    threshold_bps: u32,
+    threshold_decimal_bps: u32,
     output_dir: &Path,
 ) -> Result<(), Error> {
     let symbols = get_tier1_usdt_pairs();  // 18 symbols
@@ -656,7 +656,7 @@ fn process_tier1_with_recovery(
             continue;
         }
 
-        let output_file = output_dir.join(format!("{}_{}bps.parquet", symbol, threshold_bps / 10));
+        let output_file = output_dir.join(format!("{}_{}bps.parquet", symbol, threshold_decimal_bps / 10));
 
         // Validate existing partial output
         if output_file.exists() && !validate_existing_output(&output_file)? {
@@ -666,7 +666,7 @@ fn process_tier1_with_recovery(
 
         // Process symbol with retries
         let result = retry_with_backoff(3, || {
-            fetch_and_process_symbol(symbol, threshold_bps, &output_file)
+            fetch_and_process_symbol(symbol, threshold_decimal_bps, &output_file)
         });
 
         match result {

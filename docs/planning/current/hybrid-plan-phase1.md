@@ -154,7 +154,7 @@ Discrepancy: trades 7-8 volume (in incomplete bar)
 ```rust
 // In validate_algorithm_invariants()
 // Use process_agg_trade_records_with_incomplete() to get ALL bars
-let mut processor_for_volume_check = RangeBarProcessor::new(threshold_bps);
+let mut processor_for_volume_check = RangeBarProcessor::new(threshold_decimal_bps);
 let all_bars = processor_for_volume_check
     .process_agg_trade_records_with_incomplete(test_trades)
     .expect("Failed to process trades with incomplete");
@@ -207,7 +207,7 @@ assert_eq!(
 
 **Resolution Summary**:
 
-- Root cause: v3.0.0 breaking change (threshold_bps: 1bps → 0.1bps units)
+- Root cause: v3.0.0 breaking change (threshold_decimal_bps: 1bps → 0.1bps units)
 - Fixed 5 threshold values in integration_test.rs (25→250, 10→100, 50→500)
 - Fixed 2 manual range contains in exness_eurusd_integration_test.rs
 - Added #[allow(dead_code)] to unused fields in exness_eurusd_statistical_analysis.rs
@@ -399,7 +399,7 @@ Adopt modular workspace with 8 crates:
     - Git tag v4.0.0-archive created and pushed
     - 59 legacy files removed (-15,036 lines)
 
-**Key Learning**: v3.0.0 migration requires systematic audit of all threshold_bps values
+**Key Learning**: v3.0.0 migration requires systematic audit of all threshold_decimal_bps values
 
 - Old: `RangeBarProcessor::new(50)` = 50bps = 0.5%
 - New: `RangeBarProcessor::new(50)` = 5bps = 0.05% ❌

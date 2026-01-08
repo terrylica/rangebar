@@ -283,10 +283,10 @@ fn validate_algorithm_invariants(range_bars: &[RangeBar], test_trades: &[AggTrad
 
 /// Validates breach consistency - critical fix from the 599 bar discrepancy issue
 fn validate_breach_consistency(range_bars: &[RangeBar]) {
-    let threshold_bps = 50; // 0.5% = 50 basis points
+    let threshold_decimal_bps = 50; // 0.5% = 50 basis points
 
     for (i, bar) in range_bars.iter().enumerate() {
-        let threshold_decimal = threshold_bps as f64 / 10000.0;
+        let threshold_decimal = threshold_decimal_bps as f64 / 10000.0;
         let upper_threshold = bar.open.to_f64() * (1.0 + threshold_decimal);
         let lower_threshold = bar.open.to_f64() * (1.0 - threshold_decimal);
 

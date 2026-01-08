@@ -177,12 +177,12 @@ let quotient = a / b;      // 40.2
 
 ```rust
 pub struct RangeBarProcessor {
-    threshold_bps: u32,  // In 0.1 BPS units (v3.0.0+)
+    threshold_decimal_bps: u32,  // In 0.1 BPS units (v3.0.0+)
     // ... internal state
 }
 
 impl RangeBarProcessor {
-    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError>;
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, ProcessingError>;
 
     pub fn process_agg_trade_records(
         &mut self,
@@ -317,7 +317,7 @@ pub struct ExnessRangeBarBuilder { /* ... */ }
 impl ExnessRangeBarBuilder {
     pub fn for_instrument(  // Preferred
         instrument: ExnessInstrument,
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
         strictness: ValidationStrictness
     ) -> Result<Self, ProcessingError>;
 
@@ -442,10 +442,10 @@ with pa.ipc.open_file("output.arrow") as f:
 pub struct StreamingProcessor;
 
 impl StreamingProcessor {
-    pub fn new(threshold_bps: u32) -> Result<Self, StreamingError>;
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, StreamingError>;
 
     pub fn with_config(
-        threshold_bps: u32,
+        threshold_decimal_bps: u32,
         config: StreamingProcessorConfig
     ) -> Result<Self, StreamingError>;
 

@@ -20,7 +20,7 @@
 
 - ✅ Renamed `threshold_pct` → `threshold_ratio` (internal calculation variable)
 - ✅ Removed deprecated `threshold_pct` field from `SpotBatchConfig` struct
-- ✅ Updated comments: "threshold_pct" → "threshold_bps"
+- ✅ Updated comments: "threshold_pct" → "threshold_decimal_bps"
 - ✅ **Impact**: Production range bar processing logic fully BPS-compliant
 
 ### 2. **API Specification**
@@ -37,7 +37,7 @@
 
 - ✅ Example threshold: "250 basis points" → "25 basis points"
 - ✅ Algorithm description: "±0.8%" → "±threshold basis points"
-- ✅ Code comments: "±0.8%" → "±threshold_bps basis points"
+- ✅ Code comments: "±0.8%" → "±threshold_decimal_bps basis points"
 - ✅ **Impact**: User documentation 100% BPS-standardized
 
 ### 4. **Python Validation Scripts**
@@ -45,7 +45,7 @@
 **Files**: `validate_range_bars.py`, `verify_rangebar_results.py`
 
 - ✅ Variable names: `threshold_pct` → `threshold_ratio`
-- ✅ Function parameters: `threshold_pct=0.008` → `threshold_bps=80`
+- ✅ Function parameters: `threshold_pct=0.008` → `threshold_decimal_bps=80`
 - ✅ Conversion logic: BPS-first with backward compatibility
 - ✅ **Impact**: Validation tools accept BPS input natively
 
@@ -53,7 +53,7 @@
 
 **File**: `docs/architecture/algorithm-spec.md`
 
-- ✅ Input parameters: `threshold_pct = 0.008` → `threshold_bps = 80`
+- ✅ Input parameters: `threshold_pct = 0.008` → `threshold_decimal_bps = 80`
 - ✅ Formula variables: All `threshold_pct` → `threshold_ratio`
 - ✅ Function signatures: BPS-first parameter specification
 - ✅ **Impact**: Technical specification aligned with BPS standard
@@ -106,7 +106,7 @@ cargo test bps_conversion
 
 ### **Eliminated Confusion**
 
-- ❌ Mixed terminology: `threshold_pct` vs `threshold_bps`
+- ❌ Mixed terminology: `threshold_pct` vs `threshold_decimal_bps`
 - ❌ Scaling errors: `* 1,000,000` vs `* 10,000` confusion
 - ❌ API inconsistency: percentage examples with BPS parameters
 

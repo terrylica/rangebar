@@ -34,13 +34,13 @@ This specification defines a **non-lookahead bias** range bar construction algor
 
 Given:
 
-- `threshold_bps = 80` (80 basis points = 0.8%)
+- `threshold_decimal_bps = 80` (80 basis points = 0.8%)
 - Bar opens at price `P_open`
 
 For each bar:
 
 ```
-threshold_ratio = threshold_bps / 10000  # Convert basis points to decimal
+threshold_ratio = threshold_decimal_bps / 10000  # Convert basis points to decimal
 upper_breach = P_open × (1 + threshold_ratio) = P_open × 1.008
 lower_breach = P_open × (1 - threshold_ratio) = P_open × 0.992
 ```
@@ -59,8 +59,8 @@ lower_breach = P_open × (1 - threshold_ratio) = P_open × 0.992
 ### High-Level Algorithm
 
 ```python
-def iter_range_bars_from_aggtrades(trades, threshold_bps=80):
-    threshold_ratio = threshold_bps / 10000  # Convert basis points to decimal
+def iter_range_bars_from_aggtrades(trades, threshold_decimal_bps=80):
+    threshold_ratio = threshold_decimal_bps / 10000  # Convert basis points to decimal
     bar = None
     defer_open = False
 

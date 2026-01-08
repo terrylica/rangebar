@@ -55,8 +55,8 @@ pub fn create_test_trade(id: u64, price: f64, timestamp: u64) -> AggTrade {
 /// Process trades in batch style (single continuous processing)
 ///
 /// Used for baseline comparison in integration tests
-pub fn process_batch_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
-    let mut processor = ExportRangeBarProcessor::new(threshold_bps).unwrap();
+pub fn process_batch_style(trades: &[AggTrade], threshold_decimal_bps: u32) -> Vec<RangeBar> {
+    let mut processor = ExportRangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
     // Process all trades continuously (simulating boundary-safe mode)
     processor.process_trades_continuously(trades);
@@ -75,9 +75,12 @@ pub fn process_batch_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<Range
 /// Process trades in streaming style (chunked processing)
 ///
 /// Simulates real-world streaming behavior with memory constraints
-pub async fn process_streaming_style(trades: &[AggTrade], threshold_bps: u32) -> Vec<RangeBar> {
+pub async fn process_streaming_style(
+    trades: &[AggTrade],
+    threshold_decimal_bps: u32,
+) -> Vec<RangeBar> {
     // Use the corrected streaming approach that matches our fix
-    let mut range_processor = ExportRangeBarProcessor::new(threshold_bps).unwrap();
+    let mut range_processor = ExportRangeBarProcessor::new(threshold_decimal_bps).unwrap();
 
     // Simulate the corrected streaming behavior:
     // Process in chunks and accumulate results (like our csv_streaming.rs fix)

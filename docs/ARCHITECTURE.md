@@ -197,7 +197,7 @@ pub struct FixedPoint(i64);  // 8-decimal precision (SCALE = 100,000,000)
 
 ```rust
 impl RangeBarProcessor {
-    pub fn new(threshold_bps: u32) -> Result<Self, ProcessingError>;
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, ProcessingError>;
     pub fn process_agg_trade_records(&mut self, trades: &[AggTrade])
         -> Result<Vec<RangeBar>, ProcessingError>;
 }
@@ -229,7 +229,7 @@ impl ExnessFetcher {
 }
 
 impl ExnessRangeBarBuilder {
-    pub fn for_instrument(instrument: ExnessInstrument, threshold_bps: u32, strictness: ValidationStrictness)
+    pub fn for_instrument(instrument: ExnessInstrument, threshold_decimal_bps: u32, strictness: ValidationStrictness)
         -> Result<Self, ProcessingError>;
     pub fn new(threshold_units: u32, variant: String, strictness: ValidationStrictness)
         -> Result<Self, ProcessingError>;  // Legacy
@@ -279,8 +279,8 @@ impl StreamingCsvExporter {
 
 ```rust
 impl StreamingProcessor {
-    pub fn new(threshold_bps: u32) -> Result<Self, StreamingError>;
-    pub fn with_config(threshold_bps: u32, config: StreamingProcessorConfig)
+    pub fn new(threshold_decimal_bps: u32) -> Result<Self, StreamingError>;
+    pub fn with_config(threshold_decimal_bps: u32, config: StreamingProcessorConfig)
         -> Result<Self, StreamingError>;
     pub async fn process_stream<S>(&mut self, stream: S)
         -> Result<StreamingMetrics, StreamingError>
@@ -466,8 +466,8 @@ pub struct StreamingProcessorConfig {
 ```rust
 use rangebar::streaming::StreamingProcessor;
 
-let threshold_bps = 25;  // 0.25% range bars
-let mut processor = StreamingProcessor::new(threshold_bps)?;
+let threshold_decimal_bps = 25;  // 0.25% range bars
+let mut processor = StreamingProcessor::new(threshold_decimal_bps)?;
 
 // Process stream with bounded memory
 let metrics = processor.process_stream(agg_trade_stream).await?;

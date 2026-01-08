@@ -4,9 +4,9 @@ version: 4.0.0
 objective: Complete rangebar system with Arrow/Parquet integration and comprehensive market type support
 
 plan_type: master_implementation_plan
-consolidates: 
+consolidates:
   - implementation-plan.yml
-  - arrow-parquet-integration.yml  
+  - arrow-parquet-integration.yml
   - success-gates.yml
   - progress.yml
 last_consolidated: "2025-09-10T19:04:00Z"
@@ -29,21 +29,21 @@ market_type_specifications:
   um_futures:
     description: "USDⓈ-Margined Perpetual Futures"
     data_source: "data.binance.vision/data/futures/um/daily/aggTrades/"
-    symbol_format: "BTCUSDT" 
+    symbol_format: "BTCUSDT"
     settlement: "USDT"
     margin_type: "cross/isolated"
     identifier: "um"
     current_support: ✅
-    
+
   cm_futures:
-    description: "Coin-Margined Perpetual Futures" 
+    description: "Coin-Margined Perpetual Futures"
     data_source: "data.binance.vision/data/futures/cm/daily/aggTrades/"
     symbol_format: "BTCUSD_PERP"
     settlement: "BTC/ETH/etc"
-    margin_type: "cross/isolated" 
+    margin_type: "cross/isolated"
     identifier: "cm"
     current_support: ❌ (planned)
-    
+
   spot:
     description: "Spot Trading Pairs"
     data_source: "data.binance.vision/data/spot/daily/aggTrades/"
@@ -59,16 +59,16 @@ file_naming_conventions:
     pattern: "{market_type}_{symbol}_rangebar_{start_date}_{end_date}_{threshold:.3}pct_v{schema_version}.arrow"
     examples:
       - "um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1.arrow"
-      - "cm_BTCUSD_PERP_rangebar_20250801_20250801_0.800pct_v1.arrow" 
+      - "cm_BTCUSD_PERP_rangebar_20250801_20250801_0.800pct_v1.arrow"
       - "spot_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1.arrow"
-  
+
   parquet:
     pattern: "{market_type}_{symbol}_rangebar_{start_date}_{end_date}_{threshold:.3}pct_v{schema_version}_{compression}.parquet"
     examples:
       - "um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet"
       - "cm_BTCUSD_PERP_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet"
       - "spot_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet"
-      
+
   csv_json:
     pattern: "{market_type}_{symbol}_rangebar_{start_date}_{end_date}_{threshold:.3}pct.{csv|json}"
     examples:
@@ -97,7 +97,7 @@ directory_organization:
           └── csv_json/
     pros: ["Clear market separation", "Easy market-specific tooling"]
     cons: ["Deeper directory nesting"]
-    
+
   strategy_2_format_segregated:
     description: "Separate by format first, with market type in filenames"
     structure: |
@@ -107,7 +107,7 @@ directory_organization:
       └── csv_json/
     pros: ["Format-focused organization", "Consistent with current structure"]
     cons: ["Market types mixed in same directory"]
-    
+
   strategy_3_hive_partitioned:
     description: "Hive-style partitioning for large datasets"
     structure: |
@@ -127,62 +127,62 @@ arrow_schema:
     - name: "bar_id"
       type: "uint64"
       nullable: false
-      
+
     - name: "open_time"
-      type: "timestamp[ms]" 
+      type: "timestamp[ms]"
       nullable: false
-      
+
     - name: "close_time"
       type: "timestamp[ms]"
       nullable: false
-      
+
     - name: "open"
       type: "decimal128(18, 8)"  # 8 decimal precision
       nullable: false
-      
+
     - name: "high"
       type: "decimal128(18, 8)"
       nullable: false
-      
+
     - name: "low"
       type: "decimal128(18, 8)"
       nullable: false
-      
+
     - name: "close"
       type: "decimal128(18, 8)"
       nullable: false
-      
+
     - name: "volume"
       type: "decimal128(18, 8)"
       nullable: false
-      
+
     - name: "trade_count"
       type: "uint32"
       nullable: false
-      
+
   # CRITICAL: Metadata for data lineage
   metadata:
     - key: "market_type"
       description: "Market type identifier (um_futures, cm_futures, spot)"
-      
+
     - key: "data_source"
       description: "Original data source URL"
-      
+
     - key: "symbol"
       description: "Trading symbol"
-      
-    - key: "threshold_bps"
+
+    - key: "threshold_decimal_bps"
       description: "Range threshold in basis points"
-      
+
     - key: "algorithm_version"
       description: "Range bar algorithm version"
-      
+
     - key: "schema_version"
       description: "Schema version for compatibility"
-      
+
     - key: "created_at"
       description: "File creation timestamp"
-      
+
     - key: "rust_version"
       description: "Rust compiler version used"
 
@@ -196,7 +196,7 @@ dataset_catalog:
         {
           "id": "um_btcusdt_20250801_0800bps",
           "market_type": "um_futures",
-          "symbol": "BTCUSDT", 
+          "symbol": "BTCUSDT",
           "date_range": ["2025-08-01", "2025-08-01"],
           "threshold_pct": 0.008,
           "bar_count": 11,
@@ -221,53 +221,53 @@ dataset_catalog:
 python_integration:
   discovery_functions: |
     # Auto-generated Python helper for dataset discovery
-    
+
     import json
     import pandas as pd
     import polars as pl
     from pathlib import Path
     from typing import List, Dict, Optional
-    
+
     class RangeBarDatasetCatalog:
         def __init__(self, catalog_path: str = "rangebar_catalog.json"):
             with open(catalog_path) as f:
                 self.catalog = json.load(f)
-        
-        def list_datasets(self, 
+
+        def list_datasets(self,
                          market_type: Optional[str] = None,
                          symbol: Optional[str] = None) -> List[Dict]:
             """List available datasets with optional filtering."""
             datasets = self.catalog["datasets"]
-            
+
             if market_type:
                 datasets = [d for d in datasets if d["market_type"] == market_type]
             if symbol:
                 datasets = [d for d in datasets if d["symbol"] == symbol]
-                
+
             return datasets
-        
+
         def load_arrow(self, dataset_id: str) -> pd.DataFrame:
             """Load dataset as pandas DataFrame from Arrow format."""
             dataset = self._get_dataset(dataset_id)
             arrow_file = dataset["formats"]["arrow"]
             return pd.read_feather(arrow_file)
-        
+
         def load_parquet(self, dataset_id: str) -> pd.DataFrame:
             """Load dataset as pandas DataFrame from Parquet format."""
             dataset = self._get_dataset(dataset_id)
-            parquet_file = dataset["formats"]["parquet"]  
+            parquet_file = dataset["formats"]["parquet"]
             return pd.read_parquet(parquet_file)
-        
+
         def load_polars(self, dataset_id: str) -> pl.LazyFrame:
             """Load dataset as Polars LazyFrame (zero-copy)."""
             dataset = self._get_dataset(dataset_id)
             parquet_file = dataset["formats"]["parquet"]
             return pl.scan_parquet(parquet_file)
-        
+
         def get_market_types(self) -> List[str]:
             """Get all available market types."""
             return list(set(d["market_type"] for d in self.catalog["datasets"]))
-        
+
         def get_symbols(self, market_type: Optional[str] = None) -> List[str]:
             """Get all available symbols, optionally filtered by market type."""
             datasets = self.list_datasets(market_type=market_type)
@@ -276,7 +276,7 @@ python_integration:
 # Implementation Phases - EMPIRICAL WORKFLOW
 implementation_phases:
   phase_1_algorithm_validation:
-    description: "Algorithm correctness and performance validation" 
+    description: "Algorithm correctness and performance validation"
     status: ✅ Complete
     empirical_insight: "Must validate algorithm before expanding formats"
     tasks:
@@ -288,10 +288,10 @@ implementation_phases:
       - ✅ "Algorithm correctness verified via breach consistency"
       - ✅ "Performance targets exceeded (116M trades/sec)"
       - ✅ "Real Binance data processing validated (1.38M trades)"
-      
+
   phase_2_foundation_security:
     description: "Security updates and dependency management"
-    status: ✅ Complete  
+    status: ✅ Complete
     empirical_insight: "Security foundation required before production features"
     tasks:
       - ✅ "Fix dependency vulnerabilities (pyo3, polars)"
@@ -302,7 +302,7 @@ implementation_phases:
       - ✅ "All security vulnerabilities resolved"
       - ✅ "Clean dependency tree"
       - ✅ "Automated quality assurance"
-      
+
   phase_3_arrow_parquet_integration:
     description: "Modern binary format support"
     status: ❌ Not Started
@@ -317,7 +317,7 @@ implementation_phases:
       - "Pandas can load with read_feather() and read_parquet()"
       - "20-80% file size reduction vs CSV/JSON"
       - "Zero-copy memory mapping works"
-      
+
   phase_4_multi_market_expansion:
     description: "CM futures and SPOT market support"
     status: ❌ Not Started
@@ -331,7 +331,7 @@ implementation_phases:
       - "All three market types supported"
       - "Clear data lineage in metadata"
       - "Market-specific symbol handling (BTCUSD_PERP vs BTCUSDT)"
-      
+
   phase_5_comprehensive_format_validation:
     description: "Cross-format coherence testing framework"
     status: ❌ Partial (basic validation only)
@@ -346,7 +346,7 @@ implementation_phases:
       - "All formats produce identical data"
       - "Automated validation passes for all market types"
       - "Regression testing matrix operational"
-      
+
   phase_6_python_ecosystem_integration:
     description: "Python discovery tools and ecosystem integration"
     status: ❌ Not Started
@@ -369,13 +369,13 @@ cli_enhancements:
       type: "enum[um_futures, cm_futures, spot]"
       default: "um_futures"
       examples: ["--market-type um_futures"]
-      
+
     output_format:
       description: "Output format selection"
       type: "enum[csv, json, arrow, parquet, all]"
       default: "parquet"  # Parquet preferred for modern workflows
       examples: ["--format arrow,parquet", "--format csv,json"]
-      
+
     compression:
       description: "Parquet compression algorithm"
       type: "enum[snappy, gzip, lz4, zstd]"
@@ -394,13 +394,13 @@ default_format_strategy:
       - "Zero-copy memory mapping in Python"
       - "Columnar storage optimized for time series analysis"
       - "Built-in compression (Snappy default)"
-    
+
     ecosystem_support:
-      - "Native pandas.read_parquet() support"  
+      - "Native pandas.read_parquet() support"
       - "Polars LazyFrame zero-copy loading"
       - "Apache Spark integration"
       - "DuckDB direct querying"
-    
+
     metadata_preservation:
       - "Market type stored in file metadata"
       - "Data source lineage preserved"
@@ -411,10 +411,10 @@ default_format_strategy:
     new_users: "Default to Parquet for best experience"
     existing_users: "Explicit --format csv,json maintains compatibility"
     automation: "Scripts can specify preferred format explicitly"
-    
+
   format_recommendations:
     data_analysis: "parquet (recommended) - Best for pandas/polars workflows"
-    human_readable: "csv,json - For manual inspection and simple tools" 
+    human_readable: "csv,json - For manual inspection and simple tools"
     archival: "parquet - Compact storage with metadata preservation"
     streaming: "arrow - Future streaming support (planned)"
     compatibility: "csv,json - Maximum tool compatibility"
@@ -425,23 +425,23 @@ default_format_strategy:
       - `--format csv,json` (explicit)
       - Environment variable: `RANGEBAR_DEFAULT_FORMAT=csv,json`
       - Configuration file support (planned)
-    
+
     migration_timeline:
       v3.0: "Parquet default, CSV/JSON fully supported"
       v3.1: "Add environment variable and config file support"
       v4.0: "CSV/JSON remain supported, no deprecation planned"
 
-# Backward Compatibility Strategy  
+# Backward Compatibility Strategy
 backward_compatibility:
   file_naming:
     current: "BTCUSDT_rangebar_20250801_20250801_0.800pct.csv"
     enhanced: "um_BTCUSDT_rangebar_20250801_20250801_0.800pct.csv"
     strategy: "Add market type prefix, maintain rest of pattern"
-    
+
   cli_interface:
     strategy: "Default to um_futures for backward compatibility"
     migration_path: "Gradual adoption of --market-type parameter"
-    
+
   existing_files:
     strategy: "Leave existing files unchanged, new files use enhanced naming"
     cleanup: "Optional migration script to rename existing files"
@@ -452,15 +452,15 @@ quality_assurance:
     - "Verify Arrow/Parquet data matches CSV output"
     - "Schema validation on write and read"
     - "Metadata consistency checks"
-    
+
   performance_targets:
     arrow_write: "< 5% overhead vs CSV"
     parquet_write: "< 15% overhead vs CSV"
     python_load: "> 10x faster than CSV"
-    
+
   compatibility_matrix:
     pandas: ">= 1.3.0"
-    polars: ">= 0.15.0"  
+    polars: ">= 0.15.0"
     arrow: ">= 10.0.0"
     python: ">= 3.8"
 
@@ -470,18 +470,18 @@ development_methodology:
     CRITICAL: Implementation phases must prioritize CSV/JSON formats first for debugging efficiency.
     CSV is plain text format allowing easy inspection with READ/CAT tools via Claude Code CLI,
     enabling rapid validation and troubleshooting before implementing binary formats (Arrow/Parquet).
-  
+
   priority_order:
     phase_1_csv_json_foundation:
       description: "Implement CSV/JSON first for debugging ease"
       rationale: "Plain text allows eyeball inspection with READ tool"
       validation_strategy: "head/tail/wc commands for quick inspection"
       debugging_efficiency: "Immediate visibility into data structure and values"
-      
+
     phase_2_arrow_integration:
       description: "Add Arrow format with CSV/JSON as reference baseline"
       validation_strategy: "Cross-validate Arrow output against CSV baseline"
-      
+
     phase_3_parquet_optimization:
       description: "Add Parquet with compression and metadata"
       validation_strategy: "Triple validation: CSV baseline, Arrow coherence, Parquet optimization"
@@ -492,12 +492,12 @@ development_methodology:
       - "tail -5 output.csv → Check final bars for truncation issues"
       - "wc -l output.csv → Instant bar count validation"
       - "awk inspection for specific fields without loading full file"
-      
+
     json_inspection:
       - "head -1 output.json | python -m json.tool → Structure validation"
       - "python one-liners for quick statistics and field checking"
       - "Human-readable format for manual verification"
-      
+
     binary_format_limitations:
       - "Arrow/Parquet require specialized tools for inspection"
       - "Cannot use simple Unix tools for quick debugging"
@@ -506,23 +506,23 @@ development_methodology:
 # Format Validation & Coherence Testing
 format_validation_methodology:
   overview: |
-    Comprehensive iterative testing framework to ensure all three format types 
+    Comprehensive iterative testing framework to ensure all three format types
     (CSV/JSON, Arrow, Parquet) produce coherent and identical data when processed
     from the same source. Uses Claude Code CLI for debugging and validation.
-  
+
   three_format_groups:
     group_1_legacy:
       formats: ["CSV", "JSON"]
       description: "Human-readable formats for compatibility and inspection"
       validation_priority: "baseline_reference"
-      
-    group_2_columnar: 
+
+    group_2_columnar:
       formats: ["Arrow"]
       description: "Columnar memory-mapped format for zero-copy operations"
       validation_priority: "performance_optimized"
-      
+
     group_3_compressed:
-      formats: ["Parquet"]  
+      formats: ["Parquet"]
       description: "Compressed columnar format with metadata preservation"
       validation_priority: "production_default"
 
@@ -536,22 +536,22 @@ format_validation_methodology:
         - "um_BTCUSDT_rangebar_20250801_20250801_0.800pct.json"
         - "um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1.arrow"
         - "um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet"
-      
+
     step_2_verify_file_existence:
       claude_code_cli: |
         # Use Claude Code CLI to verify all expected files exist
         ls ./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.*
-        
+
         # Check file sizes are reasonable
         ls -lh ./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.*
-      
+
     step_3_load_and_compare_csv_json:
       claude_code_cli: |
         # CSV inspection using Claude Code CLI
         head -5 ./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.csv
         tail -5 ./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.csv
         wc -l ./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.csv
-        
+
         # JSON structure inspection
         head -1 ./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.json | python -m json.tool
         python -c "import json; data=json.load(open('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.json')); print(f'Bars: {len(data)}, Fields: {list(data[0].keys()) if data else None}')"
@@ -561,30 +561,30 @@ format_validation_methodology:
         import csv
         import json
         from decimal import Decimal
-        
+
         def validate_csv_json_coherence(csv_file, json_file):
             # Load CSV data
             with open(csv_file, 'r') as f:
                 csv_reader = csv.DictReader(f)
                 csv_data = list(csv_reader)
-            
-            # Load JSON data  
+
+            # Load JSON data
             with open(json_file, 'r') as f:
                 json_data = json.load(f)
-            
+
             # Validate row count matches
             assert len(csv_data) == len(json_data), f"Row count mismatch: CSV={len(csv_data)}, JSON={len(json_data)}"
-            
+
             # Validate field coherence
             for i, (csv_row, json_row) in enumerate(zip(csv_data, json_data)):
                 for field in ['bar_id', 'open_time', 'close_time', 'open', 'high', 'low', 'close', 'volume']:
                     csv_val = Decimal(csv_row[field])
                     json_val = Decimal(str(json_row[field]))
                     assert csv_val == json_val, f"Row {i}, field {field}: CSV={csv_val}, JSON={json_val}"
-            
+
             print(f"✅ CSV/JSON coherence validated: {len(csv_data)} bars match perfectly")
             return True
-    
+
     step_4_arrow_format_validation:
       claude_code_cli: |
         # Arrow file inspection using Claude Code CLI
@@ -603,30 +603,30 @@ format_validation_methodology:
         import pandas as pd
         import json
         from decimal import Decimal
-        
+
         def validate_arrow_coherence(arrow_file, csv_file):
             # Load Arrow as DataFrame
             arrow_df = pd.read_feather(arrow_file)
-            
+
             # Load CSV for comparison
             csv_df = pd.read_csv(csv_file)
-            
+
             # Validate shape matches
             assert arrow_df.shape == csv_df.shape, f"Shape mismatch: Arrow={arrow_df.shape}, CSV={csv_df.shape}"
-            
+
             # Validate numerical precision (Arrow uses decimal128)
             for col in ['open', 'high', 'low', 'close', 'volume']:
                 for i in range(len(arrow_df)):
                     arrow_val = Decimal(str(arrow_df.iloc[i][col]))
                     csv_val = Decimal(str(csv_df.iloc[i][col]))
                     assert arrow_val == csv_val, f"Row {i}, {col}: Arrow={arrow_val}, CSV={csv_val}"
-            
+
             print(f"✅ Arrow coherence validated: {len(arrow_df)} bars match CSV precisely")
             return True
-    
+
     step_5_parquet_format_validation:
       claude_code_cli: |
-        # Parquet file inspection using Claude Code CLI  
+        # Parquet file inspection using Claude Code CLI
         python -c "
         import pandas as pd
         df = pd.read_parquet('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet')
@@ -635,7 +635,7 @@ format_validation_methodology:
         print(f'Memory usage: {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB')
         print(f'First bar: {df.iloc[0].to_dict()}')
         print(f'Last bar: {df.iloc[-1].to_dict()}')
-        
+
         # Check metadata preservation
         import pyarrow.parquet as pq
         parquet_file = pq.ParquetFile('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet')
@@ -649,34 +649,34 @@ format_validation_methodology:
         import pyarrow.parquet as pq
         from decimal import Decimal
         import os
-        
+
         def validate_parquet_coherence(parquet_file, csv_file):
             # Load Parquet as DataFrame
             parquet_df = pd.read_parquet(parquet_file)
-            
+
             # Load CSV for comparison
             csv_df = pd.read_csv(csv_file)
-            
+
             # Validate shape matches
             assert parquet_df.shape == csv_df.shape, f"Shape mismatch: Parquet={parquet_df.shape}, CSV={csv_df.shape}"
-            
+
             # Check compression effectiveness
             csv_size = os.path.getsize(csv_file)
             parquet_size = os.path.getsize(parquet_file)
             compression_ratio = (csv_size - parquet_size) / csv_size * 100
-            
+
             print(f"Compression: CSV={csv_size/1024:.1f}KB → Parquet={parquet_size/1024:.1f}KB ({compression_ratio:.1f}% reduction)")
-            
-            # Validate numerical precision  
+
+            # Validate numerical precision
             for col in ['open', 'high', 'low', 'close', 'volume']:
                 for i in range(len(parquet_df)):
                     parquet_val = Decimal(str(parquet_df.iloc[i][col]))
                     csv_val = Decimal(str(csv_df.iloc[i][col]))
                     assert parquet_val == csv_val, f"Row {i}, {col}: Parquet={parquet_val}, CSV={csv_val}"
-            
+
             print(f"✅ Parquet coherence validated: {len(parquet_df)} bars match CSV precisely")
             return True
-    
+
     step_6_cross_format_coherence_test:
       description: "Ultimate validation: All formats produce identical data"
       claude_code_cli: |
@@ -684,20 +684,20 @@ format_validation_methodology:
         python -c "
         import pandas as pd
         import json
-        
+
         # Load all formats
         csv_df = pd.read_csv('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.csv')
-        
+
         with open('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct.json') as f:
             json_data = json.load(f)
         json_df = pd.DataFrame(json_data)
-        
+
         arrow_df = pd.read_feather('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1.arrow')
         parquet_df = pd.read_parquet('./validation_output/um_BTCUSDT_rangebar_20250801_20250801_0.800pct_v1_snappy.parquet')
-        
+
         # Assert all shapes match
         assert csv_df.shape == json_df.shape == arrow_df.shape == parquet_df.shape
-        
+
         print(f'✅ All formats have identical shape: {csv_df.shape}')
         print(f'✅ All {len(csv_df)} range bars validated across 4 formats')
         "
@@ -707,100 +707,100 @@ format_validation_methodology:
       #!/bin/bash
       # master-format-validation.sh
       # Self-explanatory validation suite for Claude Code CLI debugging
-      
+
       set -e
-      
+
       SYMBOL="BTCUSDT"
       DATE="2025-08-01"
       THRESHOLD="0.008"
       OUTPUT_DIR="./validation_output"
-      
+
       echo "🔍 Range Bar Format Validation Suite"
       echo "===================================="
       echo "Symbol: $SYMBOL"
-      echo "Date: $DATE"  
+      echo "Date: $DATE"
       echo "Threshold: $THRESHOLD"
       echo "Output: $OUTPUT_DIR"
       echo ""
-      
+
       # Step 1: Generate all formats
       echo "📊 Step 1: Generating all formats..."
       mkdir -p $OUTPUT_DIR
       cargo run --release --bin rangebar_export -- $SYMBOL $DATE $DATE $THRESHOLD $OUTPUT_DIR --format all
-      
+
       # Step 2: Verify file existence
       echo "📁 Step 2: Verifying file existence..."
       ls -lh $OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_*
-      
+
       # Step 3: CSV/JSON coherence
       echo "🔍 Step 3: CSV/JSON coherence test..."
       python3 -c "
       import csv, json, sys
       from decimal import Decimal
-      
+
       csv_file = '$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct.csv'
       json_file = '$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct.json'
-      
+
       with open(csv_file) as f:
           csv_data = list(csv.DictReader(f))
       with open(json_file) as f:
           json_data = json.load(f)
-      
+
       assert len(csv_data) == len(json_data), f'Count mismatch: {len(csv_data)} vs {len(json_data)}'
-      
+
       for i, (c, j) in enumerate(zip(csv_data, json_data)):
           for field in ['open', 'high', 'low', 'close', 'volume']:
               if Decimal(c[field]) != Decimal(str(j[field])):
                   print(f'❌ Mismatch row {i}, {field}: {c[field]} vs {j[field]}')
                   sys.exit(1)
-      
+
       print(f'✅ CSV/JSON coherent: {len(csv_data)} bars validated')
       "
-      
+
       # Step 4: Arrow validation
       echo "🏹 Step 4: Arrow format validation..."
       python3 -c "
       import pandas as pd
       import sys
-      
+
       try:
           arrow_df = pd.read_feather('$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct_v1.arrow')
           csv_df = pd.read_csv('$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct.csv')
-          
+
           assert arrow_df.shape == csv_df.shape, f'Shape mismatch: {arrow_df.shape} vs {csv_df.shape}'
           print(f'✅ Arrow coherent: {len(arrow_df)} bars validated')
       except Exception as e:
           print(f'❌ Arrow validation failed: {e}')
           sys.exit(1)
       "
-      
-      # Step 5: Parquet validation  
+
+      # Step 5: Parquet validation
       echo "📦 Step 5: Parquet format validation..."
       python3 -c "
       import pandas as pd
       import os, sys
-      
+
       try:
           parquet_df = pd.read_parquet('$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct_v1_snappy.parquet')
           csv_df = pd.read_csv('$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct.csv')
-          
+
           assert parquet_df.shape == csv_df.shape, f'Shape mismatch: {parquet_df.shape} vs {csv_df.shape}'
-          
+
           csv_size = os.path.getsize('$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct.csv')
           parquet_size = os.path.getsize('$OUTPUT_DIR/um_${SYMBOL}_rangebar_${DATE//-/}_${DATE//-/}_0.800pct_v1_snappy.parquet')
           compression = (csv_size - parquet_size) / csv_size * 100
-          
+
           print(f'✅ Parquet coherent: {len(parquet_df)} bars, {compression:.1f}% compressed')
       except Exception as e:
           print(f'❌ Parquet validation failed: {e}')
           sys.exit(1)
       "
-      
+
       echo ""
       echo "🎉 ALL FORMAT VALIDATION PASSED"
       echo "==============================="
       echo "✅ CSV/JSON: Coherent"
-      echo "✅ Arrow: Coherent" 
+      echo "✅ Arrow: Coherent"
       echo "✅ Parquet: Coherent + Compressed"
       echo ""
       echo "Ready for production use across all formats!"
@@ -813,19 +813,19 @@ format_validation_methodology:
         tail -5 output_file.csv                     # Check last rows
         wc -l output_file.csv                       # Count total bars
         awk -F',' '{print $1,$5,$6,$7,$8}' output_file.csv | head -5  # Key fields only
-        
+
       json_debugging: |
-        # JSON format debugging with Claude Code CLI  
+        # JSON format debugging with Claude Code CLI
         head -1 output_file.json | python -m json.tool    # Pretty-print structure
         python -c "import json; d=json.load(open('output_file.json')); print(f'Bars: {len(d)}, Fields: {list(d[0].keys())}')"
         python -c "import json; d=json.load(open('output_file.json')); [print(f'Bar {i}: {bar}') for i, bar in enumerate(d[:2])]"
-        
+
       arrow_debugging: |
         # Arrow format debugging with Claude Code CLI
         python -c "import pandas as pd; df=pd.read_feather('output_file.arrow'); print(f'Shape: {df.shape}, Dtypes: {df.dtypes.to_dict()}')"
         python -c "import pandas as pd; df=pd.read_feather('output_file.arrow'); print(df.head())"
         python -c "import pandas as pd; df=pd.read_feather('output_file.arrow'); print(df.describe())"
-        
+
       parquet_debugging: |
         # Parquet format debugging with Claude Code CLI
         python -c "import pandas as pd; df=pd.read_parquet('output_file.parquet'); print(f'Shape: {df.shape}, Memory: {df.memory_usage().sum()/1024**2:.1f}MB')"
@@ -838,17 +838,17 @@ format_validation_methodology:
         params: "BTCUSDT 2025-08-01 2025-08-01 0.008"
         expected_bars: "~10-15"
         purpose: "Quick validation"
-        
+
       single_day_large:
-        params: "BTCUSDT 2025-08-01 2025-08-01 0.001"  
+        params: "BTCUSDT 2025-08-01 2025-08-01 0.001"
         expected_bars: "~1000+"
         purpose: "Volume stress test"
-        
+
       multi_day_medium:
         params: "BTCUSDT 2025-08-01 2025-08-05 0.008"
         expected_bars: "~50-100"
         purpose: "Time series continuity"
-        
+
       different_symbols:
         params: ["ETHUSDT 2025-08-01 2025-08-01 0.008", "SOLUSDT 2025-08-01 2025-08-01 0.008"]
         purpose: "Multi-asset validation"
@@ -860,28 +860,28 @@ format_validation_methodology:
       - "✅ Timestamps preserved with millisecond precision"
       - "✅ Volume aggregation consistent"
       - "✅ Bar sequence ordering maintained"
-      
+
     format_specific:
       csv:
         - "✅ Headers present and correctly named"
         - "✅ No trailing commas or malformed rows"
         - "✅ Decimal precision preserved"
-        
+
       json:
         - "✅ Valid JSON structure (no syntax errors)"
         - "✅ All numeric fields properly typed"
         - "✅ No scientific notation in inappropriate fields"
-        
+
       arrow:
-        - "✅ Schema matches specification exactly"  
+        - "✅ Schema matches specification exactly"
         - "✅ Decimal128 precision for price/volume fields"
         - "✅ Metadata preserved in file headers"
-        
+
       parquet:
         - "✅ Compression achieved (20-80% size reduction)"
-        - "✅ Snappy compression algorithm used"  
+        - "✅ Snappy compression algorithm used"
         - "✅ Metadata preserved and queryable"
-        
+
     performance_validation:
       - "✅ Parquet loads >5x faster than CSV in pandas"
       - "✅ Arrow zero-copy loading verified"
@@ -892,11 +892,11 @@ future_extensions:
   streaming_support:
     description: "Real-time Arrow streaming"
     timeline: "Post v3.0.0"
-    
+
   delta_lake:
     description: "Delta Lake table format support"
     timeline: "Post v3.0.0"
-    
+
   multi_timeframe:
     description: "Multiple range thresholds in single file"
     timeline: "Post v3.0.0"
@@ -904,14 +904,14 @@ future_extensions:
 # Current Project Status - UPDATED 2025-09-11 (Post-Validation)
 current_status:
   phase: "Phase 2 Complete - Algorithm + Performance Validation"
-  rust_implementation: ✅ Complete - Pure Rust range bar construction working  
+  rust_implementation: ✅ Complete - Pure Rust range bar construction working
   data_fetching: ✅ Complete - Direct data.binance.vision integration
   algorithm_validation: ✅ Complete - Breach consistency validation implemented
   performance_validation: ✅ Complete - 116M trades/sec (11.6x better than target)
   correctness_validation: ✅ Complete - Real data processing (1.38M trades validated)
   multi_asset_support: ✅ Complete - BTCUSDT, ETHUSDT, SOLUSDT, ADAUSDT tested
   security_updates: ✅ Complete - All dependency vulnerabilities fixed
-  
+
   # Missing Core Functionality (High Priority)
   arrow_parquet_integration: ❌ Not Started - No binary format support
   multi_market_support: ❌ Not Started - UM futures only (no CM/SPOT)
@@ -927,18 +927,18 @@ validation_framework:
     rationale: "Breaching trade that triggers bar closure becomes the close price"
     implementation: "(high_breach → close_breach) AND (low_breach → close_breach)"
     workflow_validation: "Validates trade processing, threshold detection, breach inclusion, bar closing"
-    
+
   step_by_step_verification_methodology:
     description: "Systematic testing approach for production confidence"
     empirical_insight: "Iterative testing prevents failure cascades"
     phases:
       - "Environment foundation (toolchain, dependencies)"
-      - "Core validation (unit tests, algorithm correctness)" 
+      - "Core validation (unit tests, algorithm correctness)"
       - "Build verification (debug, release)"
       - "Performance validation (speed + correctness)"
       - "Real data processing (actual Binance trades)"
       - "Cross-validation (breach consistency checks)"
-    
+
   performance_plus_correctness_validation:
     description: "Dual validation requirement"
     empirical_learning: "Speed metrics alone insufficient - need correctness proof"
@@ -955,7 +955,7 @@ validation_framework:
   market_microstructure: ✅ Complete - Advanced financial metrics and analysis
   format_validation: ✅ Complete - Cross-format validation methodology documented
   parallel_computation: ✅ Complete - Rayon integration for statistical performance
-  
+
   # Data Integrity & Workspace Organization
   data_integrity_verification: ✅ Complete - SHA256 verification for Binance downloads implemented
   workspace_organization: ✅ Complete - Scripts organized (scripts/analysis/, scripts/testing/)
@@ -966,7 +966,7 @@ validation_framework:
 # SOTA Statistical Analysis Framework - PHASE 1.5 IMPLEMENTATION
 statistical_analysis_framework:
   overview: |
-    Comprehensive statistical analysis framework implemented with 200+ metrics for 
+    Comprehensive statistical analysis framework implemented with 200+ metrics for
     market microstructure analysis. Leverages SOTA Rust crates for high-performance
     financial time series analysis and generates extensive JSON metadata.
 
@@ -975,17 +975,17 @@ statistical_analysis_framework:
       statrs: "0.17 - Core statistical distributions and functions"
       quantiles: "0.7 - Streaming quantile estimation (CKMS, T-Digest)"
       uses: ["Distribution analysis", "Percentile computation", "Outlier detection"]
-      
+
     data_processing:
       polars: "0.35 - High-performance DataFrame operations with lazy evaluation"
       features: ["lazy", "temporal", "strings", "parquet", "csv"]
       uses: ["Time series aggregation", "Window functions", "Statistical computations"]
-      
+
     mathematical_computation:
       nalgebra: "0.33 - Linear algebra backend for complex calculations"
       peroxide: "0.37 with O3 features - Scientific computing with BLAS optimizations"
       uses: ["Matrix operations", "Covariance analysis", "Principal component analysis"]
-      
+
     performance_optimization:
       rayon: "1.11 - Parallel computation for statistical processing"
       hashbrown: "0.14 - Fast HashMap implementation for statistical caches"
@@ -997,28 +997,28 @@ statistical_analysis_framework:
     dataset_info:
       fields: ["symbol", "market_type", "date_range", "source_exchange", "data_format"]
       validation: "Schema-validated with comprehensive data lineage"
-      
+
     algorithm_configuration:
-      fields: ["threshold_bps", "algorithm_version", "processing_mode", "precision_mode"]
+      fields: ["threshold_decimal_bps", "algorithm_version", "processing_mode", "precision_mode"]
       documentation: "Complete algorithm parameters and execution context"
-      
+
     core_statistics:
       price_statistics: "OHLC statistics, price distributions, volatility metrics"
       volume_statistics: "Volume distributions, flow analysis, aggregation metrics"
       time_statistics: "Duration analysis, time-based patterns, session metrics"
-      
+
     market_microstructure_analysis:
       spread_estimation: "Bid-ask spread analysis from trade data"
       liquidity_metrics: "Volume-based liquidity indicators and market depth"
       noise_analysis: "Price noise characterization and signal extraction"
       impact_analysis: "Trade impact on price movements"
-      
+
     advanced_financial_metrics:
       volatility_models: "GARCH-style volatility estimation and forecasting"
       correlation_analysis: "Cross-asset correlation and co-movement analysis"
       risk_metrics: "VaR, CVaR, maximum drawdown, tail risk measures"
       performance_attribution: "Factor-based performance decomposition"
-      
+
     quality_assurance_metrics:
       data_completeness: "Missing data analysis and gap detection"
       outlier_detection: "Statistical outlier identification and flagging"
@@ -1030,12 +1030,12 @@ statistical_analysis_framework:
       framework: "Rayon-based parallel computation"
       thread_safety: "Lock-free statistical computations where possible"
       memory_efficiency: "Streaming algorithms for large datasets"
-      
+
     streaming_algorithms:
       quantile_estimation: "CKMS and T-Digest for memory-efficient percentiles"
       rolling_statistics: "Online algorithms for moving averages and variance"
       incremental_updates: "Efficient re-computation for streaming data"
-      
+
     statistical_configuration:
       precision_settings: "Configurable numerical precision for statistical calculations"
       computation_modes: ["fast_approximate", "high_precision", "memory_optimized"]
@@ -1046,41 +1046,41 @@ statistical_analysis_framework:
       JSON files now contain extensive statistical metadata alongside range bar data:
       - Core OHLCV range bars (primary data)
       - Complete statistical analysis (200+ metrics)
-      - Market microstructure insights  
+      - Market microstructure insights
       - Data quality assessments
       - Algorithm execution diagnostics
-      
+
     metadata_schema:
       data_section: "Core range bar OHLCV data"
       statistics_section: "Comprehensive statistical analysis"
       quality_section: "Data quality and validation metrics"
       performance_section: "Processing performance and diagnostics"
       format_section: "Cross-format compatibility information"
-      
+
     statistical_profiling:
       raw_data_profile: "Comprehensive profiling of raw aggTrades input"
-      range_bar_profile: "Statistical characterization of output range bars"  
+      range_bar_profile: "Statistical characterization of output range bars"
       transformation_analysis: "Statistical analysis of raw→range bar transformation"
       comparative_metrics: "Performance vs traditional time-based bars"
 
   feature_integration:
     cargo_features: |
       [features]
-      default = ["statistics", "data-integrity"] 
+      default = ["statistics", "data-integrity"]
       statistics = ["dep:statrs", "dep:quantiles", "dep:polars", "dep:nalgebra", "dep:peroxide"]
-      data-integrity = ["dep:sha2", "dep:crc32fast", "dep:md5"] 
+      data-integrity = ["dep:sha2", "dep:crc32fast", "dep:md5"]
       performance-optimized = ["dep:hashbrown", "dep:smallvec", "dep:ahash"]
-      
+
     conditional_compilation: "Statistics module only compiled with 'statistics' feature"
     backward_compatibility: "Non-statistical builds remain lightweight and fast"
-    
+
   implementation_status:
     statistics_module: "✅ Complete - 91KB comprehensive implementation"
     cargo_integration: "✅ Complete - All SOTA crates integrated"
-    library_exports: "✅ Complete - Public API exposed via lib.rs" 
+    library_exports: "✅ Complete - Public API exposed via lib.rs"
     binary_integration: "🔄 In Progress - Export binary using statistical engine"
     json_enhancement: "🔄 In Progress - Enhanced JSON with comprehensive metadata"
-    
+
   performance_characteristics:
     computational_overhead: "~10-15% additional processing time for full statistical analysis"
     memory_usage: "Streaming algorithms minimize memory footprint"
@@ -1092,13 +1092,13 @@ statistical_analysis_framework:
     numerical_stability: "Tested with extreme market conditions and edge cases"
     performance_benchmarks: "Performance validation across different dataset sizes"
     memory_safety: "Rust's ownership system ensures memory-safe statistical computations"
-  
+
   next_phase: "Phase 3 - Arrow/Parquet Integration (Core Missing Functionality)"
   immediate_priorities:
     priority_1_arrow_parquet: "Add binary format support - biggest gap vs YML plan"
     priority_2_market_type_cli: "Add market_type parameter (um_futures, cm_futures, spot)"
     priority_3_comprehensive_validation: "Complete format validation framework from YML"
-    
+
   immediate_tasks:
     - "Add apache-arrow and parquet crate dependencies to Cargo.toml"
     - "Implement Arrow schema with decimal128 precision and metadata"
@@ -1120,7 +1120,7 @@ success_criteria:
   performance_targets: ✅ "116M trades/sec (11.6x better than 100ms target)"
   real_data_validation: ✅ "1.38M Binance trades processed and verified"
   security_foundation: ✅ "All vulnerabilities fixed, dependency tree clean"
-  
+
   # Missing Core Functionality
   binary_format_support: ❌ "Arrow/Parquet integration not implemented"
   multi_market_support: ❌ "Only UM futures, no CM/SPOT support"
