@@ -3,6 +3,9 @@
 //! Implements non-lookahead bias range bar construction where bars close when
 //! price moves ±threshold bps from the bar's OPEN price.
 
+use crate::checkpoint::{
+    AnomalySummary, Checkpoint, CheckpointError, PositionVerification, PriceWindow,
+};
 use crate::fixed_point::FixedPoint;
 use crate::types::{AggTrade, RangeBar};
 #[cfg(feature = "python")]
@@ -17,6 +20,22 @@ pub struct RangeBarProcessor {
     /// Current bar state for streaming processing (Q19)
     /// Enables get_incomplete_bar() and stateful process_single_trade()
     current_bar_state: Option<RangeBarState>,
+
+    /// Price window for checkpoint hash verification
+    price_window: PriceWindow,
+
+    /// Last processed trade ID (for gap detection on resume)
+    last_trade_id: Option<i64>,
+
+    /// Last processed timestamp (for position verification)
+    last_timestamp_us: i64,
+
+    /// Anomaly tracking for debugging
+    anomaly_summary: AnomalySummary,
+
+    /// Flag indicating this processor was created from a checkpoint
+    /// When true, process_agg_trade_records will continue from existing bar state
+    resumed_from_checkpoint: bool,
 }
 
 impl RangeBarProcessor {
@@ -51,6 +70,11 @@ impl RangeBarProcessor {
         Ok(Self {
             threshold_decimal_bps,
             current_bar_state: None,
+            price_window: PriceWindow::new(),
+            last_trade_id: None,
+            last_timestamp_us: 0,
+            anomaly_summary: AnomalySummary::default(),
+            resumed_from_checkpoint: false,
         })
     }
 
@@ -76,6 +100,11 @@ impl RangeBarProcessor {
         &mut self,
         trade: AggTrade,
     ) -> Result<Option<RangeBar>, ProcessingError> {
+        // Track price and position for checkpoint
+        self.price_window.push(trade.price);
+        self.last_trade_id = Some(trade.agg_trade_id);
+        self.last_timestamp_us = trade.timestamp;
+
         match &mut self.current_bar_state {
             None => {
                 // First trade - initialize new bar
@@ -196,14 +225,27 @@ impl RangeBarProcessor {
         // Validate records are sorted
         self.validate_trade_ordering(agg_trade_records)?;
 
-        // Clear streaming state - batch mode uses local state
-        self.current_bar_state = None;
+        // Use existing bar state if resuming from checkpoint, otherwise start fresh
+        // This is CRITICAL for cross-file continuation (Issues #2, #3)
+        let mut current_bar: Option<RangeBarState> = if self.resumed_from_checkpoint {
+            // Continue from checkpoint's incomplete bar
+            self.resumed_from_checkpoint = false; // Consume the flag
+            self.current_bar_state.take()
+        } else {
+            // Start fresh for normal batch processing
+            self.current_bar_state = None;
+            None
+        };
 
         let mut bars = Vec::with_capacity(agg_trade_records.len() / 100); // Heuristic capacity
-        let mut current_bar: Option<RangeBarState> = None;
         let mut defer_open = false;
 
         for agg_record in agg_trade_records {
+            // Track price and position for checkpoint
+            self.price_window.push(agg_record.price);
+            self.last_trade_id = Some(agg_record.agg_trade_id);
+            self.last_timestamp_us = agg_record.timestamp;
+
             if defer_open {
                 // Previous bar closed, this agg_record opens new bar
                 current_bar = Some(RangeBarState::new(agg_record, self.threshold_decimal_bps));
@@ -245,6 +287,9 @@ impl RangeBarProcessor {
             }
         }
 
+        // Save current bar state for checkpoint (preserves incomplete bar)
+        self.current_bar_state = current_bar.clone();
+
         // Add final partial bar only if explicitly requested
         // This preserves algorithm integrity: bars should only close on threshold breach
         if include_incomplete && let Some(bar_state) = current_bar {
@@ -252,6 +297,150 @@ impl RangeBarProcessor {
         }
 
         Ok(bars)
+    }
+
+    // === CHECKPOINT METHODS ===
+
+    /// Create checkpoint for cross-file continuation
+    ///
+    /// Captures current processing state for seamless continuation:
+    /// - Incomplete bar (if any) with FIXED thresholds
+    /// - Position tracking (timestamp, trade_id if available)
+    /// - Price hash for verification
+    ///
+    /// # Arguments
+    ///
+    /// * `symbol` - Symbol being processed (e.g., "BTCUSDT", "EURUSD")
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let bars = processor.process_agg_trade_records(&trades)?;
+    /// let checkpoint = processor.create_checkpoint("BTCUSDT");
+    /// let json = serde_json::to_string(&checkpoint)?;
+    /// std::fs::write("checkpoint.json", json)?;
+    /// ```
+    pub fn create_checkpoint(&self, symbol: &str) -> Checkpoint {
+        let (incomplete_bar, thresholds) = match &self.current_bar_state {
+            Some(state) => (
+                Some(state.bar.clone()),
+                Some((state.upper_threshold, state.lower_threshold)),
+            ),
+            None => (None, None),
+        };
+
+        Checkpoint::new(
+            symbol.to_string(),
+            self.threshold_decimal_bps,
+            incomplete_bar,
+            thresholds,
+            self.last_timestamp_us,
+            self.last_trade_id,
+            self.price_window.compute_hash(),
+        )
+    }
+
+    /// Resume processing from checkpoint
+    ///
+    /// Restores incomplete bar state with IMMUTABLE thresholds.
+    /// Next trade continues building the bar until threshold breach.
+    ///
+    /// # Errors
+    ///
+    /// - `CheckpointError::MissingThresholds` - Checkpoint has bar but no thresholds
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let json = std::fs::read_to_string("checkpoint.json")?;
+    /// let checkpoint: Checkpoint = serde_json::from_str(&json)?;
+    /// let mut processor = RangeBarProcessor::from_checkpoint(checkpoint)?;
+    /// let bars = processor.process_agg_trade_records(&next_file_trades)?;
+    /// ```
+    pub fn from_checkpoint(checkpoint: Checkpoint) -> Result<Self, CheckpointError> {
+        // Validate checkpoint consistency
+        if checkpoint.incomplete_bar.is_some() && checkpoint.thresholds.is_none() {
+            return Err(CheckpointError::MissingThresholds);
+        }
+
+        // Restore bar state if there's an incomplete bar
+        let current_bar_state = match (checkpoint.incomplete_bar, checkpoint.thresholds) {
+            (Some(bar), Some((upper, lower))) => Some(RangeBarState {
+                bar,
+                upper_threshold: upper,
+                lower_threshold: lower,
+            }),
+            _ => None,
+        };
+
+        Ok(Self {
+            threshold_decimal_bps: checkpoint.threshold_decimal_bps,
+            current_bar_state,
+            price_window: PriceWindow::new(), // Reset - will be rebuilt from new trades
+            last_trade_id: checkpoint.last_trade_id,
+            last_timestamp_us: checkpoint.last_timestamp_us,
+            anomaly_summary: checkpoint.anomaly_summary,
+            resumed_from_checkpoint: true, // Signal to continue from existing bar state
+        })
+    }
+
+    /// Verify we're at the right position in the data stream
+    ///
+    /// Call with first trade of new file to verify continuity.
+    /// Returns verification result indicating if there's a gap or exact match.
+    ///
+    /// # Arguments
+    ///
+    /// * `first_trade` - First trade of the new file/chunk
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// let processor = RangeBarProcessor::from_checkpoint(checkpoint)?;
+    /// let verification = processor.verify_position(&next_file_trades[0]);
+    /// match verification {
+    ///     PositionVerification::Exact => println!("Perfect continuation!"),
+    ///     PositionVerification::Gap { missing_count, .. } => {
+    ///         println!("Warning: {} trades missing", missing_count);
+    ///     }
+    ///     PositionVerification::TimestampOnly { gap_ms } => {
+    ///         println!("Exness data: {}ms gap", gap_ms);
+    ///     }
+    /// }
+    /// ```
+    pub fn verify_position(&self, first_trade: &AggTrade) -> PositionVerification {
+        match self.last_trade_id {
+            Some(last_id) => {
+                // Binance: has trade IDs - check for gaps
+                let expected_id = last_id + 1;
+                if first_trade.agg_trade_id == expected_id {
+                    PositionVerification::Exact
+                } else {
+                    let missing_count = first_trade.agg_trade_id - expected_id;
+                    PositionVerification::Gap {
+                        expected_id,
+                        actual_id: first_trade.agg_trade_id,
+                        missing_count,
+                    }
+                }
+            }
+            None => {
+                // Exness: no trade IDs - use timestamp only
+                let gap_us = first_trade.timestamp - self.last_timestamp_us;
+                let gap_ms = gap_us / 1000;
+                PositionVerification::TimestampOnly { gap_ms }
+            }
+        }
+    }
+
+    /// Get the current anomaly summary
+    pub fn anomaly_summary(&self) -> &AnomalySummary {
+        &self.anomaly_summary
+    }
+
+    /// Get the threshold in decimal basis points
+    pub fn threshold_decimal_bps(&self) -> u32 {
+        self.threshold_decimal_bps
     }
 
     /// Validate that trades are properly sorted for deterministic processing
@@ -279,6 +468,7 @@ impl RangeBarProcessor {
 }
 
 /// Internal state for a range bar being built
+#[derive(Clone)]
 struct RangeBarState {
     /// The range bar being constructed
     pub bar: RangeBar,
@@ -607,6 +797,241 @@ mod tests {
         assert!(
             !bars.is_empty(),
             "ExportRangeBarProcessor should generate same results as basic processor"
+        );
+    }
+
+    // === CHECKPOINT TESTS (Issues #2 and #3) ===
+
+    #[test]
+    fn test_checkpoint_creation() {
+        let mut processor = RangeBarProcessor::new(250).unwrap();
+
+        // Process some trades that don't complete a bar
+        let trades = scenarios::no_breach_sequence(250);
+        let _bars = processor.process_agg_trade_records(&trades).unwrap();
+
+        // Create checkpoint
+        let checkpoint = processor.create_checkpoint("BTCUSDT");
+
+        assert_eq!(checkpoint.symbol, "BTCUSDT");
+        assert_eq!(checkpoint.threshold_decimal_bps, 250);
+        assert!(checkpoint.has_incomplete_bar()); // Should have incomplete bar
+        assert!(checkpoint.thresholds.is_some()); // Thresholds should be saved
+        assert!(checkpoint.last_trade_id.is_some()); // Should track last trade
+    }
+
+    #[test]
+    fn test_checkpoint_serialization_roundtrip() {
+        let mut processor = RangeBarProcessor::new(250).unwrap();
+
+        // Process trades
+        let trades = scenarios::no_breach_sequence(250);
+        let _bars = processor.process_agg_trade_records(&trades).unwrap();
+
+        // Create checkpoint
+        let checkpoint = processor.create_checkpoint("BTCUSDT");
+
+        // Serialize to JSON
+        let json = serde_json::to_string(&checkpoint).expect("Serialization should succeed");
+
+        // Deserialize back
+        let restored: Checkpoint =
+            serde_json::from_str(&json).expect("Deserialization should succeed");
+
+        assert_eq!(restored.symbol, checkpoint.symbol);
+        assert_eq!(
+            restored.threshold_decimal_bps,
+            checkpoint.threshold_decimal_bps
+        );
+        assert_eq!(
+            restored.incomplete_bar.is_some(),
+            checkpoint.incomplete_bar.is_some()
+        );
+    }
+
+    #[test]
+    fn test_cross_file_bar_continuation() {
+        // This is the PRIMARY test for Issues #2 and #3
+        // Verifies that incomplete bars continue correctly across file boundaries
+
+        // Create trades that span multiple bars
+        let mut all_trades = Vec::new();
+
+        // Generate enough trades to produce multiple bars
+        // Using 100bps threshold (1%) for clearer price movements
+        let base_timestamp = 1640995200000000i64; // Microseconds
+
+        // Create a sequence where we'll have ~3-4 completed bars with remainder
+        for i in 0..20 {
+            let price = 50000.0 + (i as f64 * 100.0) * if i % 4 < 2 { 1.0 } else { -1.0 };
+            let trade = test_utils::create_test_agg_trade(
+                i + 1,
+                &format!("{:.8}", price),
+                "1.0",
+                base_timestamp + (i as i64 * 1000000),
+            );
+            all_trades.push(trade);
+        }
+
+        // === FULL PROCESSING (baseline) ===
+        let mut processor_full = RangeBarProcessor::new(100).unwrap(); // 100 × 0.1bps = 10bps = 0.1%
+        let bars_full = processor_full
+            .process_agg_trade_records(&all_trades)
+            .unwrap();
+
+        // === SPLIT PROCESSING WITH CHECKPOINT ===
+        let split_point = 10; // Split in the middle
+
+        // Part 1: Process first half
+        let mut processor_1 = RangeBarProcessor::new(100).unwrap();
+        let part1_trades = &all_trades[0..split_point];
+        let bars_1 = processor_1.process_agg_trade_records(part1_trades).unwrap();
+
+        // Create checkpoint
+        let checkpoint = processor_1.create_checkpoint("TEST");
+
+        // Part 2: Resume from checkpoint and process second half
+        let mut processor_2 = RangeBarProcessor::from_checkpoint(checkpoint).unwrap();
+        let part2_trades = &all_trades[split_point..];
+        let bars_2 = processor_2.process_agg_trade_records(part2_trades).unwrap();
+
+        // === VERIFY CONTINUATION ===
+        // Total completed bars should match full processing
+        let split_total = bars_1.len() + bars_2.len();
+
+        println!("Full processing: {} bars", bars_full.len());
+        println!(
+            "Split processing: {} + {} = {} bars",
+            bars_1.len(),
+            bars_2.len(),
+            split_total
+        );
+
+        assert_eq!(
+            split_total,
+            bars_full.len(),
+            "Split processing should produce same bar count as full processing"
+        );
+
+        // Verify the bars themselves match
+        let all_split_bars: Vec<_> = bars_1.iter().chain(bars_2.iter()).collect();
+        for (i, (full, split)) in bars_full.iter().zip(all_split_bars.iter()).enumerate() {
+            assert_eq!(full.open.0, split.open.0, "Bar {} open price mismatch", i);
+            assert_eq!(
+                full.close.0, split.close.0,
+                "Bar {} close price mismatch",
+                i
+            );
+        }
+    }
+
+    #[test]
+    fn test_verify_position_exact() {
+        let mut processor = RangeBarProcessor::new(250).unwrap();
+
+        // Process some trades
+        let trade1 = test_utils::create_test_agg_trade(100, "50000.0", "1.0", 1640995200000000);
+        let trade2 = test_utils::create_test_agg_trade(101, "50010.0", "1.0", 1640995201000000);
+
+        let _ = processor.process_single_trade(trade1);
+        let _ = processor.process_single_trade(trade2);
+
+        // Create next trade in sequence
+        let next_trade = test_utils::create_test_agg_trade(102, "50020.0", "1.0", 1640995202000000);
+
+        // Verify position
+        let verification = processor.verify_position(&next_trade);
+
+        assert_eq!(verification, PositionVerification::Exact);
+    }
+
+    #[test]
+    fn test_verify_position_gap() {
+        let mut processor = RangeBarProcessor::new(250).unwrap();
+
+        // Process some trades
+        let trade1 = test_utils::create_test_agg_trade(100, "50000.0", "1.0", 1640995200000000);
+        let trade2 = test_utils::create_test_agg_trade(101, "50010.0", "1.0", 1640995201000000);
+
+        let _ = processor.process_single_trade(trade1);
+        let _ = processor.process_single_trade(trade2);
+
+        // Create next trade with gap (skip IDs 102-104)
+        let next_trade = test_utils::create_test_agg_trade(105, "50020.0", "1.0", 1640995202000000);
+
+        // Verify position
+        let verification = processor.verify_position(&next_trade);
+
+        match verification {
+            PositionVerification::Gap {
+                expected_id,
+                actual_id,
+                missing_count,
+            } => {
+                assert_eq!(expected_id, 102);
+                assert_eq!(actual_id, 105);
+                assert_eq!(missing_count, 3);
+            }
+            _ => panic!("Expected Gap verification, got {:?}", verification),
+        }
+    }
+
+    #[test]
+    fn test_checkpoint_clean_completion() {
+        // Test when last trade completes a bar with no remainder
+        // In range bar algorithm: breach trade closes bar, NEXT trade opens new bar
+        // If there's no next trade, there's no incomplete bar
+        let mut processor = RangeBarProcessor::new(100).unwrap(); // 10bps
+
+        // Create trades that complete exactly one bar
+        let trades = vec![
+            test_utils::create_test_agg_trade(1, "50000.0", "1.0", 1640995200000000),
+            test_utils::create_test_agg_trade(2, "50100.0", "1.0", 1640995201000000), // ~0.2% move, breaches 0.1%
+        ];
+
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
+        assert_eq!(bars.len(), 1, "Should have exactly one completed bar");
+
+        // Create checkpoint - should NOT have incomplete bar
+        // (breach trade closes bar, no next trade to open new bar)
+        let checkpoint = processor.create_checkpoint("TEST");
+
+        // With defer_open logic, the next bar isn't started until the next trade
+        assert!(
+            !checkpoint.has_incomplete_bar(),
+            "No incomplete bar when last trade was a breach with no following trade"
+        );
+    }
+
+    #[test]
+    fn test_checkpoint_with_remainder() {
+        // Test when we have trades remaining after a completed bar
+        let mut processor = RangeBarProcessor::new(100).unwrap(); // 10bps
+
+        // Create trades: bar completes at trade 2, trade 3 starts new bar
+        let trades = vec![
+            test_utils::create_test_agg_trade(1, "50000.0", "1.0", 1640995200000000),
+            test_utils::create_test_agg_trade(2, "50100.0", "1.0", 1640995201000000), // Breach
+            test_utils::create_test_agg_trade(3, "50110.0", "1.0", 1640995202000000), // Opens new bar
+        ];
+
+        let bars = processor.process_agg_trade_records(&trades).unwrap();
+        assert_eq!(bars.len(), 1, "Should have exactly one completed bar");
+
+        // Create checkpoint - should have incomplete bar from trade 3
+        let checkpoint = processor.create_checkpoint("TEST");
+
+        assert!(
+            checkpoint.has_incomplete_bar(),
+            "Should have incomplete bar from trade 3"
+        );
+
+        // Verify the incomplete bar has correct data
+        let incomplete = checkpoint.incomplete_bar.unwrap();
+        assert_eq!(
+            incomplete.open.to_string(),
+            "50110.00000000",
+            "Incomplete bar should open at trade 3 price"
         );
     }
 }

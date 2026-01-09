@@ -18,6 +18,7 @@ serde_json.workspace = true
 chrono.workspace = true
 thiserror.workspace = true
 csv = { workspace = true, optional = true }
+ahash = "0.8"  # Fast, non-cryptographic hash for price window verification
 
 # Optional dependencies for future phases
 pyo3 = { version = "0.22", optional = true }

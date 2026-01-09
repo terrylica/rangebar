@@ -8,7 +8,9 @@
 //! - Breach inclusion: Breaching trade included in closing bar
 //! - Fixed thresholds: Never recalculated during bar lifetime
 //! - Temporal integrity: Guaranteed correct historical simulation
+//! - **Cross-file checkpoints**: Seamless continuation across file boundaries (v6.1.0+)
 
+pub mod checkpoint;
 pub mod fixed_point;
 pub mod processor;
 pub mod timestamp;
@@ -22,6 +24,7 @@ pub mod test_utils;
 pub mod test_data_loader;
 
 // Re-export commonly used types
+pub use checkpoint::{AnomalySummary, Checkpoint, CheckpointError, PositionVerification};
 pub use fixed_point::FixedPoint;
 pub use processor::{ExportRangeBarProcessor, ProcessingError, RangeBarProcessor};
 pub use timestamp::{
