@@ -108,7 +108,7 @@
     - `from_str()` - Parse decimal strings
     - `to_string()` - Format with 8 decimals
     - `to_f64()` - Convert to f64 for output
-    - `compute_range_thresholds()` - Calculate upper/lower from price + threshold_bps
+    - `compute_range_thresholds()` - Calculate upper/lower from price + threshold_decimal_bps
 
 **Critical Detail**: v3.0.0 breaking change multiplied all thresholds by 10 (from 1bps to 0.1bps units)
 

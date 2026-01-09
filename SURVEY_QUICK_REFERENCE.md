@@ -24,7 +24,7 @@ Quality Score:    HIGH
 **Algorithm**: Fixed-point threshold breach detection
 
 - Thresholds calculated from bar OPEN price only (non-lookahead bias)
-- Breach when price moves ±threshold_bps from OPEN
+- Breach when price moves ±threshold_decimal_bps from OPEN
 - Breaching trade included in closing bar
 - Next bar opens with following trade
 
@@ -111,7 +111,7 @@ Quality Score:    HIGH
 
 ### v3.0.0 (Basis Points)
 
-- `threshold_bps` unit changed: 1bps → 0.1bps
+- `threshold_decimal_bps` unit changed: 1bps → 0.1bps
 - Migration: multiply all threshold values by 10
 - Example: `250` means 25bps (was 250bps)
 

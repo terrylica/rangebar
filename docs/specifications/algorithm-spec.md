@@ -19,7 +19,7 @@ This specification defines the **canonical range bar construction algorithm** im
 
 ### Mathematical Formulation
 
-**Threshold Units** (v3.0.0+): Thresholds specified in **tenths of basis points (0.1bps units)**
+**Threshold Units** (v3.0.0+): Thresholds specified in **decimal basis points (0.1bps units)**
 
 Given:
 

@@ -114,10 +114,10 @@ for each trade:
 Location: `fixed_point.rs::compute_range_thresholds()`
 
 ```
-delta = (price * threshold_bps) / 100_000
+delta = (price * threshold_decimal_bps) / 100_000
 upper = price + delta
 lower = price - delta
-// v3.0.0: threshold_bps now in 0.1bps units (multiply by 10 from v2)
+// v3.0.0: threshold_decimal_bps now in 0.1bps units (multiply by 10 from v2)
 ```
 
 ### 3. Timestamp Normalization

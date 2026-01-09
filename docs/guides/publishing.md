@@ -197,7 +197,7 @@ export CARGO_REGISTRY_TOKEN=$(doppler secrets get CRATES_IO_CLAUDE_CODE \
 rangebar-core = { path = "../rangebar-core" }
 
 # ✅ CORRECT
-rangebar-core = { path = "../rangebar-core", version = "5.0" }
+rangebar-core = { path = "../rangebar-core", version = "6.0" }
 ```
 
 ### Error: "files in working directory contain changes"

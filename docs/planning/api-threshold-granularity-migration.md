@@ -192,7 +192,7 @@ impl RangeBarProcessor {
 ///
 /// # Arguments
 ///
-/// * `threshold_decimal_bps` - Threshold in **tenths of basis points** (0.1bps units)
+/// * `threshold_decimal_bps` - Threshold in **decimal basis points** (0.1bps units)
 ///   - Example: `25` → 2.5bps = 0.025%
 ///   - Example: `250` → 25bps = 0.25%
 ///   - Minimum: `1` → 0.1bps = 0.001%
