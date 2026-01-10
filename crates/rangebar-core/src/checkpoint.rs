@@ -13,7 +13,9 @@
 //! ## Key Invariants
 //!
 //! - Thresholds are computed from bar.open and are IMMUTABLE for bar's lifetime
-//! - `bar[i+1].open == bar[i].close` continuity preserved across files
+//! - Incomplete bar state preserved across file boundaries
+//! - Note: `bar[i+1].open` may differ from `bar[i].close` (next bar opens at first
+//!   tick after previous bar closes, not at the close price itself)
 //! - Works with both Binance (has agg_trade_id) and Exness (timestamp-only)
 
 use crate::fixed_point::FixedPoint;
