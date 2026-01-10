@@ -5,6 +5,26 @@ All notable changes to RangeBar will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+### 🐛 Bug Fixes
+
+- **docs**: Streamline CLAUDE.md and add compilation optimization guide - Condense root CLAUDE.md with links to detailed docs - Add crates/CLAUDE.md for crate-specific development guidance - Add docs/CLAUDE.md for documentation standards - Add compilation-optimization.md for build performance tips
+
+- **docs**: Update publishing guide version example to 6.1
+
+- **docs**: Correct range bar continuity invariant in checkpoint.rs The previous documentation incorrectly claimed `bar[i+1].open == bar[i].close`. In range bar construction, the next bar opens at the first tick AFTER the previous bar closes, not at the close price itself. This incorrect documentation led to a bug in downstream rangebar-py where the validate_continuity() function was checking the wrong invariant. Fixes #4
+
+
+### 🧰 Maintenance
+
+- Add mise.toml for terrylica GitHub account
+
+- **docs**: Comprehensive v6.1.0 documentation cleanup - Delete legacy survey files (SURVEY_*.md, CODEBASE_SURVEY.md) - outdated v5.0.0 - Delete archived algorithm-spec v1.0.0 (superseded by authoritative spec) - Update version references from 5.0.0/6.0.0 to 6.1.0 in crate READMEs - Update docs/planning/INDEX.md to mark deleted spec as superseded - Fix threshold comment in lib.rs (250 = 0.25% not 2.5%) - Add comprehensive checkpoint API documentation to API.md - Update version headers in API.md, ARCHITECTURE.md, algorithm-spec.md
+
+- **docs**: Remove stale planning docs and fix references - Delete STRATEGIC_PLAN*.md (3 files) - outdated v5.0.0 era planning - Delete RELEASE_NOTES*.md (2 files) - stale v4.0.0 notes (use CHANGELOG.md) - Delete MILESTONE_cc165da.md - stale historical milestone - Delete docs/NEXT_STEPS.md - outdated post-v5.0.0 todo list - Fix Eon-Labs URL → terrylica in python-migration-legacy.md - Update API.md dependency versions from 6.0.0 to 6.1.0
+
+- **docs**: Remove legacy planning files and consolidate documentation - Remove DOCUMENTATION.md (duplicates docs/README.md) - Move TERMINOLOGY.md to docs/TERMINOLOGY.md - Delete entire docs/planning/legacy/ directory (7 obsolete files, ~6.7K lines) - Update docs/planning/INDEX.md to remove legacy references - Fix docs/diagrams/INDEX.md links to point to docs/README.md Removed files: - comprehensive-rolling14bar-system-specification.yml - exness-migration-plan.md - github-chart-visualization-comprehensive-plan.md - master-implementation-plan.yml - phase6-data-flow-architecture.md - phase6-technical-specification.yaml - test-fake-data-audit-v1-obsolete.md
+
 ### ♻️ Refactoring
 
 - Workspace restructuring phases 1-3 (data management + binance provider) Phase 1: Data Management Structure - Create data/ and cache/ directories for raw inputs and provider cache - Create output/ subdirectories (benchmarks, validation, production, experiments) - Add README.md to data/, cache/, output/, test_data/ with taxonomy documentation - Update .gitignore with selective output tracking (commit summaries, ignore large files) Phase 2: Core Verification - Verified src/core/ compiles standalone (cargo check + 88 tests pass) - No changes to core algorithm (stability confirmed) Phase 3: Binance Provider Migration - Create src/providers/binance/ module - Migrate data/historical.rs → providers/binance/historical.rs - Merge tier1.rs + market/symbols.rs → providers/binance/symbols.rs (verified identical) - Migrate streaming/websocket.rs → providers/binance/websocket.rs - Add providers module to lib.rs - All 7 Binance provider tests pass Validation: - cargo check: PASS - cargo test --lib providers: PASS (7/7 tests) - SLO compliance: Correctness ✅, Observability ✅, Maintainability ✅ Note: Old files remain temporarily for backward compatibility. Will be removed in Phase 11. Related: docs/planning/architecture/restructure-v2.3.0-migration.md
