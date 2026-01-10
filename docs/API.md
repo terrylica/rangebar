@@ -695,9 +695,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 **Dependencies**:
 
 ```toml
-rangebar-core = "6.0.0"
-rangebar-providers = { version = "6.0.0", features = ["binance"] }
-rangebar-io = { version = "6.0.0", features = ["polars-io"] }
+rangebar-core = "6.1.0"
+rangebar-providers = { version = "6.1.0", features = ["binance"] }
+rangebar-io = { version = "6.1.0", features = ["polars-io"] }
 tokio = { version = "1.0", features = ["full"] }
 ```
 
