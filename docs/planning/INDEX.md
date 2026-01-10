@@ -1,33 +1,32 @@
 # Planning Documentation Index
 
-**Last Updated**: 2025-10-17
-**Total Documents**: 32 (20 markdown, 12 YAML)
+**Last Updated**: 2026-01-09
+**Total Documents**: 25 (18 markdown, 7 YAML)
 **Purpose**: Central navigation hub for all planning, architecture, and research documentation
 
 ---
 
-## 📋 Quick Navigation
+## Quick Navigation
 
-- [Active Plans](#-active-plans) - Currently being implemented
-- [Completed Plans](#-completed-plans) - Finished and delivered
-- [Reference Documents](#-reference-documents) - Quick reference guides
-- [Archived Plans](#-archived-plans) - Historical/superseded plans
-- [By Category](#-by-category) - Organized by type
+- [Active Plans](#active-plans) - Currently being implemented
+- [Completed Plans](#completed-plans) - Finished and delivered
+- [Reference Documents](#reference-documents) - Quick reference guides
+- [By Category](#by-category) - Organized by type
 
 ---
 
-## ⚡ Active Plans
+## Active Plans
 
 ### Current Implementation
 
-- [`PRODUCTION_HARDENING_ROADMAP.md`](/docs/planning/PRODUCTION_HARDENING_ROADMAP.md) - Production readiness improvements (deep codebase survey)
-- [`COMPREHENSIVE-TODO-LIST.md`](/docs/planning/current/COMPREHENSIVE-TODO-LIST.md) - Master tracking for repository audit and improvements
+- [`PRODUCTION_HARDENING_ROADMAP.md`](/docs/planning/PRODUCTION_HARDENING_ROADMAP.md) - Production readiness improvements
+- [`COMPREHENSIVE-TODO-LIST.md`](/docs/planning/current/COMPREHENSIVE-TODO-LIST.md) - Master tracking for repository audit
 
 ### Current Planning
 
-- [`walk-forward-pattern-recognition-system.md`](/docs/planning/current/walk-forward-pattern-recognition-system.md) - ML pattern recognition system (Active Design Phase)
+- [`walk-forward-pattern-recognition-system.md`](/docs/planning/current/walk-forward-pattern-recognition-system.md) - ML pattern recognition system
 - [`quick-wins-plan.md`](/docs/planning/current/quick-wins-plan.md) - Quick improvement opportunities
-- [`repository-audit-plan.md`](/docs/planning/current/repository-audit-plan.md) - Systematic audit for prune & grow opportunities
+- [`repository-audit-plan.md`](/docs/planning/current/repository-audit-plan.md) - Systematic audit plan
 
 ### YAML Plans (Current)
 
@@ -38,7 +37,7 @@
 
 ---
 
-## ✅ Completed Plans
+## Completed Plans
 
 ### Migrations & Upgrades
 
@@ -46,7 +45,6 @@
 - [`restructure-v2.3.0-migration.md`](/docs/planning/architecture/restructure-v2.3.0-migration.md) - v2.3.0 restructuring (Complete)
 - [`api-threshold-granularity-migration.md`](/docs/planning/api-threshold-granularity-migration.md) - Threshold 1bps→0.1bps migration
 - [`dukascopy-cleanup-plan-v5.0.0.md`](/docs/planning/dukascopy-cleanup-plan-v5.0.0.md) - Dukascopy provider removal
-- [`exness-migration-plan.md`](/docs/planning/legacy/exness-migration-plan.md) - Dukascopy→Exness migration
 
 ### Cleanup & Refactoring
 
@@ -61,7 +59,7 @@
 
 ---
 
-## 📖 Reference Documents
+## Reference Documents
 
 ### Command References
 
@@ -70,28 +68,10 @@
 
 ---
 
-## 🗄️ Archived Plans
-
-### Legacy Features & Specifications
-
-- ~~`algorithm-spec.md`~~ - Original v1.0.0 algorithm spec (deleted, superseded by [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md))
-- [`test-fake-data-audit-v1-obsolete.md`](/docs/planning/legacy/test-fake-data-audit-v1-obsolete.md) - Superseded by v2
-- [`phase6-data-flow-architecture.md`](/docs/planning/legacy/phase6-data-flow-architecture.md) - Phase 6 visualization planning
-- [`github-chart-visualization-comprehensive-plan.md`](/docs/planning/legacy/github-chart-visualization-comprehensive-plan.md) - Chart visualization plan
-
-### Legacy YAML Specifications
-
-- [`master-implementation-plan.yml`](/docs/planning/legacy/master-implementation-plan.yml) - v4.0.0 master plan
-- [`phase6-technical-specification.yaml`](/docs/planning/legacy/phase6-technical-specification.yaml) - Phase 6 technical spec
-- [`comprehensive-rolling14bar-system-specification.yml`](/docs/planning/legacy/comprehensive-rolling14bar-system-specification.yml) - Rolling 14-bar system
-
----
-
-## 📂 By Category
+## By Category
 
 ### Architecture & Design
 
-- ~~`algorithm-spec.md`~~ - Core algorithm v1.0.0 (deleted, superseded by [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md))
 - [`polars-integration-plan.yml`](/docs/planning/architecture/polars-integration-plan.yml) - Polars dataframe integration
 - [`restructure-v2.3.0-migration.md`](/docs/planning/architecture/restructure-v2.3.0-migration.md) - v2.3.0 restructure
 
@@ -116,57 +96,22 @@
 - [`COMPREHENSIVE-TODO-LIST.md`](/docs/planning/current/COMPREHENSIVE-TODO-LIST.md) - Master tracking
 - [`codebase-sanitization-plan.yml`](/docs/planning/current/codebase-sanitization-plan.yml) - Cleanup plan
 
-### Legacy / Archived
+---
 
-- [`test-fake-data-audit-v1-obsolete.md`](/docs/planning/legacy/test-fake-data-audit-v1-obsolete.md) - Superseded
-- [`phase6-data-flow-architecture.md`](/docs/planning/legacy/phase6-data-flow-architecture.md) - Phase 6 design
-- [`github-chart-visualization-comprehensive-plan.md`](/docs/planning/legacy/github-chart-visualization-comprehensive-plan.md) - Visualization
-- [`exness-migration-plan.md`](/docs/planning/legacy/exness-migration-plan.md) - Provider migration
-- [`master-implementation-plan.yml`](/docs/planning/legacy/master-implementation-plan.yml) - v4.0.0 plan
-- [`phase6-technical-specification.yaml`](/docs/planning/legacy/phase6-technical-specification.yaml) - Phase 6 spec
-- [`comprehensive-rolling14bar-system-specification.yml`](/docs/planning/legacy/comprehensive-rolling14bar-system-specification.yml) - Rolling system
+## Document Statistics
+
+| Category     | Active | Completed | Reference | Total  |
+| ------------ | ------ | --------- | --------- | ------ |
+| Current      | 5      | 1         | 2         | 8      |
+| Architecture | 0      | 1         | 1         | 2      |
+| Research     | 0      | 2         | 3         | 5      |
+| Root         | 1      | 3         | 1         | 5      |
+| YAML Files   | 4      | 2         | 1         | 7      |
+| **Total**    | **10** | **9**     | **8**     | **27** |
 
 ---
 
-## 📊 Document Statistics
-
-| Category     | Active | Completed | Archived | Reference | Total  |
-| ------------ | ------ | --------- | -------- | --------- | ------ |
-| Current      | 5      | 1         | 0        | 2         | 8      |
-| Architecture | 0      | 1         | 2        | 0         | 3      |
-| Research     | 0      | 2         | 0        | 0         | 2      |
-| Legacy       | 0      | 1         | 6        | 0         | 7      |
-| Root         | 1      | 3         | 0        | 1         | 5      |
-| YAML Files   | 4      | 2         | 3        | 0         | 9      |
-| **Total**    | **10** | **10**    | **11**   | **3**     | **34** |
-
----
-
-## 🔍 Finding Documents
-
-### By Status
-
-- **Active** - Currently being worked on
-- **Completed** - Finished and delivered
-- **Archived** - Historical reference, superseded
-- **Reference** - Quick reference guides, always relevant
-- **Pending** - Planned but not started
-
-### By Type
-
-- **`.md` files** - Detailed documentation and plans
-- **`.yml/.yaml` files** - Structured specifications and plans
-
-### Search Tips
-
-1. Use your IDE's file search (Cmd+P / Ctrl+P)
-2. Search by keyword in filename
-3. Check the category that matches your need
-4. Look at creation date for recency
-
----
-
-## 📝 Adding New Plans
+## Adding New Plans
 
 When creating new planning documents:
 
@@ -174,7 +119,6 @@ When creating new planning documents:
    - `/current/` - Active development work
    - `/architecture/` - System design specs
    - `/research/` - Analysis and findings
-   - `/legacy/` - Superseded/historical
 
 2. **Add metadata header:**
 
@@ -183,7 +127,7 @@ When creating new planning documents:
 
    **Version**: 1.0.0
    **Created**: YYYY-MM-DD
-   **Status**: [pending|in_progress|completed|archived|active|reference]
+   **Status**: [pending|in_progress|completed|active|reference]
    **Supersedes**: [file path or N/A]
    ```
 

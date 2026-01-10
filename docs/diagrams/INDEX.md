@@ -130,7 +130,7 @@ To add a new diagram:
 2. **Update this INDEX.md**: Add entry with purpose and status
 3. **Use Mermaid syntax**: Follow existing diagram style
 4. **Test rendering**: Verify on GitHub or Mermaid Live Editor
-5. **Link from main docs**: Update [DOCUMENTATION.md](/DOCUMENTATION.md) if needed
+5. **Link from main docs**: Update [docs/README.md](/docs/README.md) if needed
 
 ---
 
@@ -162,7 +162,7 @@ Ask yourself: "Can a non-technical user understand the business logic from this 
 
 ## Quick Links
 
-- **Main Documentation Hub**: [DOCUMENTATION.md](/DOCUMENTATION.md)
+- **Main Documentation Hub**: [docs/README.md](/docs/README.md)
 - **Architecture Overview**: [docs/ARCHITECTURE.md](/docs/ARCHITECTURE.md)
 - **Algorithm Specification**: [docs/specifications/algorithm-spec.md](/docs/specifications/algorithm-spec.md)
 - **Common Workflows**: [docs/guides/common-workflows.md](/docs/guides/common-workflows.md)
