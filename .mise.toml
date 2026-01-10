@@ -1,0 +1,6 @@
+# mise configuration for rangebar workspace
+# Sets terrylica as the GitHub account for this directory
+
+[env]
+GH_TOKEN = "{{ read_file(path=env.HOME ~ '/.claude/.secrets/gh-token-terrylica') | trim }}"
+GITHUB_TOKEN = "{{ read_file(path=env.HOME ~ '/.claude/.secrets/gh-token-terrylica') | trim }}"
