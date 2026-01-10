@@ -57,7 +57,7 @@ rangebar/
 ```
 rangebar/
 ├── crates/
-│   ├── rangebar-core/        # Core algorithm (4 deps)
+│   ├── rangebar-core/        # Core algorithm (5 deps)
 │   ├── rangebar-providers/    # Data providers
 │   ├── rangebar-config/       # Configuration
 │   ├── rangebar-io/           # I/O + Polars

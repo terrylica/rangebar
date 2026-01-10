@@ -151,12 +151,12 @@ Enable Polars integration with the `polars-io` feature:
 
 ```toml
 [dependencies]
-rangebar-io = { version = "6.0.0", features = ["polars-io"] }
+rangebar-io = { version = "6.1.0", features = ["polars-io"] }
 ```
 
 ## Version
 
-Current version: **5.0.0** (modular crate architecture)
+Current version: **6.1.0** (modular crate architecture with checkpoint system)
 
 ## Documentation
 

@@ -52,7 +52,7 @@ Detailed context for the 8-crate modular workspace architecture.
 **rangebar-io** - I/O operations
 
 - Depends on: `rangebar-core`
-- Features: `parquet`, `arrow`, `csv-export`
+- Features: `parquet` (enables Polars), `all`
 - Polars integration for DataFrame ops
 - Export: CSV, Parquet, Arrow IPC
 
@@ -60,8 +60,8 @@ Detailed context for the 8-crate modular workspace architecture.
 
 **rangebar-streaming** - Real-time processor
 
-- Depends on: `rangebar-core`, `rangebar-providers`
-- Features: `all`, `metrics`, `circuit-breaker`
+- Depends on: `rangebar-core`, `rangebar-providers` (optional)
+- Features: `binance-integration`, `stats`, `indicators`, `all`
 - Bounded memory, circuit breaker pattern
 - Public API: `StreamingProcessor`, `StreamingConfig`
 

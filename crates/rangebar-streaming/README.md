@@ -120,7 +120,7 @@ if metrics.circuit_breaker_active {
 
 ## Version
 
-Current version: **5.0.0** (modular crate architecture)
+Current version: **6.1.0** (modular crate architecture with checkpoint system)
 
 ## Documentation
 

@@ -4,9 +4,9 @@ Command-line tools for range bar processing, analysis, and validation.
 
 ## Overview
 
-`rangebar-cli` consolidates all command-line binaries for the rangebar workspace. Provides tools for symbol discovery, data validation, range bar export, benchmarking, and analysis.
+`rangebar-cli` consolidates all command-line binaries for the rangebar workspace. Provides tools for symbol discovery, data validation, batch analysis, benchmarking, and temporal validation.
 
-## Available Tools
+## Available Tools (6 binaries)
 
 ### tier1-symbol-discovery
 
@@ -45,23 +45,25 @@ cargo run --bin data-structure-validator -- \
 - SHA256 checksum verification (optional)
 - Parallel processing with configurable workers
 
-### rangebar-export
+### rangebar-analyze
 
-Export range bars from aggTrades data:
+Parallel Tier-1 batch analysis (formerly `parallel-tier1-analysis`):
 
 ```bash
-# Export BTCUSDT spot market (default)
-cargo run --bin rangebar-export --release -- \
-  BTCUSDT 2024-01-01 2024-01-31 250 ./output
+# Analyze with default settings
+cargo run --bin rangebar-analyze --release -- \
+  --symbol BTCUSDT --threshold 250
 
-# Export UM futures market
-cargo run --bin rangebar-export --release -- \
-  BTCUSDT 2024-01-01 2024-01-31 250 ./output um
-
-# Threshold: 250 units × 0.1 BPS = 25 BPS = 0.25%
+# Multi-symbol parallel analysis
+cargo run --bin rangebar-analyze --release -- \
+  --symbols BTCUSDT,ETHUSDT,SOLUSDT --threshold 250
 ```
 
-**Output**: CSV files with OHLCV data and enhanced metrics (trade counts, turnover, etc.).
+**Features**:
+
+- Multi-symbol parallel analysis using Rayon
+- Comprehensive statistics generation
+- JSON output with analysis reports
 
 ### spot-tier1-processor
 
@@ -88,7 +90,7 @@ cargo run --bin spot-tier1-processor -- --workers 16
 Benchmark Polars integration performance:
 
 ```bash
-cargo run --bin polars-benchmark --features polars-io -- \
+cargo run --bin polars-benchmark -- \
   --input ./data/BTCUSDT_bars.csv \
   --output-dir ./benchmark_output
 ```
@@ -100,12 +102,12 @@ cargo run --bin polars-benchmark --features polars-io -- \
 - Streaming CSV export (2x-5x speedup target)
 - General Polars performance
 
-### temporal-integrity-test-only
+### temporal-integrity-validator
 
-Validate temporal integrity of Polars conversions:
+Validate temporal integrity of range bar data:
 
 ```bash
-cargo run --bin temporal-integrity-test-only --features polars-io -- \
+cargo run --bin temporal-integrity-validator -- \
   --input ./data/BTCUSDT_bars.csv
 ```
 
@@ -115,34 +117,22 @@ cargo run --bin temporal-integrity-test-only --features polars-io -- \
 - DataFrame operation safety
 - Export readiness without round-trip conversion
 
-### rangebar-api
-
-RESTful API server for range bar processing (future):
-
-```bash
-cargo run --bin rangebar-api --release
-```
-
 ## Tool Categories
 
 ### Discovery & Validation
 
 - `tier1-symbol-discovery` - Symbol discovery
 - `data-structure-validator` - Data validation
+- `temporal-integrity-validator` - Temporal validation
 
-### Processing & Export
+### Processing & Analysis
 
-- `rangebar-export` - Single symbol export
+- `rangebar-analyze` - Parallel batch analysis
 - `spot-tier1-processor` - Batch Tier-1 processing
 
-### Testing & Benchmarking
+### Benchmarking
 
 - `polars-benchmark` - Performance benchmarks
-- `temporal-integrity-test-only` - Temporal validation
-
-### Services
-
-- `rangebar-api` - REST API server
 
 ## Common Flags
 
@@ -167,12 +157,12 @@ All tools support standard flags:
 
 ## Version
 
-Current version: **5.0.0** (modular crate architecture)
+Current version: **6.1.0** (modular crate architecture with checkpoint system)
 
 ## Documentation
 
-- Architecture: `../../docs/ARCHITECTURE.md`
-- Examples: `../../examples/`
+- Architecture: [`/docs/ARCHITECTURE.md`](/docs/ARCHITECTURE.md)
+- Algorithm spec: [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md)
 - Each tool has comprehensive `--help` documentation
 
 ## License

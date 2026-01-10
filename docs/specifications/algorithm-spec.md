@@ -1,9 +1,10 @@
 # Range Bar Algorithm Specification
 
-**Version**: 5.0.0
+**Version**: 6.1.0
 **Status**: authoritative
 **Created**: 2025-10-17
-**Supersedes**: `docs/planning/architecture/algorithm-spec.md` (v1.0.0, archived)
+**Updated**: 2026-01-10
+**Supersedes**: `docs/planning/architecture/algorithm-spec.md` (v1.0.0, deleted)
 
 ---
 
@@ -419,7 +420,7 @@ pub enum ProcessingError {
 
 **Superseded Documents**:
 
-- [`/docs/planning/architecture/algorithm-spec.md`](/docs/planning/architecture/algorithm-spec.md) (v1.0.0, archived)
+- `/docs/planning/architecture/algorithm-spec.md` (v1.0.0, deleted)
 
 ---
 

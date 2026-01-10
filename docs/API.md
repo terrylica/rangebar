@@ -1,8 +1,8 @@
-# Rangebar API Reference (v5.0.0)
+# Rangebar API Reference (v6.1.0)
 
 **Target Audience**: AI coding agents (Claude Code, Cursor, etc.) and developers
 **Format**: Structured, machine-readable API documentation
-**Last Updated**: 2025-10-17
+**Last Updated**: 2026-01-10
 **Status**: Complete (covers all 8 workspace crates)
 
 ---
@@ -11,6 +11,7 @@
 
 - [Core Types](#core-types) - `AggTrade`, `RangeBar`, `FixedPoint`
 - [Processors](#processors) - Range bar computation
+- [Checkpoint System](#checkpoint-system-v610) - Cross-file continuation (v6.1.0+)
 - [Data Providers](#data-providers) - Binance, Exness data sources
 - [Export Formats](#export-formats) - CSV, Parquet, Arrow
 - [Streaming](#streaming) - Real-time processing
@@ -213,6 +214,123 @@ println!("Generated {} bars from {} trades", bars.len(), trades.len());
 ```
 
 **Algorithm Guarantee**: Non-lookahead bias (uses only current and past data)
+
+---
+
+## Checkpoint System (v6.1.0+)
+
+Cross-file range bar continuation via checkpoint serialization.
+
+**Location**: `crates/rangebar-core/src/checkpoint.rs`
+
+### Checkpoint Struct
+
+```rust
+/// Checkpoint for cross-file range bar continuation (8 fields)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Checkpoint {
+    // Identification
+    pub symbol: String,
+    pub threshold_decimal_bps: u32,
+
+    // Bar state (reuses existing RangeBar type)
+    pub incomplete_bar: Option<RangeBar>,
+    pub thresholds: Option<(FixedPoint, FixedPoint)>,  // (upper, lower)
+
+    // Position tracking
+    pub last_timestamp_us: i64,
+    pub last_trade_id: Option<i64>,  // Binance: Some, Exness: None
+
+    // Integrity & monitoring
+    pub price_hash: u64,
+    pub anomaly_summary: AnomalySummary,
+}
+
+/// Anomaly summary for quick inspection
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct AnomalySummary {
+    pub gaps_detected: u32,
+    pub overlaps_detected: u32,
+    pub timestamp_anomalies: u32,
+}
+```
+
+### Checkpoint Methods
+
+```rust
+impl RangeBarProcessor {
+    /// Create checkpoint for cross-file continuation
+    pub fn create_checkpoint(&self, symbol: &str) -> Checkpoint;
+
+    /// Resume processing from checkpoint
+    pub fn from_checkpoint(checkpoint: Checkpoint) -> Result<Self, CheckpointError>;
+
+    /// Verify position continuity at file boundary
+    pub fn verify_position(&self, first_trade: &AggTrade) -> PositionVerification;
+}
+```
+
+### PositionVerification Enum
+
+```rust
+pub enum PositionVerification {
+    /// Trade ID matches expected (Binance: last_id + 1)
+    Exact,
+    /// Trade ID gap detected (Binance only)
+    Gap { expected_id: i64, actual_id: i64, missing_count: i64 },
+    /// No trade ID available, timestamp check only (Exness)
+    TimestampOnly { gap_ms: i64 },
+}
+```
+
+### CheckpointError Enum
+
+```rust
+pub enum CheckpointError {
+    SymbolMismatch { checkpoint: String, expected: String },
+    ThresholdMismatch { checkpoint: u32, expected: u32 },
+    PriceHashMismatch { expected: u64, actual: u64 },
+    MissingThresholds,
+    SerializationError(String),
+}
+```
+
+### Usage Example
+
+```rust
+use rangebar_core::{RangeBarProcessor, Checkpoint};
+
+// Process file 1
+let mut processor = RangeBarProcessor::new(250)?;
+let bars_1 = processor.process_agg_trade_records(&file1_trades)?;
+let checkpoint = processor.create_checkpoint("BTCUSDT");
+
+// Serialize checkpoint (JSON)
+let json = serde_json::to_string(&checkpoint)?;
+save_to_disk(&json)?;
+
+// Later: Resume from checkpoint
+let json = load_from_disk()?;
+let checkpoint: Checkpoint = serde_json::from_str(&json)?;
+let mut processor = RangeBarProcessor::from_checkpoint(checkpoint)?;
+
+// Verify position (optional)
+let verification = processor.verify_position(&file2_trades[0]);
+match verification {
+    PositionVerification::Exact => println!("Perfect continuation"),
+    PositionVerification::Gap { missing_count, .. } => {
+        println!("Warning: {} trades missing", missing_count);
+    }
+    PositionVerification::TimestampOnly { gap_ms } => {
+        println!("Timestamp gap: {}ms", gap_ms);
+    }
+}
+
+// Continue processing - incomplete bar continues automatically
+let bars_2 = processor.process_agg_trade_records(&file2_trades)?;
+```
+
+**Key Guarantee**: Incomplete bars at file boundaries continue building with trades from the next file until threshold breach.
 
 ---
 

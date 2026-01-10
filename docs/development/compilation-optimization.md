@@ -22,11 +22,11 @@ Techniques for accelerating Rust compilation in the rangebar workspace.
 brew install sccache
 ```
 
-**Configuration** (add to shell profile):
+**Configuration** (already in `~/.cargo/config.toml`):
 
-```bash
-# ~/.zshenv or ~/.zshrc
-export RUSTC_WRAPPER=sccache
+```toml
+[build]
+rustc-wrapper = "sccache"
 ```
 
 **Verify**:

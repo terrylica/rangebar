@@ -12,7 +12,7 @@ Core algorithm and types for non-lookahead range bar construction from tick data
 
 - **Fixed-Point Arithmetic**: 8-decimal precision (SCALE = 100,000,000) eliminates floating-point errors
 - **Non-Lookahead Algorithm**: Threshold breach detection uses only current and past data
-- **Minimal Dependencies**: Only 4 essential dependencies (chrono, serde, serde_json, thiserror)
+- **Minimal Dependencies**: Only 5 essential dependencies (chrono, serde, serde_json, thiserror, ahash)
 - **Type Safety**: Strongly-typed `AggTrade`, `RangeBar`, and `FixedPoint` structures
 - **Serialization Support**: Full serde support for all core types
 
@@ -97,7 +97,7 @@ See [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-sp
 
 ## Version
 
-Current version: **5.0.0** (modular crate architecture)
+Current version: **6.1.0** (modular crate architecture with checkpoint system)
 
 ## Critical Notes
 

@@ -21,7 +21,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rangebar = "6.0"
+rangebar = "6.1"
 ```
 
 ### Meta-Crate
@@ -52,7 +52,7 @@ with v4.0.0. New code should depend on specific sub-crates directly:
 ```rust
 use rangebar::{RangeBarProcessor, AggTrade, FixedPoint};
 
-// Create processor with 250 basis points threshold (2.5%)
+// Create processor with 25 basis points threshold (0.25%)
 let mut processor = RangeBarProcessor::new(250).unwrap();
 
 // Create sample aggTrade

@@ -56,7 +56,7 @@ The meta-crate supports optional features for selective compilation:
 
 ```toml
 [dependencies]
-rangebar = { version = "6.0.0", features = ["full"] }
+rangebar = { version = "6.1.0", features = ["full"] }
 ```
 
 ### Available Features
@@ -73,16 +73,16 @@ rangebar = { version = "6.0.0", features = ["full"] }
 
 ```toml
 # Minimal: Core algorithm only
-rangebar = { version = "6.0.0" }
+rangebar = { version = "6.1.0" }
 
 # Core + providers
-rangebar = { version = "6.0.0", features = ["providers"] }
+rangebar = { version = "6.1.0", features = ["providers"] }
 
 # Core + providers + streaming
-rangebar = { version = "6.0.0", features = ["streaming"] }
+rangebar = { version = "6.1.0", features = ["streaming"] }
 
 # Everything
-rangebar = { version = "6.0.0", features = ["full"] }
+rangebar = { version = "6.1.0", features = ["full"] }
 ```
 
 ## Architecture
@@ -130,7 +130,7 @@ use rangebar_providers::binance::HistoricalDataLoader;
 
 ## Version
 
-Current version: **5.0.0** (modular crate architecture)
+Current version: **6.1.0** (modular crate architecture with checkpoint system)
 
 **Breaking Changes in v3.0.0**:
 

@@ -74,7 +74,7 @@
 
 ### Legacy Features & Specifications
 
-- [`algorithm-spec.md`](/docs/planning/architecture/algorithm-spec.md) - Original algorithm specification (archived)
+- ~~`algorithm-spec.md`~~ - Original v1.0.0 algorithm spec (deleted, superseded by [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md))
 - [`test-fake-data-audit-v1-obsolete.md`](/docs/planning/legacy/test-fake-data-audit-v1-obsolete.md) - Superseded by v2
 - [`phase6-data-flow-architecture.md`](/docs/planning/legacy/phase6-data-flow-architecture.md) - Phase 6 visualization planning
 - [`github-chart-visualization-comprehensive-plan.md`](/docs/planning/legacy/github-chart-visualization-comprehensive-plan.md) - Chart visualization plan
@@ -91,7 +91,7 @@
 
 ### Architecture & Design
 
-- [`algorithm-spec.md`](/docs/planning/architecture/algorithm-spec.md) - Core algorithm (archived)
+- ~~`algorithm-spec.md`~~ - Core algorithm v1.0.0 (deleted, superseded by [`/docs/specifications/algorithm-spec.md`](/docs/specifications/algorithm-spec.md))
 - [`polars-integration-plan.yml`](/docs/planning/architecture/polars-integration-plan.yml) - Polars dataframe integration
 - [`restructure-v2.3.0-migration.md`](/docs/planning/architecture/restructure-v2.3.0-migration.md) - v2.3.0 restructure
 

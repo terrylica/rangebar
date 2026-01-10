@@ -88,7 +88,7 @@ export RANGEBAR_BINANCE__DEFAULT_MARKET=um
 
 ## Version
 
-Current version: **5.0.0** (modular crate architecture)
+Current version: **6.1.0** (modular crate architecture with checkpoint system)
 
 ## Documentation
 
